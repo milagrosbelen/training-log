@@ -74,3 +74,4 @@ export function getDateParts(dateStr) {
   return { year, month: month - 1, day } // month - 1 porque los meses en Date son 0-indexed
 }
 
+

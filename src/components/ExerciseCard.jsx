@@ -4,13 +4,14 @@ import { Trash2 } from "lucide-react"
 function ExerciseCard({ exercise, onUpdate, onDelete }) {
   const [weight, setWeight] = useState(exercise.weight || "")
   const [reps, setReps] = useState(exercise.reps || "")
-  const [sets, setSets] = useState(exercise.sets || 1)
+  // Usar string vacío para evitar concatenación en mobile
+  const [sets, setSets] = useState(exercise.sets ? String(exercise.sets) : "")
 
   // Sincronizar cuando el ejercicio cambia externamente
   useEffect(() => {
     setWeight(exercise.weight || "")
     setReps(exercise.reps || "")
-    setSets(exercise.sets || 1)
+    setSets(exercise.sets ? String(exercise.sets) : "")
   }, [exercise])
 
   const handleWeightChange = (newWeight) => {
@@ -34,8 +35,10 @@ function ExerciseCard({ exercise, onUpdate, onDelete }) {
   }
 
   const handleSetsChange = (newSets) => {
-    const setsValue = Math.max(1, newSets)
-    setSets(setsValue)
+    // Mantener como string durante el tipeo
+    setSets(newSets)
+    // Convertir a número solo para actualizar el ejercicio (mínimo 1)
+    const setsValue = Math.max(1, parseInt(newSets) || 1)
     onUpdate({
       ...exercise,
       weight,
@@ -115,7 +118,19 @@ function ExerciseCard({ exercise, onUpdate, onDelete }) {
           <input
             type="number"
             value={sets}
-            onChange={(e) => handleSetsChange(parseInt(e.target.value) || 1)}
+            onChange={(e) => {
+              const value = e.target.value
+              // Permitir string vacío o números válidos >= 1
+              if (value === "" || (!isNaN(value) && parseInt(value) >= 1)) {
+                handleSetsChange(value)
+              }
+            }}
+            onFocus={(e) => {
+              // Limpiar el input al hacer focus si tiene valor por defecto
+              if (e.target.value === "1") {
+                e.target.select()
+              }
+            }}
             className="w-full h-12 bg-slate-700/50 text-white text-center px-3 rounded-lg text-lg sm:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/30 placeholder:text-slate-500/50"
             placeholder="1"
             min="1"

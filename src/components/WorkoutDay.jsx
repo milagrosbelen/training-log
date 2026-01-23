@@ -13,8 +13,9 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
   }
 
   const initialDuration = getDurationFromMinutes(workout?.duration || 0)
-  const [durationHours, setDurationHours] = useState(initialDuration.hours)
-  const [durationMinutes, setDurationMinutes] = useState(initialDuration.minutes)
+  // Usar strings vacíos para evitar concatenación en mobile
+  const [durationHours, setDurationHours] = useState(initialDuration.hours === 0 ? "" : String(initialDuration.hours))
+  const [durationMinutes, setDurationMinutes] = useState(initialDuration.minutes === 0 ? "" : String(initialDuration.minutes))
   const [workoutType, setWorkoutType] = useState(workout?.type || "")
   const [exercises, setExercises] = useState(workout?.exercises || [])
 
@@ -22,14 +23,14 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
   useEffect(() => {
     if (workout) {
       const duration = getDurationFromMinutes(workout.duration || 0)
-      setDurationHours(duration.hours)
-      setDurationMinutes(duration.minutes)
+      setDurationHours(duration.hours === 0 ? "" : String(duration.hours))
+      setDurationMinutes(duration.minutes === 0 ? "" : String(duration.minutes))
       setWorkoutType(workout.type || "")
       setExercises(workout.exercises || [])
     } else {
       // Si no hay workout, resetear a valores por defecto
-      setDurationHours(0)
-      setDurationMinutes(0)
+      setDurationHours("")
+      setDurationMinutes("")
       setWorkoutType("")
       setExercises([])
     }
@@ -66,8 +67,10 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
       return
     }
 
-    // Convertir horas y minutos a minutos totales
-    const totalMinutes = (durationHours * 60) + durationMinutes
+    // Convertir horas y minutos a minutos totales (convertir strings a números)
+    const hours = parseInt(durationHours) || 0
+    const minutes = parseInt(durationMinutes) || 0
+    const totalMinutes = (hours * 60) + minutes
     
     onSave({
       date,
@@ -116,7 +119,19 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
             <input
               type="number"
               value={durationHours}
-              onChange={(e) => setDurationHours(Math.max(0, parseInt(e.target.value) || 0))}
+              onChange={(e) => {
+                const value = e.target.value
+                // Permitir string vacío o números válidos
+                if (value === "" || (!isNaN(value) && parseInt(value) >= 0)) {
+                  setDurationHours(value)
+                }
+              }}
+              onFocus={(e) => {
+                // Limpiar el input al hacer focus si tiene valor por defecto
+                if (e.target.value === "0") {
+                  e.target.select()
+                }
+              }}
               placeholder="0"
               className="w-20 bg-slate-700/50 text-white text-sm py-2.5 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/50 placeholder:text-slate-500 text-center"
               min="0"
@@ -127,7 +142,24 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
             <input
               type="number"
               value={durationMinutes}
-              onChange={(e) => setDurationMinutes(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+              onChange={(e) => {
+                const value = e.target.value
+                // Permitir string vacío o números válidos entre 0 y 59
+                if (value === "") {
+                  setDurationMinutes("")
+                } else {
+                  const numValue = parseInt(value)
+                  if (!isNaN(numValue) && numValue >= 0 && numValue <= 59) {
+                    setDurationMinutes(value)
+                  }
+                }
+              }}
+              onFocus={(e) => {
+                // Limpiar el input al hacer focus si tiene valor por defecto
+                if (e.target.value === "0") {
+                  e.target.select()
+                }
+              }}
               placeholder="0"
               className="w-20 bg-slate-700/50 text-white text-sm py-2.5 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/50 placeholder:text-slate-500 text-center"
               min="0"
