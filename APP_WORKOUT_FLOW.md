@@ -481,3 +481,4 @@ FitnessLog es una herramienta completa y profesional para el registro de entrena
 La aplicación prioriza la experiencia del usuario, garantizando que el proceso de registro sea rápido, intuitivo y libre de errores, especialmente en el manejo de fechas y datos. El diseño visual limpio y profesional facilita la lectura y comprensión de la información registrada.
 
 
+

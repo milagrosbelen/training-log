@@ -5,6 +5,7 @@ import WorkoutDay from "./components/WorkoutDay"
 import WorkoutSummary from "./components/WorkoutSummary"
 import MonthlySummary from "./components/MonthlySummary"
 import CopyWorkoutModal from "./components/CopyWorkoutModal"
+import ProgressCharts from "./components/ProgressCharts"
 
 function App() {
   const [workouts, setWorkouts] = useState([])
@@ -243,6 +244,10 @@ function App() {
               month={summaryMonth}
               year={summaryYear}
             />
+            {/* Separador visual entre resumen mensual y gráficos */}
+            <div className="border-t border-slate-700/50 pt-6">
+              <ProgressCharts workouts={workouts} />
+            </div>
           </div>
         )}
       </main>

@@ -84,3 +84,4 @@ export function getExerciseProgressStatus(currentExercise, currentDate, allWorko
 }
 
 
+

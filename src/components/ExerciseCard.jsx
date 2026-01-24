@@ -77,39 +77,8 @@ function ExerciseCard({ exercise, onUpdate, onDelete }) {
         </button>
       </div>
 
-      {/* Grid de inputs simplificados - Solo inputs numéricos */}
+      {/* Grid de inputs simplificados - Orden lógico: Series, Repeticiones, Peso */}
       <div className="grid grid-cols-3 gap-4 sm:gap-6">
-        {/* PESO (KG) */}
-        <div>
-          <label className="block text-xs font-medium text-slate-400 mb-2.5">
-            Peso (kg)
-          </label>
-          <input
-            type="number"
-            value={weight}
-            onChange={(e) => handleWeightChange(e.target.value)}
-            className="w-full h-12 bg-slate-700/50 text-white text-center px-3 rounded-lg text-lg sm:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/30 placeholder:text-slate-500/50"
-            placeholder="0"
-            min="0"
-            step="0.5"
-          />
-        </div>
-
-        {/* REPS */}
-        <div>
-          <label className="block text-xs font-medium text-slate-400 mb-2.5">
-            Repeticiones
-          </label>
-          <input
-            type="number"
-            value={reps}
-            onChange={(e) => handleRepsChange(e.target.value)}
-            className="w-full h-12 bg-slate-700/50 text-white text-center px-3 rounded-lg text-lg sm:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/30 placeholder:text-slate-500/50"
-            placeholder="0"
-            min="0"
-          />
-        </div>
-
         {/* SERIES */}
         <div>
           <label className="block text-xs font-medium text-slate-400 mb-2.5">
@@ -134,6 +103,37 @@ function ExerciseCard({ exercise, onUpdate, onDelete }) {
             className="w-full h-12 bg-slate-700/50 text-white text-center px-3 rounded-lg text-lg sm:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/30 placeholder:text-slate-500/50"
             placeholder="1"
             min="1"
+          />
+        </div>
+
+        {/* REPS */}
+        <div>
+          <label className="block text-xs font-medium text-slate-400 mb-2.5">
+            Repeticiones
+          </label>
+          <input
+            type="number"
+            value={reps}
+            onChange={(e) => handleRepsChange(e.target.value)}
+            className="w-full h-12 bg-slate-700/50 text-white text-center px-3 rounded-lg text-lg sm:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/30 placeholder:text-slate-500/50"
+            placeholder="0"
+            min="0"
+          />
+        </div>
+
+        {/* PESO (KG) */}
+        <div>
+          <label className="block text-xs font-medium text-slate-400 mb-2.5">
+            Peso (kg)
+          </label>
+          <input
+            type="number"
+            value={weight}
+            onChange={(e) => handleWeightChange(e.target.value)}
+            className="w-full h-12 bg-slate-700/50 text-white text-center px-3 rounded-lg text-lg sm:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/30 placeholder:text-slate-500/50"
+            placeholder="0"
+            min="0"
+            step="0.5"
           />
         </div>
       </div>
