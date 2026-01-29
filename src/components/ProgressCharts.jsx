@@ -78,3 +78,5 @@ function ProgressCharts({ workouts }) {
 
 export default ProgressCharts
 
+
+

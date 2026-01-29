@@ -211,3 +211,5 @@ function formatDateForChart(dateStr) {
   return `${day} ${MONTHS_SHORT[month - 1]}`
 }
 
+
+

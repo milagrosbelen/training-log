@@ -50,38 +50,42 @@ export function findLastExerciseOccurrence(currentExercise, currentDate, allWork
 }
 
 /**
- * Obtiene el estado de progreso de un ejercicio
+ * Obtiene el estado de progreso de un ejercicio comparando el peso con el entrenamiento anterior
  * @param {Object} currentExercise - Ejercicio actual
  * @param {string} currentDate - Fecha del entrenamiento actual (YYYY-MM-DD)
  * @param {Array} allWorkouts - Array de todos los entrenamientos guardados
- * @returns {Object} { status: "improved" | "same" | "worse" | "first", previousVolume: number, currentVolume: number }
+ * @returns {Object} { status: "improved" | "same" | "worse" | "first", previousWeight: number, currentWeight: number }
  */
 export function getExerciseProgressStatus(currentExercise, currentDate, allWorkouts) {
   if (!currentExercise || !currentDate || !allWorkouts) {
-    return { status: "first", previousVolume: 0, currentVolume: 0 }
+    return { status: "first", previousWeight: 0, currentWeight: 0 }
   }
   
-  const currentVolume = calculateExerciseVolume(currentExercise)
+  // Obtener el peso actual (convertir a número)
+  const currentWeight = parseFloat(currentExercise.weight) || 0
   
-  // Buscar el último ejercicio previo
+  // Buscar el último ejercicio previo con el mismo nombre
   const lastExercise = findLastExerciseOccurrence(currentExercise, currentDate, allWorkouts)
   
   // Si no hay ejercicio previo, es el primer registro
   if (!lastExercise) {
-    return { status: "first", previousVolume: 0, currentVolume }
+    return { status: "first", previousWeight: 0, currentWeight }
   }
   
-  const previousVolume = calculateExerciseVolume(lastExercise)
+  // Obtener el peso del ejercicio anterior (convertir a número)
+  const previousWeight = parseFloat(lastExercise.weight) || 0
   
-  // Comparar volúmenes
-  if (currentVolume > previousVolume) {
-    return { status: "improved", previousVolume, currentVolume }
-  } else if (currentVolume === previousVolume) {
-    return { status: "same", previousVolume, currentVolume }
+  // Comparar pesos
+  if (currentWeight > previousWeight) {
+    return { status: "improved", previousWeight, currentWeight }
+  } else if (currentWeight === previousWeight) {
+    return { status: "same", previousWeight, currentWeight }
   } else {
-    return { status: "worse", previousVolume, currentVolume }
+    return { status: "worse", previousWeight, currentWeight }
   }
 }
+
+
 
 
 

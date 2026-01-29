@@ -143,3 +143,5 @@ function DurationChart({ workouts }) {
 
 export default DurationChart
 
+
+

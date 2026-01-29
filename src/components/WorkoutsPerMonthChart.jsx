@@ -136,3 +136,5 @@ function WorkoutsPerMonthChart({ workouts }) {
 
 export default WorkoutsPerMonthChart
 
+
+
