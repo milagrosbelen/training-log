@@ -1,4 +1,5 @@
 import { getDateParts } from "../utils/dateUtils"
+import { getRandomQuote, progressQuotes } from "../utils/motivationalQuotes"
 
 function MonthlySummary({ workouts, month, year }) {
   const MONTHS = [
@@ -83,6 +84,11 @@ function MonthlySummary({ workouts, month, year }) {
             ? `Has entrenado ${daysWithWorkout} día${daysWithWorkout !== 1 ? "s" : ""} este mes.`
             : "Comienza a registrar tus entrenamientos para ver tu progreso."}
         </p>
+        {daysWithWorkout > 0 && (
+          <p className="text-xs text-slate-500 italic mt-1">
+            {getRandomQuote(progressQuotes)}
+          </p>
+        )}
       </div>
 
       {/* Tarjetas de Métricas - Mejor diseño con sombras y bordes */}

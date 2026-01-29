@@ -13,6 +13,7 @@
 import WeightProgressChart from "./WeightProgressChart"
 import WorkoutsPerMonthChart from "./WorkoutsPerMonthChart"
 import DurationChart from "./DurationChart"
+import { getRandomQuote, progressQuotes } from "../utils/motivationalQuotes"
 
 /**
  * Props que recibe este componente:
@@ -37,6 +38,11 @@ function ProgressCharts({ workouts }) {
         <p className="text-sm sm:text-base text-slate-400">
           Visualiza tu progreso a lo largo del tiempo con estos gráficos interactivos
         </p>
+        {workouts.length > 0 && (
+          <p className="text-xs text-slate-500 italic mt-2">
+            {getRandomQuote(progressQuotes)}
+          </p>
+        )}
       </div>
 
       {/* Grid responsivo para los gráficos */}
@@ -77,6 +83,8 @@ function ProgressCharts({ workouts }) {
 }
 
 export default ProgressCharts
+
+
 
 
 

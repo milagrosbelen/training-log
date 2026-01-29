@@ -50,39 +50,176 @@ export function findLastExerciseOccurrence(currentExercise, currentDate, allWork
 }
 
 /**
- * Obtiene el estado de progreso de un ejercicio comparando el peso con el entrenamiento anterior
+ * Obtiene el estado de progreso general de un ejercicio comparando peso, repeticiones y series
+ * con el entrenamiento anterior usando lógica jerárquica:
+ * - Si el peso cambia, ese cambio determina el rendimiento
+ * - Si el peso es igual, se evalúan repeticiones y series
+ * 
  * @param {Object} currentExercise - Ejercicio actual
  * @param {string} currentDate - Fecha del entrenamiento actual (YYYY-MM-DD)
  * @param {Array} allWorkouts - Array de todos los entrenamientos guardados
- * @returns {Object} { status: "improved" | "same" | "worse" | "first", previousWeight: number, currentWeight: number }
+ * @returns {Object} {
+ *   status: "improved" | "same" | "worse" | "first",
+ *   previousWeight: number,
+ *   currentWeight: number,
+ *   weightDifference: number,
+ *   previousReps: number,
+ *   currentReps: number,
+ *   repsDifference: number,
+ *   previousSets: number,
+ *   currentSets: number,
+ *   setsDifference: number,
+ *   comparisonDetails: {
+ *     weightChanged: boolean,
+ *     repsChanged: boolean,
+ *     setsChanged: boolean,
+ *     reason: string
+ *   }
+ * }
  */
 export function getExerciseProgressStatus(currentExercise, currentDate, allWorkouts) {
   if (!currentExercise || !currentDate || !allWorkouts) {
-    return { status: "first", previousWeight: 0, currentWeight: 0 }
+    return { 
+      status: "first", 
+      previousWeight: 0, 
+      currentWeight: 0,
+      weightDifference: 0,
+      previousReps: 0,
+      currentReps: 0,
+      repsDifference: 0,
+      previousSets: 0,
+      currentSets: 0,
+      setsDifference: 0,
+      comparisonDetails: {
+        weightChanged: false,
+        repsChanged: false,
+        setsChanged: false,
+        reason: "sin datos previos"
+      }
+    }
   }
   
-  // Obtener el peso actual (convertir a número)
+  // Extraer valores actuales
   const currentWeight = parseFloat(currentExercise.weight) || 0
+  const currentReps = parseInt(currentExercise.reps) || 0
+  const currentSets = parseInt(currentExercise.sets) || 1
   
   // Buscar el último ejercicio previo con el mismo nombre
   const lastExercise = findLastExerciseOccurrence(currentExercise, currentDate, allWorkouts)
   
   // Si no hay ejercicio previo, es el primer registro
   if (!lastExercise) {
-    return { status: "first", previousWeight: 0, currentWeight }
+    return { 
+      status: "first", 
+      previousWeight: 0, 
+      currentWeight,
+      weightDifference: currentWeight,
+      previousReps: 0,
+      currentReps,
+      repsDifference: currentReps,
+      previousSets: 0,
+      currentSets,
+      setsDifference: currentSets,
+      comparisonDetails: {
+        weightChanged: currentWeight > 0,
+        repsChanged: currentReps > 0,
+        setsChanged: currentSets > 0,
+        reason: "primer registro"
+      }
+    }
   }
   
-  // Obtener el peso del ejercicio anterior (convertir a número)
+  // Extraer valores anteriores
   const previousWeight = parseFloat(lastExercise.weight) || 0
+  const previousReps = parseInt(lastExercise.reps) || 0
+  const previousSets = parseInt(lastExercise.sets) || 1
   
-  // Comparar pesos
-  if (currentWeight > previousWeight) {
-    return { status: "improved", previousWeight, currentWeight }
-  } else if (currentWeight === previousWeight) {
-    return { status: "same", previousWeight, currentWeight }
-  } else {
-    return { status: "worse", previousWeight, currentWeight }
+  // Calcular diferencias
+  const weightDiff = currentWeight - previousWeight
+  const repsDiff = currentReps - previousReps
+  const setsDiff = currentSets - previousSets
+  
+  // LÓGICA DE COMPARACIÓN JERÁRQUICA
+  
+  let status
+  let reason
+  
+  // Caso 1: Peso cambió (tiene prioridad absoluta)
+  if (weightDiff > 0) {
+    status = "improved"
+    reason = `peso +${weightDiff.toFixed(1)}kg`
+  } else if (weightDiff < 0) {
+    status = "worse"
+    reason = `peso ${weightDiff.toFixed(1)}kg`
+  } 
+  // Caso 2: Peso igual, evaluar reps y series
+  else {
+    const repsImproved = repsDiff > 0
+    const setsImproved = setsDiff > 0
+    const repsWorsened = repsDiff < 0
+    const setsWorsened = setsDiff < 0
+    
+    if (repsImproved || setsImproved) {
+      status = "improved"
+      if (repsImproved && setsImproved) {
+        reason = `reps +${repsDiff}, series +${setsDiff} (peso igual)`
+      } else if (repsImproved) {
+        reason = `reps +${repsDiff} (peso igual)`
+      } else {
+        reason = `series +${setsDiff} (peso igual)`
+      }
+    } else if (repsWorsened || setsWorsened) {
+      status = "worse"
+      if (repsWorsened && setsWorsened) {
+        reason = `reps ${repsDiff}, series ${setsDiff} (peso igual)`
+      } else if (repsWorsened) {
+        reason = `reps ${repsDiff} (peso igual)`
+      } else {
+        reason = `series ${setsDiff} (peso igual)`
+      }
+    } else {
+      status = "same"
+      reason = "sin cambios"
+    }
   }
+  
+  return {
+    status,
+    previousWeight,
+    currentWeight,
+    weightDifference: weightDiff,
+    previousReps,
+    currentReps,
+    repsDifference: repsDiff,
+    previousSets,
+    currentSets,
+    setsDifference: setsDiff,
+    comparisonDetails: {
+      weightChanged: weightDiff !== 0,
+      repsChanged: repsDiff !== 0,
+      setsChanged: setsDiff !== 0,
+      reason
+    }
+  }
+}
+
+/**
+ * Formatea la diferencia numérica para mostrar al usuario
+ * @param {number} difference - Diferencia numérica (puede ser positiva, negativa o cero)
+ * @param {string} unit - Unidad de medida ("kg" o "volumen")
+ * @returns {string} Diferencia formateada (ej: "+5kg", "-120", "0kg")
+ */
+export function formatProgressDifference(difference, unit = "kg") {
+  if (difference === 0) {
+    return unit === "kg" ? "0kg" : "0"
+  }
+  
+  const sign = difference > 0 ? "+" : ""
+  const formattedValue = unit === "kg" 
+    ? Math.abs(difference).toFixed(1) 
+    : Math.abs(difference).toFixed(0)
+  
+  return `${sign}${formattedValue}${unit === "kg" ? "kg" : ""}`
 }
 
 

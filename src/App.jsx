@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react"
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, Plus } from "lucide-react"
 import Calendar from "./components/Calendar"
 import WorkoutDay from "./components/WorkoutDay"
 import WorkoutSummary from "./components/WorkoutSummary"
 import MonthlySummary from "./components/MonthlySummary"
 import CopyWorkoutModal from "./components/CopyWorkoutModal"
 import ProgressCharts from "./components/ProgressCharts"
+import Toast from "./components/Toast"
+import { getRandomQuote, emptyStateQuotes, successQuotes, workoutDayQuotes } from "./utils/motivationalQuotes"
 
 function App() {
   const [workouts, setWorkouts] = useState([])
@@ -16,6 +18,7 @@ function App() {
   const [editingDate, setEditingDate] = useState(null) // Fecha que está siendo editada
   const [showCopyModal, setShowCopyModal] = useState(false) // Mostrar modal de copiar entrenamiento
   const [copiedWorkout, setCopiedWorkout] = useState(null) // Entrenamiento copiado temporalmente (aún no guardado)
+  const [toast, setToast] = useState(null) // Estado para el toast (message, type)
 
   // Cargar entrenamientos desde localStorage al iniciar
   useEffect(() => {
@@ -56,30 +59,38 @@ function App() {
   }
 
   const handleSaveWorkout = (workoutData) => {
-    const existingIndex = workouts.findIndex((w) => w.date === workoutData.date)
+    try {
+      const existingIndex = workouts.findIndex((w) => w.date === workoutData.date)
 
-    // Guardar con locked: true (entrenamiento guardado permanentemente)
-    const workoutToSave = {
-      ...workoutData,
-      locked: true,
+      // Guardar con locked: true (entrenamiento guardado permanentemente)
+      const workoutToSave = {
+        ...workoutData,
+        locked: true,
+      }
+
+      if (existingIndex >= 0) {
+        // Actualizar entrenamiento existente
+        const updatedWorkouts = [...workouts]
+        updatedWorkouts[existingIndex] = workoutToSave
+        setWorkouts(updatedWorkouts)
+        const quote = getRandomQuote(successQuotes)
+        setToast({ message: `Entrenamiento actualizado correctamente. ${quote}`, type: "success" })
+      } else {
+        // Agregar nuevo entrenamiento
+        setWorkouts([...workouts, workoutToSave])
+        const quote = getRandomQuote(successQuotes)
+        setToast({ message: `Entrenamiento guardado correctamente. ${quote}`, type: "success" })
+      }
+
+      // Limpiar workout copiado temporal
+      setCopiedWorkout(null)
+      
+      // Salir del modo edición
+      setEditingDate(null)
+      // No limpiar selectedDate - mantener seleccionado para ver el entrenamiento guardado
+    } catch (error) {
+      setToast({ message: "Error al guardar el entrenamiento", type: "error" })
     }
-
-    if (existingIndex >= 0) {
-      // Actualizar entrenamiento existente
-      const updatedWorkouts = [...workouts]
-      updatedWorkouts[existingIndex] = workoutToSave
-      setWorkouts(updatedWorkouts)
-    } else {
-      // Agregar nuevo entrenamiento
-      setWorkouts([...workouts, workoutToSave])
-    }
-
-    // Limpiar workout copiado temporal
-    setCopiedWorkout(null)
-    
-    // Salir del modo edición
-    setEditingDate(null)
-    // No limpiar selectedDate - mantener seleccionado para ver el entrenamiento guardado
   }
 
   const handleDiscardWorkout = () => {
@@ -104,10 +115,15 @@ function App() {
 
   const handleDeleteWorkout = () => {
     if (window.confirm("¿Estás seguro de que quieres eliminar este entrenamiento?")) {
-      const updatedWorkouts = workouts.filter((w) => w.date !== selectedDate)
-      setWorkouts(updatedWorkouts)
-      setSelectedDate("")
-      setEditingDate(null)
+      try {
+        const updatedWorkouts = workouts.filter((w) => w.date !== selectedDate)
+        setWorkouts(updatedWorkouts)
+        setSelectedDate("")
+        setEditingDate(null)
+        setToast({ message: "Entrenamiento eliminado correctamente", type: "success" })
+      } catch (error) {
+        setToast({ message: "Error al eliminar el entrenamiento", type: "error" })
+      }
     }
   }
 
@@ -157,7 +173,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-slate-900 text-white relative">
       {/* Header/Navigation - Mejorado con mejor espaciado y sombra */}
       <header className="bg-slate-800/95 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-50 shadow-lg">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -198,34 +214,79 @@ function App() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {currentView === "calendar" && (
           <div className="space-y-6">
-            <Calendar
-              selectedDate={selectedDate}
-              onDateSelect={handleDateSelect}
-              workouts={workouts}
-            />
-            
-            {/* Sección de Registro del Día - Directamente debajo del calendario */}
-            {selectedDate && (
-              <div className="space-y-6 pt-2 border-t border-slate-700/50">
-                <h2 className="text-lg sm:text-xl font-semibold text-white">
-                  {shouldShowSummary() ? "Entrenamiento guardado" : "Entrenamiento del día"}
-                </h2>
-                {shouldShowSummary() ? (
-                  <WorkoutSummary
-                    workout={getCurrentWorkout()}
-                    allWorkouts={workouts}
-                    onEdit={handleEditWorkout}
-                    onDelete={handleDeleteWorkout}
-                  />
-                ) : (
-                  <WorkoutDay
-                    date={selectedDate}
-                    workout={getWorkoutForEditing()}
-                    onSave={handleSaveWorkout}
-                    onDiscard={handleDiscardWorkout}
-                  />
-                )}
+            {/* Estado vacío cuando no hay entrenamientos */}
+            {workouts.length === 0 && !selectedDate ? (
+              <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
+                <div className="space-y-3">
+                  <h2 className="text-2xl sm:text-3xl font-semibold text-white">
+                    Todavía no registraste entrenamientos
+                  </h2>
+                  <p className="text-base sm:text-lg text-slate-400">
+                    Empezá agregando tu primer día 💪
+                  </p>
+                  <p className="text-sm text-slate-500 italic mt-2">
+                    {getRandomQuote(emptyStateQuotes)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    const today = new Date().toISOString().split("T")[0]
+                    handleDateSelect(today)
+                  }}
+                  className="bg-teal-500 hover:bg-teal-600 text-black font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Plus className="w-5 h-5" />
+                  Agregar mi primer entrenamiento
+                </button>
               </div>
+            ) : (
+              <>
+                <Calendar
+                  selectedDate={selectedDate}
+                  onDateSelect={handleDateSelect}
+                  workouts={workouts}
+                />
+                
+                {/* Guía visual cuando no hay día seleccionado */}
+                {!selectedDate && (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-slate-500">
+                      Elegí un día del calendario y registrá tu entrenamiento 💪
+                    </p>
+                  </div>
+                )}
+                
+                {/* Sección de Registro del Día - Directamente debajo del calendario */}
+                {selectedDate && (
+                  <div className="space-y-6 pt-2 border-t border-slate-700/50">
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-semibold text-white">
+                        {shouldShowSummary() ? "Entrenamiento guardado" : "Entrenamiento del día"}
+                      </h2>
+                      {!shouldShowSummary() && (
+                        <p className="text-xs text-slate-500 italic mt-1">
+                          {getRandomQuote(workoutDayQuotes)}
+                        </p>
+                      )}
+                    </div>
+                    {shouldShowSummary() ? (
+                      <WorkoutSummary
+                        workout={getCurrentWorkout()}
+                        allWorkouts={workouts}
+                        onEdit={handleEditWorkout}
+                        onDelete={handleDeleteWorkout}
+                      />
+                    ) : (
+                      <WorkoutDay
+                        date={selectedDate}
+                        workout={getWorkoutForEditing()}
+                        onSave={handleSaveWorkout}
+                        onDiscard={handleDiscardWorkout}
+                      />
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
@@ -260,6 +321,17 @@ function App() {
           onCopy={handleCopyWorkout}
           onClose={handleCloseCopyModal}
         />
+      )}
+
+      {/* Toast de feedback */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-50">
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        </div>
       )}
     </div>
   )

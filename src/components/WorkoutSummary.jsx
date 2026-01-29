@@ -61,42 +61,46 @@ function WorkoutSummary({ workout, allWorkouts, onEdit, onDelete }) {
     
     const progress = getExerciseProgressStatus(exercise, workout.date, allWorkouts)
     
-    switch (progress.status) {
-      case "first":
-        return (
-          <span className="text-xs font-medium text-teal-400 flex items-center gap-1.5 mt-0.5">
-            <span className="text-base">🆕</span>
-            <span>Primer registro</span>
-          </span>
-        )
-      case "improved":
-        return (
-          <span className="text-xs font-medium text-green-400 flex items-center gap-1.5 mt-0.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-green-400 shadow-sm shadow-green-400/50"></span>
-            <span>Mejoró respecto a la última sesión</span>
-          </span>
-        )
-      case "same":
-        return (
-          <span className="text-xs font-medium text-yellow-400 flex items-center gap-1.5 mt-0.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-sm shadow-yellow-400/50"></span>
-            <span>Se mantuvo igual</span>
-          </span>
-        )
-      case "worse":
-        return (
-          <span className="text-xs font-medium text-red-400 flex items-center gap-1.5 mt-0.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-400 shadow-sm shadow-red-400/50"></span>
-            <span>Bajó rendimiento</span>
-          </span>
-        )
-      default:
-        return (
-          <span className="text-xs font-medium text-slate-400 mt-0.5">
-            Sin datos previos
-          </span>
-        )
+    // Si es primer registro, mostrar solo mensaje simple
+    if (progress.status === "first") {
+      return (
+        <span className="text-xs font-medium text-teal-400 flex items-center gap-1.5 mt-0.5">
+          <span className="text-base">🆕</span>
+          <span>Primer registro</span>
+        </span>
+      )
     }
+    
+    // Determinar color, icono y etiqueta según estado general
+    const statusConfig = {
+      improved: {
+        color: "text-green-400",
+        icon: "bg-green-400",
+        shadow: "shadow-green-400/50",
+        label: "Mejoró"
+      },
+      same: {
+        color: "text-yellow-400",
+        icon: "bg-yellow-400",
+        shadow: "shadow-yellow-400/50",
+        label: "Sin cambios"
+      },
+      worse: {
+        color: "text-red-400",
+        icon: "bg-red-400",
+        shadow: "shadow-red-400/50",
+        label: "Empeoró"
+      }
+    }
+    
+    const config = statusConfig[progress.status] || statusConfig.same
+    
+    return (
+      <span className={`text-xs font-medium ${config.color} flex items-center gap-1.5 mt-0.5`}>
+        <span className={`w-2.5 h-2.5 rounded-full ${config.icon} shadow-sm ${config.shadow}`}></span>
+        <span>{config.label}: {progress.comparisonDetails.reason}</span>
+      </span>
+    )
   }
 
   if (!workout) return null

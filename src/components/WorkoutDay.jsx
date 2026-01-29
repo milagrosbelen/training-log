@@ -35,6 +35,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
   const [selectedMainGroup, setSelectedMainGroup] = useState(null)
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState(null)
   const [showExerciseSelector, setShowExerciseSelector] = useState(false)
+  const [errors, setErrors] = useState({})
 
   // Sincronizar estado cuando el workout cambia (útil cuando se copia un entrenamiento)
   useEffect(() => {
@@ -102,6 +103,28 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
     setExercises(exercises.filter((ex) => ex.id !== exerciseId))
   }
 
+  const moveExerciseUp = (exerciseId) => {
+    const currentIndex = exercises.findIndex((ex) => ex.id === exerciseId)
+    if (currentIndex > 0) {
+      const newExercises = [...exercises]
+      const temp = newExercises[currentIndex]
+      newExercises[currentIndex] = newExercises[currentIndex - 1]
+      newExercises[currentIndex - 1] = temp
+      setExercises(newExercises)
+    }
+  }
+
+  const moveExerciseDown = (exerciseId) => {
+    const currentIndex = exercises.findIndex((ex) => ex.id === exerciseId)
+    if (currentIndex < exercises.length - 1) {
+      const newExercises = [...exercises]
+      const temp = newExercises[currentIndex]
+      newExercises[currentIndex] = newExercises[currentIndex + 1]
+      newExercises[currentIndex + 1] = temp
+      setExercises(newExercises)
+    }
+  }
+
   /**
    * Función para seleccionar un grupo principal
    * 
@@ -167,10 +190,47 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
   }
 
   const handleSave = () => {
+    // Limpiar errores previos
+    setErrors({})
+    const newErrors = {}
+
     // Validar que el tipo de entrenamiento no esté vacío
     const trimmedType = workoutType.trim()
     if (!trimmedType) {
-      alert("Por favor, ingresa un tipo de entrenamiento")
+      newErrors.type = "Ingresá un título para el entrenamiento"
+    }
+
+    // Validar que haya al menos un ejercicio
+    if (exercises.length === 0) {
+      newErrors.exercises = "Agregá al menos un ejercicio"
+    } else {
+      // Validar que cada ejercicio tenga datos válidos
+      exercises.forEach((exercise, index) => {
+        // Validar peso (debe ser número válido si está presente)
+        if (exercise.weight && exercise.weight !== "") {
+          const weightNum = parseFloat(exercise.weight)
+          if (isNaN(weightNum) || weightNum < 0) {
+            newErrors[`exercise-${index}-weight`] = "El peso debe ser un número válido"
+          }
+        }
+        // Validar repeticiones (debe ser número válido si está presente)
+        if (exercise.reps && exercise.reps !== "") {
+          const repsNum = parseInt(exercise.reps)
+          if (isNaN(repsNum) || repsNum < 0) {
+            newErrors[`exercise-${index}-reps`] = "Las repeticiones deben ser un número válido"
+          }
+        }
+      })
+    }
+
+    // Validar que la fecha esté presente
+    if (!date || date.trim() === "") {
+      newErrors.date = "Seleccioná una fecha válida"
+    }
+
+    // Si hay errores, mostrarlos y no guardar
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
       return
     }
 
@@ -248,13 +308,25 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
           <input
             type="text"
             value={workoutType}
-            onChange={(e) => setWorkoutType(e.target.value)}
+            onChange={(e) => {
+              setWorkoutType(e.target.value)
+              // Limpiar error al escribir
+              if (errors.type) {
+                setErrors({ ...errors, type: undefined })
+              }
+            }}
             placeholder="Ej: Piernas + glúteos, Full body, Cardio..."
-            className="w-full bg-slate-700/50 text-white py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/50 placeholder:text-slate-400"
+            className={`w-full bg-slate-700/50 text-white py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border ${
+              errors.type ? "border-red-500/50" : "border-slate-600/50"
+            } placeholder:text-slate-400`}
           />
-          <p className="text-xs text-slate-400">
-            Escribe un título para identificar este entrenamiento
-          </p>
+          {errors.type ? (
+            <p className="text-xs text-red-400">{errors.type}</p>
+          ) : (
+            <p className="text-xs text-slate-400">
+              Escribe un título para identificar este entrenamiento
+            </p>
+          )}
         </div>
       </div>
 
@@ -430,13 +502,22 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
           </div>
 
           <div className="space-y-3">
-            {exercises.map((exercise) => (
-              <ExerciseCard
-                key={exercise.id}
-                exercise={exercise}
-                onUpdate={updateExercise}
-                onDelete={() => deleteExercise(exercise.id)}
-              />
+            {exercises.map((exercise, index) => (
+              <div key={exercise.id}>
+                <ExerciseCard
+                  exercise={exercise}
+                  onUpdate={updateExercise}
+                  onDelete={() => deleteExercise(exercise.id)}
+                  onMoveUp={() => moveExerciseUp(exercise.id)}
+                  onMoveDown={() => moveExerciseDown(exercise.id)}
+                  canMoveUp={index > 0}
+                  canMoveDown={index < exercises.length - 1}
+                  errors={{
+                    weight: errors[`exercise-${index}-weight`],
+                    reps: errors[`exercise-${index}-reps`],
+                  }}
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -448,6 +529,13 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
           <p className="text-sm text-slate-400">
             Selecciona un grupo arriba y luego un ejercicio para comenzar.
           </p>
+        </div>
+      )}
+
+      {/* Mensaje de error si no hay ejercicios */}
+      {errors.exercises && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+          <p className="text-sm text-red-400">{errors.exercises}</p>
         </div>
       )}
 
