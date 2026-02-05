@@ -347,3 +347,8 @@ const getProgressIndicator = (exercise) => {
 
 
 
+
+
+
+
+

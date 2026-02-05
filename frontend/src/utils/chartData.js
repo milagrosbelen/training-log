@@ -217,6 +217,3 @@ function formatDateForChart(dateStr) {
 
 
 
-
-
-

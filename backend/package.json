@@ -1,0 +1,25 @@
+{
+  "name": "milogit-backend",
+  "version": "1.0.0",
+  "description": "Backend de MiLogit - Servidor Node.js con Express y PostgreSQL",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "keywords": [
+    "backend",
+    "express",
+    "postgresql",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "pg": "^8.11.3"
+  }
+}
