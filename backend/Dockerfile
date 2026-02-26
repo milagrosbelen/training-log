@@ -52,29 +52,15 @@ ARG APP_ENV=production
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     libzip-dev \
-    libxml2-dev \
     libicu-dev \
     unzip \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Extensiones PHP requeridas por Laravel 10 + PostgreSQL
+# Extensiones PHP adicionales (pdo, ctype, json, mbstring, xml, zip vienen en la imagen base)
+# Instalación secuencial para evitar conflictos de compilación paralela
 RUN docker-php-ext-configure intl \
-    && docker-php-ext-install -j$(nproc) \
-    pdo \
-    pdo_pgsql \
-    pgsql \
-    bcmath \
-    ctype \
-    fileinfo \
-    json \
-    mbstring \
-    opcache \
-    pcntl \
-    tokenizer \
-    xml \
-    zip \
-    intl
+    && docker-php-ext-install pdo_pgsql bcmath intl
 
 # Limpieza para imagen más ligera en producción
 RUN if [ "$APP_ENV" = "production" ]; then \
