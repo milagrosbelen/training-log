@@ -76,5 +76,5 @@ EXPOSE 8000
 
 USER www-data
 
-# Migraciones + servidor (Render y otros PaaS)
-CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"]
+# Migraciones + servidor (Render usa PORT, otros usan 8000)
+CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
