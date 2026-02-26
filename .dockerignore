@@ -1,0 +1,52 @@
+# =============================================================================
+# .dockerignore - Raíz del repo (build desde root para Render)
+# =============================================================================
+
+.git
+.gitignore
+.gitattributes
+
+# Frontend - no necesario para el backend
+node_modules
+src
+public
+index.html
+vite.config.js
+tailwind.config.js
+postcss.config.js
+eslint.config.js
+package.json
+package-lock.json
+
+# Backend - exclusiones
+backend/vendor
+backend/node_modules
+backend/.env
+backend/.env.*
+!backend/.env.example
+backend/storage/logs/*
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/public/hot
+backend/public/build
+backend/public/storage
+backend/.phpunit.cache
+backend/.phpunit.result.cache
+backend/phpunit.xml
+backend/tests
+backend/*.log
+
+# Documentación y desarrollo
+*.md
+documentation
+.idea
+.vscode
+.fleet
+
+# Mantener estructura de storage (los .gitignore)
+!backend/storage/framework/.gitignore
+!backend/storage/framework/cache/.gitignore
+!backend/storage/framework/sessions/.gitignore
+!backend/storage/framework/views/.gitignore
+!backend/storage/logs/.gitignore

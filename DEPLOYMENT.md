@@ -39,13 +39,31 @@ Para que otros usuarios usen la app desde sus celulares, necesitás:
 
 8. Anotá la URL pública del backend (ej: `https://milogit-backend.up.railway.app`)
 
-### Opción B: Render
+### Opción B: Render (con Docker)
 
 1. [render.com](https://render.com) → New → Web Service
-2. Conectá el repo y apuntá a la carpeta `backend`
-3. Agregá un servicio **PostgreSQL** desde Render
-4. Configurá variables de entorno igual que arriba
-5. Comando de start: `php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT`
+2. Conectá el repo de GitHub
+3. **Importante:** dejá **Root Directory** vacío (el `Dockerfile` está en la raíz del repo)
+4. Render detectará el `Dockerfile` y hará el build automáticamente
+5. Agregá un servicio **PostgreSQL** desde Render y conectalo
+6. Variables de entorno (Settings → Environment):
+
+   ```
+   APP_NAME=MiLogit
+   APP_ENV=production
+   APP_DEBUG=false
+   APP_KEY=base64:xxxx  (generar con: php artisan key:generate --show)
+   APP_URL=https://tu-servicio.onrender.com
+   
+   DB_CONNECTION=pgsql
+   DB_HOST=<host de Render PostgreSQL>
+   DB_PORT=5432
+   DB_DATABASE=<nombre>
+   DB_USERNAME=<usuario>
+   DB_PASSWORD=<contraseña>
+   ```
+
+7. No hace falta configurar Build Command ni Start Command (el Dockerfile lo define)
 
 ---
 
