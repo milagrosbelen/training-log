@@ -41,29 +41,49 @@ Para que otros usuarios usen la app desde sus celulares, necesitás:
 
 ### Opción B: Render (con Docker)
 
-1. [render.com](https://render.com) → New → Web Service
+**Opción B1: Usar Blueprint (recomendado)**
+
+1. [render.com](https://render.com) → **New** → **Blueprint**
+2. Conectá el repo de GitHub (training-log o el que uses)
+3. Render leerá `render.yaml` y creará el servicio con la config correcta
+4. Agregá PostgreSQL desde el Dashboard y las variables de entorno
+
+**Opción B2: Crear Web Service manualmente**
+
+1. [render.com](https://render.com) → **New** → **Web Service**
 2. Conectá el repo de GitHub
-3. **Importante:** dejá **Root Directory** vacío (el `Dockerfile` está en la raíz del repo)
-4. Render detectará el `Dockerfile` y hará el build automáticamente
-5. Agregá un servicio **PostgreSQL** desde Render y conectalo
-6. Variables de entorno (Settings → Environment):
+3. En **Environment**: elegí **Docker** (no PHP ni Node)
+4. **Root Directory**: dejalo **completamente vacío**
+5. No pongas Build Command ni Start Command
+6. Agregá PostgreSQL y variables de entorno
 
-   ```
-   APP_NAME=MiLogit
-   APP_ENV=production
-   APP_DEBUG=false
-   APP_KEY=base64:xxxx  (generar con: php artisan key:generate --show)
-   APP_URL=https://tu-servicio.onrender.com
-   
-   DB_CONNECTION=pgsql
-   DB_HOST=<host de Render PostgreSQL>
-   DB_PORT=5432
-   DB_DATABASE=<nombre>
-   DB_USERNAME=<usuario>
-   DB_PASSWORD=<contraseña>
-   ```
+**Variables de entorno (Settings → Environment):**
 
-7. No hace falta configurar Build Command ni Start Command (el Dockerfile lo define)
+```
+APP_NAME=MiLogit
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:xxxx  (generar con: php artisan key:generate --show)
+APP_URL=https://tu-servicio.onrender.com
+
+DB_CONNECTION=pgsql
+DB_HOST=<host de Render PostgreSQL>
+DB_PORT=5432
+DB_DATABASE=<nombre>
+DB_USERNAME=<usuario>
+DB_PASSWORD=<contraseña>
+```
+
+---
+
+**Si aparece "Dockerfile: no such file or directory":**
+
+1. Entrá al servicio en Render → **Settings**
+2. **Root Directory**: borrá todo, debe quedar vacío
+3. **Environment**: debe ser **Docker** (si dice PHP u otro, cambiá a Docker)
+4. Guardá y hacé **Manual Deploy**
+
+Si ya tenés Root Directory vacío y sigue fallando, **borrá el servicio** y crealo de nuevo con **New → Blueprint** (usá el `render.yaml` del repo).
 
 ---
 

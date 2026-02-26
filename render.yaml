@@ -1,0 +1,16 @@
+# Render Blueprint - MiLogit Backend
+# Conectá este repo y usá "New Blueprint" para crear el servicio con la config correcta
+
+services:
+  - type: web
+    runtime: docker
+    name: milogit-backend
+    dockerfilePath: ./Dockerfile
+    # rootDir vacío = usa la raíz del repo (donde está el Dockerfile)
+    # healthCheckPath opcional - quitar si falla
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      # Las demás (APP_KEY, DB_*) las agregás en el Dashboard
