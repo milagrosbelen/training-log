@@ -1,0 +1,67 @@
+# =============================================================================
+# .dockerignore - Backend Laravel MiLogit
+# Excluye archivos innecesarios del contexto de build para imágenes más ligeras
+# =============================================================================
+
+# Control de versiones
+.git
+.gitignore
+.gitattributes
+
+# Dependencias (se instalan en el contenedor)
+vendor
+node_modules
+
+# Entorno y secretos (inyectar en runtime)
+.env
+.env.*
+!.env.example
+
+# Storage - datos generados en runtime
+storage/logs/*
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/app/*
+!storage/app/.gitignore
+!storage/app/public
+!storage/app/public/.gitignore
+!storage/framework/.gitignore
+!storage/framework/cache/.gitignore
+!storage/framework/sessions/.gitignore
+!storage/framework/views/.gitignore
+!storage/logs/.gitignore
+
+# Build assets (se generan si se necesita)
+public/hot
+public/build
+public/storage
+
+# Testing
+.phpunit.cache
+.phpunit.result.cache
+phpunit.xml
+tests
+*.log
+
+# IDEs y editores
+.idea
+.vscode
+.fleet
+*.swp
+*.swo
+*~
+
+# Documentación y archivos de desarrollo
+*.md
+!README.md
+Homestead.json
+Homestead.yaml
+auth.json
+Dockerfile
+.dockerignore
+
+# Debug y temporales
+npm-debug.log
+yarn-error.log
+yarn-debug.log
