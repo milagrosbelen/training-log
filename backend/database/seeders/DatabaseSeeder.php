@@ -12,6 +12,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(UserSeeder::class);
+        // Sin usuarios de prueba - los usuarios se registran por la app
     }
 }

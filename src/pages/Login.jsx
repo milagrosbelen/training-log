@@ -31,8 +31,8 @@ function Login() {
     <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="bg-slate-800/95 border border-slate-700/50 rounded-2xl shadow-xl shadow-black/20 p-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white text-center mb-1">
-            Bienvenido a MiLogit
+          <h1 className="text-3xl sm:text-4xl font-bold text-white text-center tracking-tight mb-2">
+            MiLogit
           </h1>
           <p className="text-slate-400 text-sm text-center mb-8">
             Iniciá sesión para gestionar tus entrenamientos
@@ -92,9 +92,6 @@ function Login() {
             >
               Registrate
             </Link>
-          </p>
-          <p className="text-center text-slate-500 text-xs mt-3">
-            Usuario de prueba: test@test.com / password123
           </p>
         </div>
       </div>

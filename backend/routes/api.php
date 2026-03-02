@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ExerciseController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\WorkoutController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,10 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', fn (Request $request) => $request->user());
+    Route::get('/profile-summary', [ProfileController::class, 'summary']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+    Route::get('/profile/focus', [ProfileController::class, 'getFocus']);
+    Route::patch('/profile/focus', [ProfileController::class, 'updateFocus']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     Route::get('/workouts', [WorkoutController::class, 'index']);

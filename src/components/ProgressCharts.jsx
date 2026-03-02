@@ -27,7 +27,7 @@ import { getRandomQuote, progressQuotes } from "../utils/motivationalQuotes"
  * Esto se llama "prop drilling" (perforación de props)
  * En aplicaciones más grandes, se usaría Context API o un estado global
  */
-function ProgressCharts({ workouts }) {
+function ProgressCharts({ workouts, monthWorkouts }) {
   return (
     <div className="space-y-6">
       {/* Título de la sección */}
@@ -59,7 +59,7 @@ function ProgressCharts({ workouts }) {
          * - Es el más importante, por eso tiene más espacio
          */}
         <div className="md:col-span-2">
-          <WeightProgressChart workouts={workouts} />
+          <WeightProgressChart workouts={monthWorkouts ?? workouts} />
         </div>
 
         {/**

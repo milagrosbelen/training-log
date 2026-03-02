@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useNavigate, Navigate } from "react-router-dom"
+import { Navigate, Link } from "react-router-dom"
 import { ChevronLeft, Plus } from "lucide-react"
 import Calendar from "../components/Calendar"
 import WorkoutDay from "../components/WorkoutDay"
@@ -9,11 +9,10 @@ import CopyWorkoutModal from "../components/CopyWorkoutModal"
 import ProgressCharts from "../components/ProgressCharts"
 import Toast from "../components/Toast"
 import { getWorkouts, saveWorkout, deleteWorkout } from "../services/workoutService"
-import { logout, isAuthenticated } from "../services/authService"
+import { isAuthenticated } from "../services/authService"
 import { getRandomQuote, emptyStateQuotes, successQuotes, workoutDayQuotes } from "../utils/motivationalQuotes"
 
 function Dashboard() {
-  const navigate = useNavigate()
   const [workouts, setWorkouts] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -145,10 +144,37 @@ function Dashboard() {
     return getCurrentWorkout()
   }
 
+  const now = new Date()
+  const currentMonth = now.getMonth()
+  const currentYear = now.getFullYear()
+
+  const handleMonthPrev = () => {
+    setSummaryMonth((m) => {
+      if (m <= 0) {
+        setSummaryYear((y) => y - 1)
+        return 11
+      }
+      return m - 1
+    })
+  }
+
+  const handleMonthNext = () => {
+    if (summaryYear === currentYear && summaryMonth === currentMonth) return
+    setSummaryMonth((m) => {
+      if (m >= 11) {
+        setSummaryYear((y) => y + 1)
+        return 0
+      }
+      return m + 1
+    })
+  }
+
+  const canGoNext = !(summaryYear === currentYear && summaryMonth === currentMonth)
+
   const handleViewSummary = () => {
     setCurrentView("summary")
-    setSummaryMonth(new Date().getMonth())
-    setSummaryYear(new Date().getFullYear())
+    setSummaryMonth(currentMonth)
+    setSummaryYear(currentYear)
   }
 
   const handleBackToCalendar = () => {
@@ -156,21 +182,11 @@ function Dashboard() {
     setSelectedDate("")
   }
 
-  const handleLogout = async () => {
-    try {
-      await logout()
-      navigate("/")
-    } catch {
-      navigate("/")
-    }
-  }
-
   return (
     <div className="min-h-screen bg-slate-900 text-white relative">
-      <header className="bg-slate-800/95 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-50 shadow-lg">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">MiLogit</h1>
+      <header className="hidden md:flex bg-slate-800/95 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-50 shadow-lg">
+        <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-end h-16">
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => { setCurrentView("calendar"); setSelectedDate("") }}
@@ -192,18 +208,18 @@ function Dashboard() {
               >
                 Progreso
               </button>
-              <button
-                onClick={handleLogout}
-                className="text-sm text-slate-400 hover:text-white transition-colors"
+              <Link
+                to="/profile"
+                className="text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-lg font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
               >
-                Cerrar sesión
-              </button>
+                Perfil
+              </Link>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 md:pb-8">
         {error && (
           <div className="mb-6 p-4 rounded-xl bg-red-500/20 border border-red-500/50 text-red-400 text-sm">
             {error}
@@ -284,9 +300,23 @@ function Dashboard() {
               <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
               <span>Volver al calendario</span>
             </button>
-            <MonthlySummary workouts={workouts} month={summaryMonth} year={summaryYear} />
+            <MonthlySummary
+              workouts={workouts}
+              month={summaryMonth}
+              year={summaryYear}
+              onMonthPrev={handleMonthPrev}
+              onMonthNext={handleMonthNext}
+              canGoNext={canGoNext}
+            />
             <div className="border-t border-slate-700/50 pt-6">
-              <ProgressCharts workouts={workouts} />
+              <ProgressCharts
+                workouts={workouts}
+                monthWorkouts={workouts.filter((w) => {
+                  if (!w?.date) return false
+                  const [y, m] = w.date.split("-").map(Number)
+                  return m - 1 === summaryMonth && y === summaryYear
+                })}
+              />
             </div>
           </div>
         )}
