@@ -64,7 +64,7 @@ function WorkoutSummary({ workout, allWorkouts, onEdit, onDelete }) {
     // Si es primer registro, mostrar solo mensaje simple
     if (progress.status === "first") {
       return (
-        <span className="text-xs font-medium text-teal-400 flex items-center gap-1.5 mt-0.5">
+        <span className="text-xs font-medium text-neon-400 flex items-center gap-1.5 mt-0.5">
           <span className="text-base">🆕</span>
           <span>Primer registro</span>
         </span>
@@ -119,7 +119,7 @@ function WorkoutSummary({ workout, allWorkouts, onEdit, onDelete }) {
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2 bg-slate-700/50 px-3 py-2 rounded-lg border border-slate-600/50">
-              <Clock className="w-4 h-4 text-teal-400" />
+              <Clock className="w-4 h-4 text-neon-400" />
               <span className="text-sm font-medium text-white">{formatDuration(workout.duration)}</span>
             </div>
           </div>
@@ -181,7 +181,7 @@ function WorkoutSummary({ workout, allWorkouts, onEdit, onDelete }) {
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <button
           onClick={onEdit}
-          className="flex-1 bg-teal-500 hover:bg-teal-600 text-black font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 hover:scale-[1.02] active:scale-[0.98]"
+          className="flex-1 bg-[#2AF447] border-2 border-[#3dff5c] text-black font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base shadow-[0_0_12px_rgba(42,244,71,0.3)] hover:bg-[#3dff5c] hover:border-[#5eff7a] hover:shadow-[0_0_16px_rgba(42,244,71,0.4)] hover:scale-[1.02] active:scale-[0.98]"
         >
           <Edit className="w-4 h-4" />
           Modificar

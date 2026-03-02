@@ -59,7 +59,7 @@ function ProgressCharts({ workouts, monthWorkouts }) {
          * - Es el más importante, por eso tiene más espacio
          */}
         <div className="md:col-span-2">
-          <WeightProgressChart workouts={monthWorkouts ?? workouts} />
+          <WeightProgressChart workouts={workouts} />
         </div>
 
         {/**

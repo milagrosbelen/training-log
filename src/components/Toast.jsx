@@ -12,9 +12,9 @@ function Toast({ message, type = "success", onClose, duration = 4000 }) {
   }, [duration, onClose])
 
   const isSuccess = type === "success"
-  const bgColor = isSuccess ? "bg-teal-500/90" : "bg-red-500/90"
-  const borderColor = isSuccess ? "border-teal-400" : "border-red-400"
-  const iconColor = isSuccess ? "text-teal-100" : "text-red-100"
+  const bgColor = isSuccess ? "bg-neon-500/90" : "bg-red-500/90"
+  const borderColor = isSuccess ? "border-neon-400" : "border-red-400"
+  const iconColor = isSuccess ? "text-neon-100" : "text-red-100"
 
   return (
     <div

@@ -21,7 +21,7 @@ function Register() {
     setLoading(true)
     try {
       await register({ name, email, password, password_confirmation: passwordConfirmation })
-      navigate("/dashboard")
+      navigate("/welcome")
     } catch (err) {
       const errors = err.response?.data?.errors
       const message = errors
@@ -62,7 +62,7 @@ function Register() {
                 placeholder="Tu nombre"
                 required
                 disabled={loading}
-                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:opacity-60"
+                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-neon-500 focus:border-transparent disabled:opacity-60"
               />
             </div>
             <div>
@@ -77,7 +77,7 @@ function Register() {
                 placeholder="tu@email.com"
                 required
                 disabled={loading}
-                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:opacity-60"
+                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-neon-500 focus:border-transparent disabled:opacity-60"
               />
             </div>
             <div>
@@ -93,7 +93,7 @@ function Register() {
                 required
                 minLength={8}
                 disabled={loading}
-                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:opacity-60"
+                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-neon-500 focus:border-transparent disabled:opacity-60"
               />
             </div>
             <div>
@@ -108,14 +108,14 @@ function Register() {
                 placeholder="••••••••"
                 required
                 disabled={loading}
-                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:opacity-60"
+                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-neon-500 focus:border-transparent disabled:opacity-60"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-teal-500 hover:bg-teal-600 disabled:bg-teal-600/60 disabled:cursor-not-allowed text-black font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 mt-2"
+              className="w-full bg-neon-500 hover:bg-neon-600 disabled:bg-neon-600/60 disabled:cursor-not-allowed text-black font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg shadow-neon-500/20 hover:shadow-neon-500/30 mt-2"
             >
               {loading ? "Creando cuenta..." : "Registrarse"}
             </button>
@@ -125,7 +125,7 @@ function Register() {
             ¿Ya tenés cuenta?{" "}
             <Link
               to="/"
-              className="text-teal-400 hover:text-teal-300 font-medium underline underline-offset-2"
+              className="text-neon-400 hover:text-neon-300 font-medium underline underline-offset-2"
             >
               Iniciá sesión
             </Link>

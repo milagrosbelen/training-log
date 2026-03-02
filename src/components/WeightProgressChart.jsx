@@ -15,31 +15,31 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { TrendingUp } from "lucide-react"
 import { getAllExerciseNames, getWeightHistoryForExercise } from "../utils/chartData"
 
+const TIME_FILTERS = [
+  { id: "all", label: "Todo el tiempo", months: null },
+  { id: "3m", label: "Últimos 3 meses", months: 3 },
+  { id: "6m", label: "Últimos 6 meses", months: 6 },
+  { id: "12m", label: "Ultimos 12 meses", months: 12 },
+]
+
+function filterByMonths(history, months) {
+  if (!months || !history?.length) return history ?? []
+  const cutoff = new Date()
+  cutoff.setMonth(cutoff.getMonth() - months)
+  const cutoffStr = cutoff.toISOString().slice(0, 10)
+  return history.filter((d) => d.date >= cutoffStr)
+}
+
 /**
- * Props que recibe este componente:
- * @param {Array} workouts - Array de todos los entrenamientos guardados
- * 
- * ¿Qué es "props"?
- * Props son datos que un componente padre pasa a un componente hijo.
- * En este caso, App.jsx pasa "workouts" a WeightProgressChart.
- * Es como pasar argumentos a una función, pero en React.
+ * Props: workouts - Array de TODOS los entrenamientos (histórico completo)
  */
-function WeightProgressChart({ workouts }) {
-  /**
-   * useState: Hook de React para manejar estado local
-   * 
-   * ¿Qué es el estado?
-   * El estado es información que puede cambiar y que afecta cómo se renderiza el componente.
-   * 
-   * selectedExercise: guarda qué ejercicio está seleccionado en el dropdown
-   * - Inicialmente es "" (vacío)
-   * - Cuando el usuario selecciona un ejercicio, cambia a ese nombre
-   * - Al cambiar, React re-renderiza el componente automáticamente
-   */
+function WeightProgressChart({ workouts = [] }) {
   const [selectedExercise, setSelectedExercise] = useState("")
+  const [timeFilter, setTimeFilter] = useState("all")
+  const safeWorkouts = Array.isArray(workouts) ? workouts : []
 
   /**
-   * useMemo: Hook de React para optimizar cálculos
+   * useMemo: Historial completo del ejercicio (sin filtrar por mes)
    * 
    * ¿Qué hace?
    * Memoriza (guarda en memoria) el resultado de un cálculo.
@@ -54,8 +54,8 @@ function WeightProgressChart({ workouts }) {
    * - Si workouts cambia, recalcula
    */
   const exerciseNames = useMemo(() => {
-    return getAllExerciseNames(workouts)
-  }, [workouts])
+    return getAllExerciseNames(safeWorkouts)
+  }, [safeWorkouts])
 
   /**
    * useMemo: Otro cálculo optimizado
@@ -66,13 +66,19 @@ function WeightProgressChart({ workouts }) {
    * Dependencias: [selectedExercise, workouts]
    * - Solo recalcula si cambia el ejercicio seleccionado o los workouts
    */
-  const weightHistory = useMemo(() => {
+  const fullHistory = useMemo(() => {
     if (!selectedExercise) return []
-    return getWeightHistoryForExercise(selectedExercise, workouts)
-  }, [selectedExercise, workouts])
+    return getWeightHistoryForExercise(selectedExercise, safeWorkouts)
+  }, [selectedExercise, safeWorkouts])
+
+  const filterConfig = TIME_FILTERS.find((f) => f.id === timeFilter) ?? TIME_FILTERS[0]
+  const weightHistory = useMemo(
+    () => filterByMonths(fullHistory, filterConfig.months),
+    [fullHistory, filterConfig.months]
+  )
 
   /**
-   * useEffect: Hook de React para efectos secundarios
+   * useEffect: Inicializar ejercicio seleccionado
    * 
    * ¿Qué hace?
    * Se ejecuta después de que el componente se renderiza.
@@ -112,7 +118,7 @@ function WeightProgressChart({ workouts }) {
     return (
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 shadow-md border border-slate-700/50">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-teal-400" />
+          <TrendingUp className="w-5 h-5 text-[#2AF447]" />
           Progreso de Peso por Ejercicio
         </h3>
         <p className="text-slate-400 text-sm">
@@ -127,7 +133,7 @@ function WeightProgressChart({ workouts }) {
       {/* Header del gráfico */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-teal-400" />
+          <TrendingUp className="w-5 h-5 text-[#2AF447]" />
           Progreso de Peso por Ejercicio
         </h3>
         <p className="text-sm text-slate-400">
@@ -135,22 +141,42 @@ function WeightProgressChart({ workouts }) {
         </p>
       </div>
 
-      {/* Selector de ejercicio */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-slate-300 mb-2">
-          Seleccionar ejercicio:
-        </label>
-        <select
-          value={selectedExercise}
-          onChange={handleExerciseChange}
-          className="w-full bg-slate-700/50 text-white py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/50"
-        >
-          {exerciseNames.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
+      {/* Selector de ejercicio y filtro de tiempo */}
+      <div className="mb-6 space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            Seleccionar ejercicio:
+          </label>
+          <select
+            value={selectedExercise}
+            onChange={handleExerciseChange}
+            className="w-full bg-slate-700/50 text-white py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2AF447] focus:bg-slate-700 border border-slate-600/50"
+          >
+            {exerciseNames.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </div>
+        {selectedExercise && fullHistory.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Período:
+            </label>
+            <select
+              value={timeFilter}
+              onChange={(e) => setTimeFilter(e.target.value)}
+              className="w-full bg-slate-700/50 text-white py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2AF447] focus:bg-slate-700 border border-slate-600/50"
+            >
+              {TIME_FILTERS.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Gráfico */}
@@ -226,7 +252,7 @@ function WeightProgressChart({ workouts }) {
                * Line: La línea del gráfico
                * - type: tipo de línea ("monotone" = suave)
                * - dataKey: qué propiedad graficar ("weight")
-               * - stroke: color de la línea (verde teal)
+               * - stroke: color de la línea (verde neon)
                * - strokeWidth: grosor de la línea
                * - dot: muestra puntos en cada dato
                * - name: nombre que aparece en la leyenda
@@ -234,9 +260,9 @@ function WeightProgressChart({ workouts }) {
               <Line
                 type="monotone"
                 dataKey="weight"
-                stroke="#14b8a6"
+                stroke="#2AF447"
                 strokeWidth={2}
-                dot={{ fill: "#14b8a6", r: 4 }}
+                dot={{ fill: "#2AF447", r: 4 }}
                 activeDot={{ r: 6 }}
                 name="Peso (kg)"
               />
@@ -246,7 +272,7 @@ function WeightProgressChart({ workouts }) {
       ) : (
         <div className="text-center py-8 text-slate-400 text-sm">
           {selectedExercise
-            ? `No hay datos registrados para "${selectedExercise}" aún.`
+            ? "Aún no hay registros suficientes para mostrar progreso."
             : "Selecciona un ejercicio para ver su progreso."}
         </div>
       )}

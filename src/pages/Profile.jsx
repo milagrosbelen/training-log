@@ -171,7 +171,7 @@ function Profile() {
           </button>
 
           <div
-            className="w-[100px] h-[100px] rounded-full border-2 border-teal-500/60 flex items-center justify-center overflow-hidden bg-slate-800 flex-shrink-0"
+            className="w-[100px] h-[100px] rounded-full border-2 border-neon-500/60 flex items-center justify-center overflow-hidden bg-slate-800 flex-shrink-0"
             aria-hidden
           >
             {avatarUrl ? (
@@ -181,7 +181,7 @@ function Profile() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-3xl font-bold text-teal-400">
+              <span className="text-3xl font-bold text-neon-400">
                 {getInitial(displayName)}
               </span>
             )}
@@ -195,7 +195,7 @@ function Profile() {
           {!isEditing && (
             <button
               onClick={handleStartEdit}
-              className="mt-4 text-sm font-medium text-teal-400 hover:text-teal-300 transition-colors"
+              className="mt-4 text-sm font-medium text-neon-500 hover:text-neon-300 transition-colors"
             >
               Modificar perfil
             </button>
@@ -217,7 +217,7 @@ function Profile() {
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="Tu nombre"
-                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-neon-500 focus:border-transparent"
               />
             </div>
 
@@ -268,7 +268,7 @@ function Profile() {
               <button
                 onClick={handleSaveEdit}
                 disabled={saving}
-                className="flex-1 sm:flex-initial px-6 py-3 rounded-xl bg-teal-500 hover:bg-teal-600 disabled:opacity-60 text-black font-semibold transition-colors"
+                className="flex-1 sm:flex-initial px-6 py-3 rounded-xl bg-neon-500 hover:bg-neon-600 disabled:opacity-60 text-black font-semibold transition-colors"
               >
                 {saving ? "Guardando..." : "Guardar"}
               </button>
@@ -296,6 +296,12 @@ function Profile() {
           formatDateShort={formatDateShort}
         />
 
+        {/* Branding */}
+        <div className="py-10 flex justify-center">
+          <span className="text-xl font-bold text-[#2AF447]/85 tracking-tight">
+            MiLogit
+          </span>
+        </div>
       </main>
 
       {toast && (
@@ -335,7 +341,7 @@ function FocusPrincipalSection({ focusAnalytics }) {
         <div className="bg-slate-800/60 rounded-2xl p-5 border border-slate-700/50">
           <p className="text-sm text-slate-400">
             Definí tu foco en{" "}
-            <Link to="/progreso" className="text-teal-400 hover:text-teal-300">
+            <Link to="/progreso" className="text-neon-400 hover:text-neon-300">
               Progreso
             </Link>{" "}
             para ver tu avance.
@@ -361,10 +367,10 @@ function FocusPrincipalSection({ focusAnalytics }) {
   }
 
   const statusConfig = {
-    mejorando: { label: "Mejorando", icon: "📈", color: "text-teal-400" },
+    mejorando: { label: "Mejorando", icon: "📈", color: "text-neon-400" },
     estable: { label: "Estable", icon: "➖", color: "text-slate-400" },
     necesita_atencion: { label: "Necesita atención", icon: "📉", color: "text-amber-400" },
-    en_progreso: { label: "En progreso", icon: "🎯", color: "text-teal-400" },
+    en_progreso: { label: "En progreso", icon: "🎯", color: "text-neon-400" },
   }
   const sc = statusConfig[status] ?? statusConfig.en_progreso
 
@@ -397,7 +403,7 @@ function FocusPrincipalSection({ focusAnalytics }) {
               <p className="text-xs text-slate-500 mb-0.5">Progreso del mes</p>
               <p
                 className={`text-base font-semibold ${
-                  progress_pct >= 0 ? "text-teal-400" : "text-amber-400"
+                  progress_pct >= 0 ? "text-neon-400" : "text-amber-400"
                 }`}
               >
                 {formatProgress(progress_pct)}
@@ -413,7 +419,7 @@ function FocusPrincipalSection({ focusAnalytics }) {
               <p className="text-xs text-slate-500 mb-0.5">Peso promedio</p>
               <p
                 className={`text-base font-semibold ${
-                  weight_change >= 0 ? "text-teal-400" : "text-amber-400"
+                  weight_change >= 0 ? "text-neon-400" : "text-amber-400"
                 }`}
               >
                 {weight_change >= 0 ? "↑" : "↓"} {formatWeightChange(Math.abs(weight_change))}
@@ -482,12 +488,12 @@ function SummaryAccordion({
               <button
                 type="button"
                 onClick={() => handleToggle(id)}
-                className="w-full flex items-center justify-between text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 rounded-lg py-1 -my-1"
+                className="w-full flex items-center justify-between text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-500/50 rounded-lg py-1 -my-1"
               >
                 <span className="text-sm font-medium text-slate-300">{label}</span>
                 <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
                   {isExpanded ? (
-                    <Minus className="w-4 h-4 text-teal-500" strokeWidth={2.5} />
+                    <Minus className="w-4 h-4 text-neon-500" strokeWidth={2.5} />
                   ) : (
                     <Plus className="w-4 h-4 text-slate-400" strokeWidth={2.5} />
                   )}

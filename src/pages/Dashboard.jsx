@@ -192,7 +192,7 @@ function Dashboard() {
                 onClick={() => { setCurrentView("calendar"); setSelectedDate("") }}
                 className={`text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                   currentView === "calendar"
-                    ? "bg-teal-500 text-black shadow-md shadow-teal-500/20"
+                    ? "bg-neon-500 text-black shadow-md shadow-neon-500/20"
                     : "text-slate-300 hover:text-white hover:bg-slate-700/50"
                 }`}
               >
@@ -202,7 +202,7 @@ function Dashboard() {
                 onClick={handleViewSummary}
                 className={`text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                   currentView === "summary"
-                    ? "bg-teal-500 text-black shadow-md shadow-teal-500/20"
+                    ? "bg-neon-500 text-black shadow-md shadow-neon-500/20"
                     : "text-slate-300 hover:text-white hover:bg-slate-700/50"
                 }`}
               >
@@ -243,7 +243,7 @@ function Dashboard() {
                 </div>
                 <button
                   onClick={() => handleDateSelect(new Date().toISOString().split("T")[0])}
-                  className="bg-teal-500 hover:bg-teal-600 text-black font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base shadow-lg shadow-teal-500/20"
+                  className="bg-neon-500 hover:bg-neon-600 text-black font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base shadow-lg shadow-neon-500/20"
                 >
                   <Plus className="w-5 h-5" />
                   Agregar mi primer entrenamiento

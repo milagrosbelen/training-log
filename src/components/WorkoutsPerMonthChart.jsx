@@ -42,7 +42,7 @@ function WorkoutsPerMonthChart({ workouts }) {
     return (
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 shadow-md border border-slate-700/50">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-teal-400" />
+          <Calendar className="w-5 h-5 text-neon-400" />
           Entrenamientos por Mes
         </h3>
         <p className="text-slate-400 text-sm">
@@ -57,7 +57,7 @@ function WorkoutsPerMonthChart({ workouts }) {
       {/* Header del gráfico */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-teal-400" />
+          <Calendar className="w-5 h-5 text-neon-400" />
           Entrenamientos por Mes
         </h3>
         <p className="text-sm text-slate-400">
@@ -118,12 +118,12 @@ function WorkoutsPerMonthChart({ workouts }) {
             {/**
              * Bar: La barra del gráfico
              * - dataKey: qué propiedad graficar ("count")
-             * - fill: color de las barras (verde teal)
+             * - fill: color de las barras (verde neon)
              * - radius: bordes redondeados en las barras
              */}
             <Bar
               dataKey="count"
-              fill="#14b8a6"
+              fill="#2AF447"
               radius={[8, 8, 0, 0]}
               name="Entrenamientos"
             />

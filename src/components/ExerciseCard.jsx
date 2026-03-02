@@ -94,7 +94,7 @@ function ExerciseCard({ exercise, onUpdate, onDelete, onMoveUp, onMoveDown, canM
           type="text"
           value={exercise.name}
           onChange={(e) => handleNameChange(e.target.value)}
-          className="text-white font-semibold text-base sm:text-lg bg-transparent border-none outline-none focus:ring-2 focus:ring-teal-500 rounded px-2 -ml-2 flex-1 min-w-0 placeholder:text-slate-500"
+          className="text-white font-semibold text-base sm:text-lg bg-transparent border-none outline-none focus:ring-2 focus:ring-neon-500 rounded px-2 -ml-2 flex-1 min-w-0 placeholder:text-slate-500"
           placeholder="Nombre del ejercicio"
         />
         {/* Bloque derecho: Flechas + Tacho agrupados */}
@@ -159,7 +159,7 @@ function ExerciseCard({ exercise, onUpdate, onDelete, onMoveUp, onMoveDown, canM
                 e.target.select()
               }
             }}
-            className="w-full h-12 bg-slate-700/50 text-white text-center px-3 rounded-lg text-lg sm:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/30 placeholder:text-slate-500/50"
+            className="w-full h-12 bg-slate-700/50 text-white text-center px-3 rounded-lg text-lg sm:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-neon-500 focus:bg-slate-700 border border-slate-600/30 placeholder:text-slate-500/50"
             placeholder="1"
             min="1"
           />
@@ -174,7 +174,7 @@ function ExerciseCard({ exercise, onUpdate, onDelete, onMoveUp, onMoveDown, canM
             type="number"
             value={reps}
             onChange={(e) => handleRepsChange(e.target.value)}
-            className={`w-full h-12 bg-slate-700/50 text-white text-center px-3 rounded-lg text-lg sm:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border ${
+            className={`w-full h-12 bg-slate-700/50 text-white text-center px-3 rounded-lg text-lg sm:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-neon-500 focus:bg-slate-700 border ${
               errors.reps ? "border-red-500/50" : "border-slate-600/30"
             } placeholder:text-slate-500/50`}
             placeholder="0"
@@ -194,7 +194,7 @@ function ExerciseCard({ exercise, onUpdate, onDelete, onMoveUp, onMoveDown, canM
             type="number"
             value={weight}
             onChange={(e) => handleWeightChange(e.target.value)}
-            className={`w-full h-12 bg-slate-700/50 text-white text-center px-3 rounded-lg text-lg sm:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border ${
+            className={`w-full h-12 bg-slate-700/50 text-white text-center px-3 rounded-lg text-lg sm:text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-neon-500 focus:bg-slate-700 border ${
               errors.weight ? "border-red-500/50" : "border-slate-600/30"
             } placeholder:text-slate-500/50`}
             placeholder="0"
@@ -235,7 +235,7 @@ function ExerciseCard({ exercise, onUpdate, onDelete, onMoveUp, onMoveDown, canM
             onChange={(e) => handleNotesChange(e.target.value)}
             placeholder="Notas del ejercicio (sensaciones, técnica, progreso...)"
             rows={2}
-            className="w-full bg-slate-700/50 text-white text-sm px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/30 placeholder:text-slate-500/50 resize-none transition-all duration-200 hover:border-slate-600/50"
+            className="w-full bg-slate-700/50 text-white text-sm px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-neon-500 focus:bg-slate-700 border border-slate-600/30 placeholder:text-slate-500/50 resize-none transition-all duration-200 hover:border-slate-600/50"
           />
         </div>
       </div>

@@ -316,7 +316,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
               }
             }}
             placeholder="Ej: Piernas + glúteos, Full body, Cardio..."
-            className={`w-full bg-slate-700/50 text-white py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border ${
+            className={`w-full bg-slate-700/50 text-white py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-neon-500 focus:bg-slate-700 border ${
               errors.type ? "border-red-500/50" : "border-slate-600/50"
             } placeholder:text-slate-400`}
           />
@@ -349,7 +349,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
                 px-4 py-3 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-between
                 ${
                   selectedMainGroup === mainGroup
-                    ? "bg-teal-500 text-black shadow-md shadow-teal-500/20"
+                    ? "bg-neon-500 text-black shadow-md shadow-neon-500/20"
                     : "bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50"
                 }
               `}
@@ -375,7 +375,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
                     px-4 py-2.5 rounded-lg font-medium text-xs transition-all duration-200
                     ${
                       selectedMuscleGroup === muscleGroup
-                        ? "bg-teal-500/80 text-black shadow-md shadow-teal-500/20"
+                        ? "bg-neon-500/80 text-black shadow-md shadow-neon-500/20"
                         : "bg-slate-700/30 text-slate-300 hover:bg-slate-700/50 hover:text-white border border-slate-600/30"
                     }
                   `}
@@ -410,7 +410,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
                       ${
                         isAlreadyAdded
                           ? "bg-slate-700/20 text-slate-500 cursor-not-allowed line-through"
-                          : "bg-slate-700/50 text-slate-200 hover:bg-teal-500 hover:text-black border border-slate-600/50"
+                          : "bg-slate-700/50 text-slate-200 hover:bg-neon-500 hover:text-black border border-slate-600/50"
                       }
                     `}
                   >
@@ -451,7 +451,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
                 }
               }}
               placeholder="0"
-              className="w-20 bg-slate-700/50 text-white text-sm py-2.5 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/50 placeholder:text-slate-500 text-center"
+              className="w-20 bg-slate-700/50 text-white text-sm py-2.5 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-neon-500 focus:bg-slate-700 border border-slate-600/50 placeholder:text-slate-500 text-center"
               min="0"
             />
             <span className="text-xs sm:text-sm text-slate-400 font-medium">H</span>
@@ -479,14 +479,14 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
                 }
               }}
               placeholder="0"
-              className="w-20 bg-slate-700/50 text-white text-sm py-2.5 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-slate-700 border border-slate-600/50 placeholder:text-slate-500 text-center"
+              className="w-20 bg-slate-700/50 text-white text-sm py-2.5 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-neon-500 focus:bg-slate-700 border border-slate-600/50 placeholder:text-slate-500 text-center"
               min="0"
               max="59"
             />
             <span className="text-xs sm:text-sm text-slate-400 font-medium">MIN</span>
           </div>
-          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-teal-900/20 rounded-xl flex items-center justify-center border border-teal-500/20 ml-auto">
-            <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-teal-400" />
+          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-neon-500/20 rounded-xl flex items-center justify-center border border-neon-500/20 ml-auto">
+            <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-neon-400" />
           </div>
         </div>
       </div>
@@ -543,7 +543,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
       <div className="pt-2">
         <button
           onClick={addExercise}
-          className="w-full border-2 border-dashed border-slate-600/50 text-slate-400 py-3.5 px-4 rounded-xl hover:border-teal-500/50 hover:text-teal-400 hover:bg-teal-500/5 transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium"
+          className="w-full border-2 border-dashed border-slate-600/50 text-slate-400 py-3.5 px-4 rounded-xl hover:border-neon-500/50 hover:text-neon-400 hover:bg-neon-500/5 transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium"
         >
           <Plus className="w-4 h-4" />
           Añadir Ejercicio Manual
@@ -555,8 +555,8 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 sm:p-5 shadow-md border border-slate-700/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-500/10 rounded-lg flex items-center justify-center border border-teal-500/20">
-                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-teal-400" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-neon-500/10 rounded-lg flex items-center justify-center border border-neon-500/20">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-neon-400" />
               </div>
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">
@@ -575,7 +575,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <button
           onClick={handleSave}
-          className="flex-1 bg-teal-500 hover:bg-teal-600 text-black font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 hover:scale-[1.02] active:scale-[0.98]"
+          className="flex-1 bg-[#2AF447] border-2 border-[#3dff5c] text-black font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base shadow-[0_0_12px_rgba(42,244,71,0.3)] hover:bg-[#3dff5c] hover:border-[#5eff7a] hover:shadow-[0_0_16px_rgba(42,244,71,0.4)] hover:scale-[1.02] active:scale-[0.98]"
         >
           <Save className="w-4 h-4" />
           GUARDAR ENTRENAMIENTO

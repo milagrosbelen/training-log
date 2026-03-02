@@ -12,11 +12,7 @@ export default function BottomNav() {
         <NavLink
           to="/progreso"
           aria-label="Progreso"
-          className={({ isActive }) =>
-            `flex items-center justify-center flex-1 h-full transition-colors duration-200 ${
-              isActive ? "text-teal-500" : "text-slate-400"
-            }`
-          }
+          className="flex items-center justify-center flex-1 h-full !text-[#2AF447] transition-colors duration-200"
         >
           <TrendingUp
             className="w-6 h-6 flex-shrink-0"
@@ -29,24 +25,22 @@ export default function BottomNav() {
         <Link
           to="/dashboard"
           aria-label="Crear entrenamiento"
-          className="flex items-center justify-center flex-shrink-0 -mt-7 w-14 h-14 rounded-full bg-teal-500 text-white shadow-lg shadow-teal-500/25 hover:bg-teal-400 hover:shadow-teal-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+          className="flex items-center justify-center flex-shrink-0 -mt-7 w-16 h-16 rounded-full bg-[#2AF447] border-2 border-[#3dff5c] shadow-[0_0_12px_rgba(42,244,71,0.35)] transition-all duration-200 hover:bg-[#3dff5c] hover:border-[#5eff7a] hover:shadow-[0_0_16px_rgba(42,244,71,0.45)] hover:scale-[1.02] active:scale-[0.98]"
         >
-          <Plus
-            className="w-7 h-7 flex-shrink-0"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <span className="!text-[#0a0a0a]">
+            <Plus
+              className="w-8 h-8 flex-shrink-0"
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </span>
         </Link>
 
         <NavLink
           to="/profile"
           aria-label="Perfil"
-          className={({ isActive }) =>
-            `flex items-center justify-center flex-1 h-full transition-colors duration-200 ${
-              isActive ? "text-teal-500" : "text-slate-400"
-            }`
-          }
+          className="flex items-center justify-center flex-1 h-full !text-[#2AF447] transition-colors duration-200"
         >
           <User
             className="w-6 h-6 flex-shrink-0"

@@ -111,7 +111,7 @@ function CopyWorkoutModal({ workouts, selectedDate, onCopy, onClose }) {
                 <button
                   key={`${workout.date}-${workout.type}`}
                   onClick={() => handleCopyWorkout(workout)}
-                  className="w-full bg-slate-700/50 hover:bg-slate-700 rounded-xl p-4 text-left transition-all duration-200 border border-slate-600/50 hover:border-teal-500/50 hover:shadow-lg hover:shadow-teal-500/10"
+                  className="w-full bg-slate-700/50 hover:bg-slate-700 rounded-xl p-4 text-left transition-all duration-200 border border-slate-600/50 hover:border-neon-500/50 hover:shadow-lg hover:shadow-neon-500/10"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -135,8 +135,8 @@ function CopyWorkoutModal({ workouts, selectedDate, onCopy, onClose }) {
                       </div>
                     </div>
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-lg bg-teal-500/20 border border-teal-500/30 flex items-center justify-center">
-                        <span className="text-teal-400 text-sm">→</span>
+                      <div className="w-8 h-8 rounded-lg bg-neon-500/20 border border-neon-500/30 flex items-center justify-center">
+                        <span className="text-neon-400 text-sm">→</span>
                       </div>
                     </div>
                   </div>

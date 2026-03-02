@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Lock } from "lucide-react"
 import { dateToISOString } from "../utils/dateUtils"
 
 const DAYS_OF_WEEK = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
@@ -140,22 +140,22 @@ function Calendar({ selectedDate, onDateSelect, workouts }) {
               onClick={() => handleDateClick(date)}
               className={`
                 aspect-square rounded-lg transition-all duration-200 text-sm font-medium
-                flex items-center justify-center relative
+                flex items-center justify-center relative border
                 ${selected 
-                  ? "bg-teal-500 text-black shadow-md shadow-teal-500/30 scale-105" 
-                  : "bg-slate-700/50 text-slate-200 hover:bg-slate-700 hover:scale-105"
+                  ? "bg-slate-700/80 text-white border-[#2AF447] shadow-[0_0_8px_rgba(42,244,71,0.25)] scale-105" 
+                  : "bg-slate-700/50 text-slate-200 border-slate-600/60 hover:bg-slate-700 hover:border-slate-500/60 hover:scale-105"
                 }
-                ${today && !selected ? "ring-2 ring-teal-400/50" : ""}
+                ${today && !selected ? "ring-2 ring-[#2AF447]/50" : ""}
               `}
             >
               {date.getDate()}
               {workout && !selected && (
                 locked ? (
-                  <span className="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 text-xs" title="Entrenamiento guardado">
-                    🔒
+                  <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2" title="Entrenamiento guardado">
+                    <Lock className="w-3 h-3 text-[#2AF447] opacity-90" strokeWidth={2.5} />
                   </span>
                 ) : (
-                  <span className="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-teal-400 rounded-full" />
+                  <span className="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-[#2AF447] rounded-full" />
                 )
               )}
             </button>
