@@ -28,21 +28,30 @@ Guía paso a paso para que tu app funcione: frontend en Vercel y backend en Rend
 
 4. **Environment Variables** → **Add Environment Variable**. Agregá:
 
+   **Opción A – DATABASE_URL (recomendada):** Si vinculás el PostgreSQL al Web Service, Render inyecta `DATABASE_URL`. Solo agregá:
    | Key | Value |
    |-----|-------|
    | `APP_NAME` | MiLogit |
    | `APP_ENV` | production |
    | `APP_DEBUG` | false |
-   | `APP_KEY` | `base64:xxxx` (ver abajo cómo generarlo) |
-   | `APP_URL` | `https://milogit-backend.onrender.com` (o la URL que te asigne Render) |
+   | `APP_KEY` | `base64:xxxx` (ver abajo) |
+   | `APP_URL` | `https://tu-servicio.onrender.com` |
+
+   **Opción B – Variables manuales:** Si no usás DATABASE_URL:
+   | Key | Value |
+   |-----|-------|
+   | `APP_NAME` | MiLogit |
+   | `APP_ENV` | production |
+   | `APP_DEBUG` | false |
+   | `APP_KEY` | `base64:xxxx` |
+   | `APP_URL` | `https://tu-servicio.onrender.com` |
    | `DB_CONNECTION` | pgsql |
-   | `DB_HOST` | *(host de tu PostgreSQL en Render)* |
+   | `DB_HOST` | *(host de PostgreSQL en Render)* |
    | `DB_PORT` | 5432 |
-   | `DB_DATABASE` | *(nombre de la DB)* |
+   | `DB_DATABASE` | *(nombre)* |
    | `DB_USERNAME` | *(usuario)* |
    | `DB_PASSWORD` | *(contraseña)* |
-
-   Si Render te da una **Database URL**, podés usar solo `DATABASE_URL` en vez de DB_HOST, DB_PORT, etc. (Laravel la interpreta automáticamente).
+   | `DB_SSLMODE` | require |
 
 5. **Create Web Service**
 

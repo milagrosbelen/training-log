@@ -76,6 +76,6 @@ EXPOSE 8000
 
 USER www-data
 
-# Migraciones (si fallan por DB, igual arranca - agregá DATABASE_URL y redeploy)
+# Migraciones (variables DB_* o DATABASE_URL deben estar en Render)
 # Servidor usa PORT de Render (ej: 10000)
-CMD ["sh", "-c", "php artisan migrate --force 2>/dev/null || echo 'DB no conectada - agregá DATABASE_URL en Environment'; php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
+CMD ["sh", "-c", "php artisan migrate --force && php artisan config:cache && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
