@@ -1,10 +1,22 @@
-FROM php:8.2-apache
+FROM php:8.2-cli
 
-RUN docker-php-ext-install pdo pdo_pgsql
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql
 
-COPY . /var/www/html
+WORKDIR /app
 
-RUN chown -R www-data:www-data /var/www/html
-RUN chmod -R 775 /var/www/html/storage
+COPY . .
 
-EXPOSE 80
+RUN curl -sS https://getcomposer.org/installer | php \
+    && mv composer.phar /usr/local/bin/composer
+
+RUN composer install --no-dev --optimize-autoloader
+
+RUN php artisan config:clear
+
+EXPOSE 8000
+
+CMD php artisan serve --host=0.0.0.0 --port=$PORT
