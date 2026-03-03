@@ -6,6 +6,8 @@ Para que otros usuarios usen la app desde sus celulares, necesitás:
 2. **Backend en internet** (Railway, Render, Fly.io, etc.)
 3. **Base de datos en la nube** (PostgreSQL)
 
+> 📘 **Guía específica Vercel + Render:** Ver [VERCEL-RENDER.md](./VERCEL-RENDER.md) para conectar frontend y backend paso a paso.
+
 ---
 
 ## Paso 1: Desplegar el backend

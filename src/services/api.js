@@ -2,8 +2,15 @@ import axios from "axios"
 
 const TOKEN_KEY = "auth_token"
 
-// En desarrollo: /api (proxy de Vite). En producción: VITE_API_URL
-const baseURL = import.meta.env.VITE_API_URL || "/api"
+// Producción: Render (si VITE_API_URL apunta a Railway, se ignora)
+const RENDER_API = "https://milogit-backend-r81y.onrender.com/api"
+let baseURL = import.meta.env.PROD
+  ? RENDER_API
+  : (import.meta.env.VITE_API_URL || "/api")
+// Si es URL externa y no termina en /api, agregarlo
+if (baseURL.startsWith("http") && !/\/api\/?$/.test(baseURL)) {
+  baseURL = baseURL.replace(/\/?$/, "") + "/api"
+}
 
 const api = axios.create({
   baseURL,
@@ -15,6 +22,11 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
+    // Axios: si url empieza con /, REEMPLAZA el path del baseURL (ej: /api se pierde)
+    // Por eso /auth/login → x.com/auth/login en vez de x.com/api/auth/login
+    if (config.url?.startsWith("/") && baseURL.startsWith("http")) {
+      config.url = config.url.slice(1)
+    }
     const token = localStorage.getItem(TOKEN_KEY)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
