@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom"
 import BottomNav from "./BottomNav"
+import ScrollToTop from "./ScrollToTop"
 
 /**
  * Layout para rutas autenticadas.
@@ -10,6 +11,7 @@ export default function AuthenticatedLayout() {
     <>
       <Outlet />
       <BottomNav />
+      <ScrollToTop />
     </>
   )
 }

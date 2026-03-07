@@ -114,6 +114,16 @@ El archivo `backend/config/cors.php` ya tiene configurado tu dominio de Vercel. 
 
 ## Errores comunes
 
+### "connection to server at 127.0.0.1 failed" / 500 Internal Server Error
+El backend intenta conectar a localhost. **DATABASE_URL no llega al contenedor.**
+
+**Solución:**
+1. Render → PostgreSQL → **Info** → copiar **Internal Database URL**
+2. Render → Web Service → **Environment** → Add: `DATABASE_URL` = URL copiada
+3. **Save** → **Manual Deploy**
+
+O vinculá el PostgreSQL al Web Service con **Add Database** para que Render inyecte DATABASE_URL.
+
 ### "No 'Access-Control-Allow-Origin' header"
 - Revisá que `VITE_API_URL` termine en `/api`
 - Revisá que el backend en Render esté corriendo y responda
