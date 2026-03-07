@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://milogit-backend-r81y.onrender.com/api/:path*"
+    }
+  ]
+}

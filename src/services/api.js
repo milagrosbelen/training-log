@@ -2,12 +2,9 @@ import axios from "axios"
 
 const TOKEN_KEY = "auth_token"
 
-// Producción: Render (si VITE_API_URL apunta a Railway, se ignora)
-const RENDER_API = "https://milogit-backend-r81y.onrender.com/api"
-let baseURL = import.meta.env.PROD
-  ? RENDER_API
-  : (import.meta.env.VITE_API_URL || "/api")
-// Si es URL externa y no termina en /api, agregarlo
+// Desarrollo: proxy Vite a localhost. Producción: /api (Vercel hace proxy a Render via vercel.json)
+// Si VITE_API_URL está definida, se usa (para deploy sin proxy). Sino, /api para proxy Vercel→Render
+let baseURL = import.meta.env.VITE_API_URL || "/api"
 if (baseURL.startsWith("http") && !/\/api\/?$/.test(baseURL)) {
   baseURL = baseURL.replace(/\/?$/, "") + "/api"
 }
