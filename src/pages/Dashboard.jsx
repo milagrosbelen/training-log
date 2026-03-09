@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Navigate, Link } from "react-router-dom"
 import { ChevronLeft, Plus } from "lucide-react"
 import Calendar from "../components/Calendar"
@@ -25,6 +25,7 @@ function Dashboard() {
   const [copiedWorkout, setCopiedWorkout] = useState(null)
   const [toast, setToast] = useState(null)
   const [error, setError] = useState("")
+  const workoutRef = useRef(null)
 
   if (!isAuthenticated()) {
     return <Navigate to="/" replace />
@@ -62,6 +63,9 @@ function Dashboard() {
     } else {
       setShowCopyModal(false)
     }
+    setTimeout(() => {
+      workoutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 100)
   }
 
   const handleSaveWorkout = async (workoutData) => {
@@ -186,7 +190,8 @@ function Dashboard() {
     <div className="min-h-screen bg-slate-900 text-white relative">
       <header className="hidden md:flex bg-slate-800/95 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-50 shadow-lg">
         <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-end h-16">
+          <div className="flex items-center justify-between h-16">
+            <span className="text-xl font-bold text-[#2AF447] [text-shadow:0_0_20px_rgba(42,244,71,0.4)] tracking-wide">MiLogit</span>
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => { setCurrentView("calendar"); setSelectedDate("") }}
@@ -250,19 +255,22 @@ function Dashboard() {
                 </button>
               </div>
             ) : (
-              <>
-                <Calendar
-                  selectedDate={selectedDate}
-                  onDateSelect={handleDateSelect}
-                  workouts={workouts}
-                />
-                {!selectedDate && (
-                  <div className="text-center py-4">
-                    <p className="text-sm text-slate-500">Elegí un día del calendario y registrá tu entrenamiento 💪</p>
-                  </div>
-                )}
-                {selectedDate && (
-                  <div className="space-y-6 pt-2 border-t border-slate-700/50">
+              <div className="flex flex-col gap-6">
+                <div className="lg:w-full lg:mx-auto">
+                  <Calendar
+                    selectedDate={selectedDate}
+                    onDateSelect={handleDateSelect}
+                    workouts={workouts}
+                  />
+                  {!selectedDate && (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-slate-500">Elegí un día del calendario y registrá tu entrenamiento 💪</p>
+                    </div>
+                  )}
+                </div>
+                <div className="lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:min-h-0 [scrollbar-width:thin] [scrollbar-color:rgb(51_65_85)_rgb(15_23_42)]">
+                  {selectedDate && (
+                    <div ref={workoutRef} className="space-y-6 pt-2 border-t border-slate-700/50">
                     <div>
                       <h2 className="text-lg sm:text-xl font-semibold text-white">
                         {shouldShowSummary() ? "Entrenamiento guardado" : "Entrenamiento del día"}
@@ -288,7 +296,8 @@ function Dashboard() {
                     )}
                   </div>
                 )}
-              </>
+                </div>
+              </div>
             )}
           </div>
         ) : (

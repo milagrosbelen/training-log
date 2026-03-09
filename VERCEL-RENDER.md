@@ -1,6 +1,8 @@
 # Conectar Vercel (frontend) con Render (backend)
 
-Guía paso a paso para que tu app funcione: frontend en Vercel y backend en Render.
+> **Guía completa paso a paso:** Ver [DEPLOY-RENDER.md](./DEPLOY-RENDER.md) para desplegar todo desde cero sin errores.
+
+Resumen rápido:
 
 ---
 
@@ -113,6 +115,31 @@ El archivo `backend/config/cors.php` ya tiene configurado tu dominio de Vercel. 
 ---
 
 ## Errores comunes
+
+### config:cache rompe las variables de entorno en Render
+
+**Problema:** Si usás `php artisan config:cache` en el CMD del Dockerfile, Laravel genera un archivo de configuración cacheado (`bootstrap/cache/config.php`). Ese archivo guarda los valores de `.env` en el momento en que corre el comando. En Render, las variables de entorno (`DATABASE_URL`, `APP_KEY`, etc.) se **inyectan cuando el contenedor inicia**, no durante el build. Si cacheás la config, Laravel lee el cache (posiblemente vacío o incorrecto) y no las variables reales.
+
+**Solución:** No usar `config:cache` en producción con Render. El Dockerfile correcto es:
+
+```dockerfile
+CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
+```
+
+**Incorrecto:**
+```dockerfile
+CMD ["sh", "-c", "php artisan migrate --force && php artisan config:cache && php artisan serve ..."]
+```
+
+### Variables de base de datos (DB_* o DATABASE_URL)
+
+**Problema:** Las migraciones fallan si Laravel no encuentra la conexión a la base de datos.
+
+**Solución:** Configurá las variables en Render → tu Web Service → **Environment**:
+- **Opción A:** `DATABASE_URL` = Internal Database URL (de tu PostgreSQL en Render)
+- **Opción B:** `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `DB_SSLMODE`
+
+Render asigna `PORT` automáticamente; usá `${PORT:-8000}` para escuchar en el puerto correcto.
 
 ### "connection to server at 127.0.0.1 failed" / 500 Internal Server Error
 El backend intenta conectar a localhost. **DATABASE_URL no llega al contenedor.**

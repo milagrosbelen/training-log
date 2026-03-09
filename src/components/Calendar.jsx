@@ -90,7 +90,7 @@ function Calendar({ selectedDate, onDateSelect, workouts }) {
   const days = getDaysInMonth(currentMonth)
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-5 sm:p-6 shadow-lg border border-slate-700/50">
+    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-5 sm:p-6 lg:p-10 lg:text-lg shadow-lg border border-slate-700/50">
       {/* Header del calendario con mejor espaciado */}
       <div className="flex items-center justify-between mb-6">
         <button
@@ -113,16 +113,16 @@ function Calendar({ selectedDate, onDateSelect, workouts }) {
       </div>
 
       {/* Días de la semana - más compactos */}
-      <div className="grid grid-cols-7 gap-1.5 mb-2">
+      <div className="grid grid-cols-7 gap-1.5 lg:gap-3 mb-2">
         {DAYS_OF_WEEK.map((day) => (
-          <div key={day} className="text-center text-xs font-medium text-slate-400 py-1">
+          <div key={day} className="text-center text-xs lg:text-base font-medium text-slate-400 py-1 lg:py-3">
             {day}
           </div>
         ))}
       </div>
 
       {/* Días del mes - mejor espaciado y diseño */}
-      <div className="grid grid-cols-7 gap-1.5">
+      <div className="grid grid-cols-7 gap-1.5 lg:gap-3">
         {days.map((date, index) => {
           if (!date) {
             return <div key={`empty-${index}`} className="aspect-square" />
@@ -139,7 +139,7 @@ function Calendar({ selectedDate, onDateSelect, workouts }) {
               key={dateStr}
               onClick={() => handleDateClick(date)}
               className={`
-                aspect-square rounded-lg transition-all duration-200 text-sm font-medium
+                aspect-square lg:h-16 lg:w-full lg:text-xl lg:font-bold rounded-lg transition-all duration-200 text-sm font-medium
                 flex items-center justify-center relative border
                 ${selected 
                   ? "bg-slate-700/80 text-white border-[#2AF447] shadow-[0_0_8px_rgba(42,244,71,0.25)] scale-105" 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { Clock, ArrowUp, Plus, Save, X, ChevronRight } from "lucide-react"
 import ExerciseCard from "./ExerciseCard"
 import { getMainGroups, getMuscleGroups, getExercisesForMuscleGroup } from "../data/routines"
@@ -36,6 +36,10 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState(null)
   const [showExerciseSelector, setShowExerciseSelector] = useState(false)
   const [errors, setErrors] = useState({})
+
+  const refPaso2 = useRef(null)
+  const refPaso3 = useRef(null)
+  const refPaso4 = useRef(null)
 
   // Sincronizar estado cuando el workout cambia (útil cuando se copia un entrenamiento)
   useEffect(() => {
@@ -153,6 +157,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
   const handleSelectMuscleGroup = (muscleGroup) => {
     setSelectedMuscleGroup(muscleGroup)
     setShowExerciseSelector(true)
+    refPaso3.current?.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
   /**
@@ -316,6 +321,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
               }
             }}
             placeholder="Ej: Piernas + glúteos, Full body, Cardio..."
+            onBlur={() => refPaso2.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
             className={`w-full bg-slate-700/50 text-white py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-neon-500 focus:bg-slate-700 border ${
               errors.type ? "border-red-500/50" : "border-slate-600/50"
             } placeholder:text-slate-400`}
@@ -331,7 +337,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
       </div>
 
       {/* Sección de Grupos Principales - Siempre visible */}
-      <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-5 sm:p-6 shadow-md border border-slate-700/50">
+      <div ref={refPaso2} className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-5 sm:p-6 shadow-md border border-slate-700/50">
         <h3 className="text-sm sm:text-base font-semibold text-white mb-3">
           Lista de ejercicios
         </h3>
@@ -425,7 +431,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
       </div>
 
       {/* Card de Duración del entrenamiento - Horas y Minutos */}
-      <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-5 sm:p-6 shadow-md border border-slate-700/50">
+      <div ref={refPaso3} className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-5 sm:p-6 shadow-md border border-slate-700/50">
         <h2 className="text-sm sm:text-base font-semibold text-white mb-1">
           Tiempo total de sesión
         </h2>
@@ -451,6 +457,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
                 }
               }}
               placeholder="0"
+              onBlur={() => refPaso4.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
               className="w-20 bg-slate-700/50 text-white text-sm py-2.5 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-neon-500 focus:bg-slate-700 border border-slate-600/50 placeholder:text-slate-500 text-center"
               min="0"
             />
@@ -479,6 +486,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
                 }
               }}
               placeholder="0"
+              onBlur={() => refPaso4.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
               className="w-20 bg-slate-700/50 text-white text-sm py-2.5 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-neon-500 focus:bg-slate-700 border border-slate-600/50 placeholder:text-slate-500 text-center"
               min="0"
               max="59"
@@ -493,7 +501,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
 
       {/* Lista de Ejercicios Agregados */}
       {exercises.length > 0 && (
-        <div className="space-y-4">
+        <div ref={refPaso4} className="space-y-4">
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
               Ejercicios agregados
