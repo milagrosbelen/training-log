@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { register } from "../services/authService"
+import PasswordInput from "../components/PasswordInput"
 
 function Register() {
   const navigate = useNavigate()
@@ -84,31 +85,27 @@ function Register() {
               <label htmlFor="register-password" className="block text-sm font-medium text-slate-300 mb-2">
                 Contraseña
               </label>
-              <input
+              <PasswordInput
                 id="register-password"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mínimo 8 caracteres"
                 required
                 minLength={8}
                 disabled={loading}
-                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-neon-500 focus:border-transparent disabled:opacity-60"
               />
             </div>
             <div>
               <label htmlFor="register-confirm" className="block text-sm font-medium text-slate-300 mb-2">
                 Confirmar contraseña
               </label>
-              <input
+              <PasswordInput
                 id="register-confirm"
-                type="password"
                 value={passwordConfirmation}
                 onChange={(e) => setPasswordConfirmation(e.target.value)}
                 placeholder="••••••••"
                 required
                 disabled={loading}
-                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-neon-500 focus:border-transparent disabled:opacity-60"
               />
             </div>
 
