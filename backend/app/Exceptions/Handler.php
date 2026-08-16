@@ -3,8 +3,10 @@
 namespace App\Exceptions;
 
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
+use PDOException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -27,6 +29,20 @@ class Handler extends ExceptionHandler
     {
         $this->reportable(function (Throwable $e) {
             //
+        });
+
+        $this->renderable(function (Throwable $e, Request $request) {
+            if (!($request->is('api/*') || $request->expectsJson())) {
+                return null;
+            }
+
+            if ($e instanceof QueryException || $e instanceof PDOException) {
+                return response()->json([
+                    'message' => 'No se pudo conectar a la base de datos. En Render revisá DB_HOST, DB_PASSWORD y DB_SSLMODE.',
+                ], 503);
+            }
+
+            return null;
         });
     }
 

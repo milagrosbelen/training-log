@@ -79,4 +79,4 @@ USER www-data
 # Migraciones (variables DB_* o DATABASE_URL deben estar en Render)
 # Servidor usa PORT de Render (ej: 10000)
 # No usar config:cache: las env vars de Render se inyectan al iniciar; cachear puede guardar valores incorrectos
-CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
+CMD ["sh", "-c", "if [ -z \"$APP_KEY\" ]; then php artisan key:generate --force; fi && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]

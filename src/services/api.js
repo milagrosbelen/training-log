@@ -3,12 +3,20 @@ import axios from "axios"
 const TOKEN_KEY = "auth_token"
 const USER_KEY = "auth_user"
 
-// Desarrollo: proxy Vite a localhost. Producción: /api (Vercel hace proxy a Render via vercel.json)
-// Si VITE_API_URL está definida, se usa (para deploy sin proxy). Sino, /api para proxy Vercel→Render
-let baseURL = import.meta.env.VITE_API_URL || "/api"
-if (baseURL.startsWith("http") && !/\/api\/?$/.test(baseURL)) {
-  baseURL = baseURL.replace(/\/?$/, "") + "/api"
+// Producción (Vercel): siempre /api en el mismo origen. vercel.json hace proxy a Render.
+// Así no hay CORS aunque exista VITE_API_URL apuntando a una URL vieja.
+function resolveBaseURL() {
+  if (import.meta.env.PROD) {
+    return "/api"
+  }
+  let url = import.meta.env.VITE_API_URL || "/api"
+  if (url.startsWith("http") && !/\/api\/?$/.test(url)) {
+    url = url.replace(/\/?$/, "") + "/api"
+  }
+  return url
 }
+
+const baseURL = resolveBaseURL()
 
 const api = axios.create({
   baseURL,
@@ -48,5 +56,16 @@ api.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+export function apiErrorMessage(err, fallback = "Los datos son incorrectos.") {
+  if (!err.response) {
+    return "No se pudo conectar con el servidor. En el celular abrí la app en la misma Wi‑Fi que la PC, no el link de Vercel."
+  }
+  const status = err.response.status
+  if (status === 404 || status >= 500) {
+    return "El servidor no está disponible ahora. Probá de nuevo en un rato o usá la app en la PC."
+  }
+  return err.response.data?.message ?? fallback
+}
 
 export { api, TOKEN_KEY, USER_KEY }

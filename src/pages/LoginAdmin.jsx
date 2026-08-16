@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { login } from "../services/authService"
+import { apiErrorMessage } from "../services/api"
 import AuthFrame, { fieldClass, primaryBtnClass } from "../components/AuthFrame"
 
 export default function LoginAdmin() {
@@ -18,7 +19,7 @@ export default function LoginAdmin() {
       await login(email, password)
       navigate("/admin", { replace: true })
     } catch (err) {
-      setError(err.response?.data?.message ?? "Las credenciales son incorrectas.")
+      setError(apiErrorMessage(err, "Las credenciales son incorrectas."))
     } finally {
       setLoading(false)
     }

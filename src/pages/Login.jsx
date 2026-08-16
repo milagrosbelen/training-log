@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { loginWithPin } from "../services/authService"
+import { apiErrorMessage } from "../services/api"
 import AuthFrame, { fieldClass, primaryBtnClass } from "../components/AuthFrame"
 
 export default function Login() {
@@ -18,7 +19,7 @@ export default function Login() {
       await loginWithPin(username, pin)
       navigate("/dashboard", { replace: true })
     } catch (err) {
-      setError(err.response?.data?.message ?? "Los datos son incorrectos.")
+      setError(apiErrorMessage(err, "Los datos son incorrectos."))
     } finally {
       setLoading(false)
     }

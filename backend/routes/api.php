@@ -18,6 +18,30 @@ use Illuminate\Support\Facades\Route;
 // Health check: GET /api (para verificar que el backend responde)
 Route::get('/', fn () => response()->json(['status' => 'ok', 'api' => 'MiLogit'])->header('Access-Control-Allow-Origin', '*'));
 
+Route::get('/health', function () {
+    $db = false;
+    $users = null;
+    $dbError = null;
+
+    try {
+        \Illuminate\Support\Facades\DB::select('select 1 as ok');
+        $db = true;
+        $users = \App\Models\User::query()->count();
+    } catch (\Throwable $e) {
+        $dbError = $e->getMessage();
+    }
+
+    return response()->json([
+        'status' => $db ? 'ok' : 'db_error',
+        'api' => 'MiLogit',
+        'app_key' => filled(config('app.key')),
+        'db' => $db,
+        'users' => $users,
+        'db_host' => config('database.connections.'.config('database.default').'.host'),
+        'db_error' => $dbError,
+    ])->header('Access-Control-Allow-Origin', '*');
+});
+
 // CORS preflight: responde OPTIONS antes que cualquier otra ruta
 Route::options('/{any}', function () {
     return response('', 204)
