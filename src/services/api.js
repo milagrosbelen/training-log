@@ -38,7 +38,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     // No redirigir si el 401 viene del login (credenciales incorrectas)
-    const isLoginRequest = error.config?.url?.includes("/auth/login")
+    const isLoginRequest =
+      error.config?.url?.includes("/auth/login") || error.config?.url?.includes("/auth/pin")
     if (error.response?.status === 401 && !isLoginRequest) {
       localStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem(USER_KEY)

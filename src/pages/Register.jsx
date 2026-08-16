@@ -22,7 +22,7 @@ function Register() {
     setLoading(true)
     try {
       await register({ name, email, password, password_confirmation: passwordConfirmation })
-      navigate("/welcome")
+      navigate("/dashboard")
     } catch (err) {
       const errors = err.response?.data?.errors
       const message = errors

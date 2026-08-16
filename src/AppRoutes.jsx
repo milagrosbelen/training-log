@@ -1,7 +1,7 @@
+import { useEffect, useState } from "react"
 import { Routes, Route, Navigate, Outlet } from "react-router-dom"
 import Login from "./pages/Login"
 import LoginAdmin from "./pages/LoginAdmin"
-import Welcome from "./pages/Welcome"
 import AuthenticatedLayout from "./components/AuthenticatedLayout"
 import AdminLayout from "./components/AdminLayout"
 import Dashboard from "./pages/Dashboard"
@@ -11,12 +11,22 @@ import Stats from "./pages/Stats"
 import Profile from "./pages/Profile"
 import AdminAlumnas from "./pages/AdminAlumnas"
 import CoachPlanEditor from "./components/plan/CoachPlanEditor"
-import { isAuthenticated, isCoach, getStoredUser } from "./services/authService"
+import {
+  getCurrentUser,
+  getStoredUser,
+  isAuthenticated,
+  isCoach,
+  logout,
+} from "./services/authService"
 import OrangeGrain from "./components/OrangeGrain"
+
+function homeForUser(user = getStoredUser()) {
+  return isCoach(user) ? "/admin" : "/dashboard"
+}
 
 function RequireGuest({ children }) {
   if (!isAuthenticated()) return children
-  return <Navigate to={isCoach() ? "/admin" : "/welcome"} replace />
+  return <Navigate to={homeForUser()} replace />
 }
 
 function RequireAlumna() {
@@ -27,55 +37,68 @@ function RequireAlumna() {
 
 function RequireAdmin() {
   if (!isAuthenticated()) return <Navigate to="/acceso" replace />
-  if (!isCoach()) return <Navigate to="/welcome" replace />
+  if (!isCoach()) return <Navigate to="/dashboard" replace />
   return <Outlet />
 }
 
-function AppRoutes() {
+export default function AppRoutes() {
+  const [checking, setChecking] = useState(isAuthenticated())
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      setChecking(false)
+      return
+    }
+    let cancelled = false
+    getCurrentUser()
+      .catch(() => logout())
+      .finally(() => {
+        if (!cancelled) setChecking(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-ink">
+        <div className="w-6 h-6 border-2 border-ink-400 border-t-ember rounded-full animate-spin" />
+      </div>
+    )
+  }
+
   return (
     <>
       <OrangeGrain />
       <Routes>
-          <Route path="/" element={<RequireGuest><Login /></RequireGuest>} />
-          <Route path="/acceso" element={<RequireGuest><LoginAdmin /></RequireGuest>} />
-          <Route path="/register" element={<Navigate to="/" replace />} />
+        <Route path="/" element={<RequireGuest><Login /></RequireGuest>} />
+        <Route path="/acceso" element={<RequireGuest><LoginAdmin /></RequireGuest>} />
+        <Route path="/register" element={<Navigate to="/" replace />} />
+        <Route path="/welcome" element={<Navigate to={isAuthenticated() ? homeForUser() : "/"} replace />} />
 
-          <Route element={<RequireAlumna />}>
-            <Route path="/welcome" element={<Welcome />} />
-            <Route element={<AuthenticatedLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/plan" element={<Plan />} />
-              <Route path="/progreso" element={<Progreso />} />
-              <Route path="/stats" element={<Stats />} />
-              <Route path="/profile" element={<Profile />} />
-            </Route>
+        <Route element={<RequireAlumna />}>
+          <Route element={<AuthenticatedLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/plan" element={<Plan />} />
+            <Route path="/progreso" element={<Progreso />} />
+            <Route path="/stats" element={<Stats />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
+        </Route>
 
-          <Route element={<RequireAdmin />}>
-            <Route element={<AdminLayout />}>
-              <Route path="/admin" element={<AdminAlumnas />} />
-              <Route path="/admin/plan" element={<CoachPlanEditor />} />
-            </Route>
+        <Route element={<RequireAdmin />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<AdminAlumnas />} />
+            <Route path="/admin/plan" element={<CoachPlanEditor />} />
           </Route>
+        </Route>
 
-          <Route
-            path="*"
-            element={
-              <Navigate
-                to={
-                  !isAuthenticated()
-                    ? "/"
-                    : isCoach(getStoredUser())
-                      ? "/admin"
-                      : "/welcome"
-                }
-                replace
-              />
-            }
-          />
-        </Routes>
+        <Route
+          path="*"
+          element={<Navigate to={!isAuthenticated() ? "/" : homeForUser()} replace />}
+        />
+      </Routes>
     </>
   )
 }
-
-export default AppRoutes

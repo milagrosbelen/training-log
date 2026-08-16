@@ -16,7 +16,7 @@ export default function Login() {
     setLoading(true)
     try {
       await loginWithPin(username, pin)
-      navigate("/welcome", { replace: true })
+      navigate("/dashboard", { replace: true })
     } catch (err) {
       setError(err.response?.data?.message ?? "Los datos son incorrectos.")
     } finally {
