@@ -1,4 +1,4 @@
-import { api } from "./api"
+import { api, readStoredUserId } from "./api"
 import { dateToISOString } from "../utils/dateUtils"
 import { slugExercise } from "../utils/exerciseImages"
 
@@ -44,10 +44,49 @@ function toPayloadExercise(ex, i) {
   }
 }
 
+let workoutsCache = null
+let workoutsCacheUserId = null
+let workoutsCacheAt = 0
+let workoutsInflight = null
+const WORKOUTS_TTL = 3 * 60 * 1000
+
+export function peekWorkouts() {
+  const userId = readStoredUserId()
+  if (!userId || workoutsCacheUserId !== userId || !Array.isArray(workoutsCache)) return null
+  return workoutsCache
+}
+
+export function clearWorkoutsCache() {
+  workoutsCache = null
+  workoutsCacheUserId = null
+  workoutsCacheAt = 0
+  workoutsInflight = null
+}
+
 export async function getWorkouts() {
-  const { data } = await api.get("/workouts")
-  const list = data.data ?? []
-  return list.map(apiToFrontend)
+  const userId = readStoredUserId()
+  if (
+    Array.isArray(workoutsCache)
+    && workoutsCacheUserId === userId
+    && Date.now() - workoutsCacheAt < WORKOUTS_TTL
+  ) {
+    return workoutsCache
+  }
+  if (workoutsInflight) return workoutsInflight
+
+  workoutsInflight = api.get("/workouts")
+    .then(({ data }) => {
+      const list = (data.data ?? []).map(apiToFrontend)
+      workoutsCache = list
+      workoutsCacheUserId = readStoredUserId()
+      workoutsCacheAt = Date.now()
+      return list
+    })
+    .finally(() => {
+      workoutsInflight = null
+    })
+
+  return workoutsInflight
 }
 
 export async function getWorkoutByDate(date) {
@@ -65,11 +104,20 @@ export async function saveWorkout(workoutData) {
       .map(toPayloadExercise),
   }
   const { data } = await api.post("/workouts", payload)
-  return apiToFrontend(data.data)
+  const workout = apiToFrontend(data.data)
+  if (Array.isArray(workoutsCache) && workout) {
+    const rest = workoutsCache.filter((item) => item.date !== workout.date)
+    workoutsCache = [workout, ...rest]
+    workoutsCacheAt = Date.now()
+  }
+  return workout
 }
 
 export async function deleteWorkout(id) {
   await api.delete(`/workouts/${id}`)
+  if (Array.isArray(workoutsCache)) {
+    workoutsCache = workoutsCache.filter((item) => item.id !== id)
+  }
 }
 
 export async function logSessionExercise({ exercise, weight, reps, sets, notes, sessionTitle, workouts = [] }) {

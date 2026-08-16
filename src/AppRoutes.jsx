@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { Routes, Route, Navigate, Outlet } from "react-router-dom"
 import Login from "./pages/Login"
 import LoginAdmin from "./pages/LoginAdmin"
@@ -42,31 +42,12 @@ function RequireAdmin() {
 }
 
 export default function AppRoutes() {
-  const [checking, setChecking] = useState(isAuthenticated())
-
   useEffect(() => {
-    if (!isAuthenticated()) {
-      setChecking(false)
-      return
-    }
-    let cancelled = false
-    getCurrentUser()
-      .catch(() => logout())
-      .finally(() => {
-        if (!cancelled) setChecking(false)
-      })
-    return () => {
-      cancelled = true
-    }
+    if (!isAuthenticated()) return
+    getCurrentUser().catch((err) => {
+      if (err.response?.status === 401) logout()
+    })
   }, [])
-
-  if (checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-ink">
-        <div className="w-6 h-6 border-2 border-ink-400 border-t-ember rounded-full animate-spin" />
-      </div>
-    )
-  }
 
   return (
     <>

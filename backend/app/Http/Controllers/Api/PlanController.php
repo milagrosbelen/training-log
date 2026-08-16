@@ -21,7 +21,7 @@ class PlanController extends Controller
             ]);
         }
 
-        $plan = $user->assignedPlan()->with(['user:id,name', 'coach:id,name', 'completions'])->first();
+        $plan = $user->assignedPlan()->with('completions')->first();
 
         if (!$plan) {
             return response()->json([
@@ -108,7 +108,7 @@ class PlanController extends Controller
             'sessions.*.exercises' => ['nullable', 'array'],
             'sessions.*.exercises.*.name' => ['required', 'string', 'max:255'],
             'sessions.*.exercises.*.sets' => ['required', 'integer', 'min:1', 'max:50'],
-            'sessions.*.exercises.*.reps' => ['required', 'string', 'max:50'],
+            'sessions.*.exercises.*.reps' => ['required', 'max:50'],
             'sessions.*.exercises.*.rest_seconds' => ['nullable', 'integer', 'min:0', 'max:600'],
             'sessions.*.exercises.*.tip' => ['nullable', 'string', 'max:500'],
             'sessions.*.exercises.*.muscle' => ['nullable', 'string', 'max:100'],
@@ -240,7 +240,7 @@ class PlanController extends Controller
                     ->map(fn (array $exercise) => [
                         'name' => trim($exercise['name']),
                         'sets' => (int) $exercise['sets'],
-                        'reps' => trim($exercise['reps']),
+                        'reps' => trim((string) $exercise['reps']),
                         'rest_seconds' => isset($exercise['rest_seconds']) ? (int) $exercise['rest_seconds'] : 90,
                         'tip' => trim((string) ($exercise['tip'] ?? '')),
                         'muscle' => trim((string) ($exercise['muscle'] ?? '')),
@@ -263,7 +263,7 @@ class PlanController extends Controller
 
     private function toPayload(Plan $plan): array
     {
-        $sessions = $plan->sessions ?? [];
+        $sessions = is_array($plan->sessions) ? $plan->sessions : [];
         $weekCompletions = $plan->completions
             ->where('week_number', $plan->week_current)
             ->keyBy('weekday');

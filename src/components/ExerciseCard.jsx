@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Trash2, ChevronUp, ChevronDown, Plus, Minus, X } from "lucide-react"
+import ExercisePhoto from "./ExercisePhoto"
 
 const MAX_SERIES = 5
 
@@ -81,8 +82,18 @@ function ExerciseCard({ exercise, onUpdate, onDelete, onMoveUp, onMoveDown, canM
         duration: 0.35,
         ease: "easeInOut"
       }}
-      className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 sm:p-5 shadow-md border border-slate-700/50 hover:border-slate-600/50"
+      className="bg-slate-800/50 backdrop-blur-sm rounded-xl shadow-md border border-slate-700/50 hover:border-slate-600/50 overflow-hidden"
     >
+      {exercise.name ? (
+        <div className="relative h-32">
+          <ExercisePhoto
+            name={exercise.name}
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-black/10" />
+        </div>
+      ) : null}
+      <div className="p-4 sm:p-5">
       {/* Header con nombre, botones de reordenar y botón eliminar */}
       <div className="flex items-center justify-between gap-2 mb-4 pb-4 border-b border-slate-700/50">
         <input
@@ -243,6 +254,7 @@ function ExerciseCard({ exercise, onUpdate, onDelete, onMoveUp, onMoveDown, canM
             className="w-full bg-slate-700/50 text-white text-sm px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-neon-500 focus:bg-slate-700 border border-slate-600/30 placeholder:text-slate-500/50 resize-none transition-all duration-200 hover:border-slate-600/50"
           />
         </div>
+      </div>
       </div>
     </motion.div>
   )

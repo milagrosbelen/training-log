@@ -57,6 +57,15 @@ api.interceptors.response.use(
   }
 )
 
+export function readStoredUserId() {
+  try {
+    const raw = localStorage.getItem(USER_KEY)
+    return raw ? JSON.parse(raw)?.id ?? null : null
+  } catch {
+    return null
+  }
+}
+
 export function apiErrorMessage(err, fallback = "Los datos son incorrectos.") {
   if (!err.response) {
     return "No se pudo conectar con el servidor. En el celular abrí la app en la misma Wi‑Fi que la PC, no el link de Vercel."

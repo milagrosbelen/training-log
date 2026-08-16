@@ -6,7 +6,7 @@ import {
 } from "lucide-react"
 import { WEEKDAYS, firstName, todayWeekday } from "../../utils/planUtils"
 import { savePlanProgress } from "../../services/planService"
-import { getWorkouts, logSessionExercise } from "../../services/workoutService"
+import { getWorkouts, peekWorkouts, logSessionExercise } from "../../services/workoutService"
 import PlanDesktopHeader from "./PlanDesktopHeader"
 import ExerciseHeroCard from "./ExerciseHeroCard"
 import ExerciseDetail from "./ExerciseDetail"
@@ -15,7 +15,7 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
   const sessionsByDay = useMemo(() => {
     const map = {}
     for (const session of plan.sessions || []) {
-      map[session.weekday] = session
+      map[Number(session.weekday)] = session
     }
     return map
   }, [plan.sessions])
@@ -33,33 +33,31 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
   const [detailIndex, setDetailIndex] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
-  const [workouts, setWorkouts] = useState([])
+  const [workouts, setWorkouts] = useState(() => peekWorkouts() || [])
 
   const session = sessionsByDay[selectedDay] || null
+  const today = todayWeekday()
   const progress = plan.progress_by_weekday?.[selectedDay] || {
     completed: 0,
     total: session?.exercises?.length || 0,
     indexes: [],
   }
   const completedSet = new Set(progress.indexes || [])
-  const trained = new Set(plan.trained_weekdays || [])
+  const trained = new Set((plan.trained_weekdays || []).map(Number))
   const displayName = firstName(plan.user_name || user?.name)
   const total = session?.exercises?.length || 0
   const done = Math.min(progress.completed || 0, total)
   const percent = total > 0 ? Math.round((done / total) * 100) : 0
+  const daysPerWeek = Number(plan.days_per_week) || (plan.sessions || []).length || 0
+  const todayHasSession = Boolean(sessionsByDay[today])
+  const todayTrained = trained.has(today)
+  const nextTraining = WEEKDAYS.find((day) => day.key > today && sessionsByDay[day.key])
+    || WEEKDAYS.find((day) => sessionsByDay[day.key])
 
   useEffect(() => {
-    let cancelled = false
     getWorkouts()
-      .then((list) => {
-        if (!cancelled) setWorkouts(Array.isArray(list) ? list : [])
-      })
-      .catch(() => {
-        if (!cancelled) setWorkouts([])
-      })
-    return () => {
-      cancelled = true
-    }
+      .then((list) => setWorkouts(Array.isArray(list) ? list : []))
+      .catch(() => {})
   }, [])
 
   const openGuidedAt = (index) => {
@@ -126,22 +124,20 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
         </p>
         <div className="mt-1 flex items-start justify-between gap-3">
           <h1 className="font-serif text-[40px] leading-none text-white">Esta semana</h1>
-          <span className="mt-2 shrink-0 rounded-full border border-gold/70 px-3 py-1 text-[11px] text-gold">
-            Semana {plan.week_current} de {plan.week_total}
-          </span>
+          {daysPerWeek ? (
+            <span className="mt-2 shrink-0 rounded-full border border-gold/70 px-3 py-1 text-[11px] text-gold text-right leading-tight">
+              {daysPerWeek} {daysPerWeek === 1 ? "día" : "días"} de entreno a la semana
+            </span>
+          ) : null}
         </div>
-        {plan.objective || plan.days_per_week ? (
-          <p className="mt-3 text-sm text-slate-400">
-            {plan.objective ? plan.objective : "Plan"}
-            {plan.days_per_week
-              ? ` · ${plan.days_per_week} ${Number(plan.days_per_week) === 1 ? "día" : "días"} por semana`
-              : ""}
-          </p>
+        {plan.objective ? (
+          <p className="mt-3 text-sm text-slate-400">{plan.objective}</p>
         ) : null}
 
         <div className="mt-8 flex justify-between px-1">
           {WEEKDAYS.map((day) => {
             const isActive = selectedDay === day.key
+            const isToday = today === day.key
             const isTrained = trained.has(day.key)
             const hasSession = Boolean(sessionsByDay[day.key])
             return (
@@ -155,31 +151,65 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
                 }}
                 className="flex flex-col items-center min-w-[36px]"
               >
+                <span className={`h-3 text-[9px] uppercase tracking-[0.12em] ${isToday ? "text-gold" : "text-transparent"}`}>
+                  Hoy
+                </span>
                 <span
                   className={`w-10 h-10 rounded-full flex items-center justify-center text-[15px] font-medium transition-colors ${
                     isActive
                       ? "bg-ember text-white"
-                      : "text-slate-200"
+                      : hasSession
+                        ? "border-2 border-ember text-white"
+                        : "text-slate-500"
                   }`}
                 >
                   {day.label}
                 </span>
-                <span className="h-5 mt-1 text-[10px] text-gold">
-                  {isTrained ? "Entrenado" : ""}
+                <span className={`h-5 mt-1 text-[10px] ${isTrained ? "text-gold" : hasSession ? "text-ember/80" : "text-transparent"}`}>
+                  {isTrained ? "Hecho" : hasSession ? "Entreno" : "."}
                 </span>
-                <span
-                  className={`mt-0.5 w-1.5 h-1.5 rounded-full ${
-                    isActive || isTrained
-                      ? "bg-ember"
-                      : hasSession
-                        ? "bg-[#5a5a5a]"
-                        : "bg-[#2e2e2e]"
-                  }`}
-                />
               </button>
             )
           })}
         </div>
+
+        {todayHasSession && !todayTrained ? (
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedDay(today)
+              setDetailIndex(null)
+              setGuided(false)
+            }}
+            className="mt-2 w-full rounded-[24px] border border-ember/40 bg-ember/10 px-4 py-4 text-left"
+          >
+            <p className="text-[11px] uppercase tracking-[0.18em] text-ember">Hoy</p>
+            <p className="mt-1 font-serif text-[26px] leading-none text-white">Hoy te toca entrenar</p>
+            <p className="mt-2 text-sm text-slate-400">
+              Es tu día. Entrá a la sesión y dejá todo.
+            </p>
+          </button>
+        ) : null}
+
+        {todayHasSession && todayTrained ? (
+          <div className="mt-2 w-full rounded-[24px] border border-gold/30 bg-ink-200 px-4 py-4">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-gold">Hoy</p>
+            <p className="mt-1 font-serif text-[26px] leading-none text-white">Hoy ya entrenaste</p>
+            <p className="mt-2 text-sm text-slate-400">Qué bien. Mañana el cuerpo lo va a notar.</p>
+          </div>
+        ) : null}
+
+        {!todayHasSession ? (
+          <div className="mt-2 w-full rounded-[24px] border border-white/5 bg-ink-200 px-4 py-4">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-gold">Hoy</p>
+            <p className="mt-1 font-serif text-[26px] leading-none text-white">Hoy descansás</p>
+            <p className="mt-2 text-sm text-slate-400">
+              {nextTraining
+                ? `El ${nextTraining.name} es tu próximo entreno.`
+                : "Recuperá. El próximo día de plan te espera."}
+            </p>
+          </div>
+        ) : null}
 
         {session ? (
           <>

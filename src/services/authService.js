@@ -1,4 +1,8 @@
 import { api, TOKEN_KEY, USER_KEY } from "./api"
+import { clearPlanCache, clearCoachCaches } from "./planService"
+import { clearWorkoutsCache } from "./workoutService"
+import { clearProfileCache } from "./profileService"
+import { clearAlumnasCache } from "./alumnaService"
 
 function persistUser(user) {
   if (user) {
@@ -38,6 +42,11 @@ export async function logout() {
   } finally {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
+    clearPlanCache()
+    clearCoachCaches()
+    clearWorkoutsCache()
+    clearProfileCache()
+    clearAlumnasCache()
   }
 }
 

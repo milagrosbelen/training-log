@@ -1,13 +1,13 @@
 import { ROUTINES } from "../data/routines"
 
 export const WEEKDAYS = [
-  { key: 0, label: "L" },
-  { key: 1, label: "M" },
-  { key: 2, label: "X" },
-  { key: 3, label: "J" },
-  { key: 4, label: "V" },
-  { key: 5, label: "S" },
-  { key: 6, label: "D" },
+  { key: 0, label: "L", name: "lunes" },
+  { key: 1, label: "M", name: "martes" },
+  { key: 2, label: "X", name: "miércoles" },
+  { key: 3, label: "J", name: "jueves" },
+  { key: 4, label: "V", name: "viernes" },
+  { key: 5, label: "S", name: "sábado" },
+  { key: 6, label: "D", name: "domingo" },
 ]
 
 export const SESSION_TITLES = [

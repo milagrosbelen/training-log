@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { ChevronLeft, LogOut, Camera, X, Plus, Minus } from "lucide-react"
-import { getProfileSummary, updateProfile } from "../services/profileService"
-import { logout } from "../services/authService"
+import { getProfileSummary, peekProfile, updateProfile } from "../services/profileService"
+import { logout, getStoredUser } from "../services/authService"
 import { isAuthenticated } from "../services/authService"
 import { Navigate } from "react-router-dom"
 import { formatDateShort } from "../utils/dateUtils"
@@ -25,11 +25,22 @@ function formatDuration(minutes) {
   return m > 0 ? `${h}h ${m} min` : `${h}h`
 }
 
+function emptyProfile(user) {
+  return {
+    user,
+    totalWorkouts: 0,
+    totalDuration: 0,
+    lastWorkout: null,
+    mostFrequentType: null,
+    history: [],
+    focusAnalytics: null,
+  }
+}
+
 function Profile() {
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
-  const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState(() => peekProfile() || emptyProfile(getStoredUser()))
   const [error, setError] = useState("")
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState("")
@@ -44,7 +55,6 @@ function Profile() {
 
   const loadProfile = async () => {
     setError("")
-    setLoading(true)
     try {
       const data = await getProfileSummary()
       setProfile(data)
@@ -53,8 +63,6 @@ function Profile() {
       setEditAvatarPreview(null)
     } catch (err) {
       setError(err.response?.data?.message ?? "Error al cargar el perfil.")
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -128,18 +136,7 @@ function Profile() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-ink text-white flex flex-col">
-        <ProfileHeader />
-        <main className="flex-1 flex items-center justify-center pb-24 md:pb-0">
-          <p className="text-slate-400">Cargando perfil...</p>
-        </main>
-      </div>
-    )
-  }
-
-  if (error) {
+  if (error && !profile?.user) {
     return (
       <div className="min-h-screen bg-ink text-white flex flex-col">
         <ProfileHeader />

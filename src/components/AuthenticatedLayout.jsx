@@ -1,17 +1,17 @@
+import { useEffect } from "react"
 import { Outlet } from "react-router-dom"
 import BottomNav from "./BottomNav"
-import ScrollToTop from "./ScrollToTop"
+import { prefetchAlumnaData } from "../services/prefetch"
 
-/**
- * Layout para rutas autenticadas.
- * BottomNav solo en mobile. Sin header fijo dentro de la app.
- */
 export default function AuthenticatedLayout() {
+  useEffect(() => {
+    prefetchAlumnaData()
+  }, [])
+
   return (
     <>
       <Outlet />
       <BottomNav />
-      <ScrollToTop />
     </>
   )
 }

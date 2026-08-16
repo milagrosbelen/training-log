@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { ClipboardList, KeyRound, Plus, Power } from "lucide-react"
-import { createAlumna, getAlumnas, updateAlumna } from "../services/alumnaService"
+import { createAlumna, getAlumnas, peekAlumnas, updateAlumna } from "../services/alumnaService"
 import { btnCreate, btnDanger, btnGhost, btnPin, fieldClass } from "../components/AuthFrame"
 import { ToastHost } from "../components/Toast"
 
@@ -13,8 +13,7 @@ function initialOf(name) {
 }
 
 export default function AdminAlumnas() {
-  const [alumnas, setAlumnas] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [alumnas, setAlumnas] = useState(() => peekAlumnas() || [])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
   const [credentials, setCredentials] = useState(null)
@@ -30,8 +29,6 @@ export default function AdminAlumnas() {
       setAlumnas(Array.isArray(list) ? list : [])
     } catch (err) {
       setError(err.response?.data?.message ?? "No se pudieron cargar las alumnas.")
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -89,10 +86,6 @@ export default function AdminAlumnas() {
     } catch (err) {
       setError(err.response?.data?.message ?? "No se pudo cambiar el PIN.")
     }
-  }
-
-  if (loading) {
-    return <p className="text-slate-500 pt-8">Cargando alumnas...</p>
   }
 
   return (

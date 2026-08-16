@@ -20,7 +20,7 @@ export default function ExerciseHeroCard({
         name={exercise.name}
         className="absolute inset-0 h-full w-full object-cover object-center"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/72 to-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/15" />
 
       {completed ? (
         <span className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-ember text-white">

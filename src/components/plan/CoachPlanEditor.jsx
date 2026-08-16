@@ -3,7 +3,7 @@ import { ChevronDown, Headphones, Plus, Trash2 } from "lucide-react"
 import { useSearchParams } from "react-router-dom"
 import { ToastHost } from "../Toast"
 import ConfirmDialog from "../ConfirmDialog"
-import ExerciseThumb from "../ExerciseThumb"
+import ExercisePhoto from "../ExercisePhoto"
 import { btnCreate, btnDanger } from "../AuthFrame"
 import {
   WEEKDAYS,
@@ -18,6 +18,8 @@ import {
 } from "../../utils/planUtils"
 import {
   getClients,
+  peekClients,
+  peekClientPlan,
   getClientPlan,
   saveClientPlan,
   deleteClientPlan,
@@ -29,12 +31,24 @@ function sessionForDay(sessions, weekday) {
 
 const DAY_NAMES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
+function formFromPlan(plan) {
+  if (!plan) return emptyPlanForm()
+  return {
+    week_current: plan.week_current || 1,
+    week_total: plan.week_total || 8,
+    days_per_week: plan.days_per_week || plan.sessions?.length || 3,
+    objective: plan.objective || "",
+    sessions: Array.isArray(plan.sessions) ? plan.sessions : [],
+  }
+}
+
 export default function CoachPlanEditor() {
   const [searchParams] = useSearchParams()
-  const [clients, setClients] = useState([])
-  const [selectedUserId, setSelectedUserId] = useState("")
-  const [form, setForm] = useState(emptyPlanForm())
-  const [loading, setLoading] = useState(true)
+  const cachedClients = peekClients() || []
+  const initialId = searchParams.get("alumna") || (cachedClients[0] ? String(cachedClients[0].id) : "")
+  const [clients, setClients] = useState(cachedClients)
+  const [selectedUserId, setSelectedUserId] = useState(initialId)
+  const [form, setForm] = useState(() => formFromPlan(initialId ? peekClientPlan(initialId) : undefined))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
   const [toast, setToast] = useState(null)
@@ -48,68 +62,40 @@ export default function CoachPlanEditor() {
   )
 
   useEffect(() => {
-    let cancelled = false
-    async function load() {
-      setError("")
-      setLoading(true)
-      try {
-        const list = await getClients()
-        if (cancelled) return
-        setClients(Array.isArray(list) ? list : [])
+    getClients()
+      .then((list) => {
+        const next = Array.isArray(list) ? list : []
+        setClients(next)
         const fromQuery = searchParams.get("alumna")
-        if (fromQuery && list?.some((client) => String(client.id) === fromQuery)) {
-          setSelectedUserId(fromQuery)
-        } else if (list?.length) {
-          setSelectedUserId(String(list[0].id))
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err.response?.data?.message ?? "No se pudieron cargar las alumnas.")
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-    load()
-    return () => {
-      cancelled = true
-    }
-  }, [])
+        setSelectedUserId((current) => {
+          if (fromQuery && next.some((client) => String(client.id) === fromQuery)) return fromQuery
+          if (current && next.some((client) => String(client.id) === String(current))) return current
+          return next[0] ? String(next[0].id) : ""
+        })
+      })
+      .catch((err) => {
+        setError(err.response?.data?.message ?? "No se pudieron cargar las alumnas.")
+      })
+  }, [searchParams])
 
   useEffect(() => {
     if (!selectedUserId) {
       setForm(emptyPlanForm())
       return
     }
-    let cancelled = false
-    async function loadPlan() {
-      setError("")
-      try {
-        const plan = await getClientPlan(selectedUserId)
-        if (cancelled) return
-        if (!plan) {
-          setForm(emptyPlanForm())
-          setCollapsedDays({})
-          return
-        }
-        setForm({
-          week_current: plan.week_current || 1,
-          week_total: plan.week_total || 8,
-          days_per_week: plan.days_per_week || plan.sessions?.length || 3,
-          objective: plan.objective || "",
-          sessions: Array.isArray(plan.sessions) ? plan.sessions : [],
-        })
+    const cached = peekClientPlan(selectedUserId)
+    if (cached !== undefined) {
+      setForm(formFromPlan(cached))
+      setCollapsedDays({})
+    }
+    getClientPlan(selectedUserId)
+      .then((plan) => {
+        setForm(formFromPlan(plan))
         setCollapsedDays({})
-      } catch (err) {
-        if (!cancelled) {
-          setError(err.response?.data?.message ?? "No se pudo cargar el plan.")
-        }
-      }
-    }
-    loadPlan()
-    return () => {
-      cancelled = true
-    }
+      })
+      .catch((err) => {
+        setError(err.response?.data?.message ?? "No se pudo cargar el plan.")
+      })
   }, [selectedUserId])
 
   const updateSession = (weekday, updater) => {
@@ -207,7 +193,13 @@ export default function CoachPlanEditor() {
       .map((session) => ({
         ...session,
         title: session.title.trim(),
-        exercises: (session.exercises || []).filter((exercise) => exercise.name.trim()),
+        exercises: (session.exercises || [])
+          .filter((exercise) => String(exercise.name || "").trim())
+          .map((exercise) => ({
+            ...exercise,
+            name: String(exercise.name).trim(),
+            reps: String(exercise.reps ?? "").trim(),
+          })),
       }))
       .filter((session) => session.title)
 
@@ -284,14 +276,6 @@ export default function CoachPlanEditor() {
     } finally {
       setSaving(false)
     }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <p className="text-slate-500">Cargando alumnas...</p>
-      </div>
-    )
   }
 
   const pendingSession = form.sessions.find((session) => session.weekday === pendingRemoveDay)
@@ -477,42 +461,49 @@ export default function CoachPlanEditor() {
                         />
 
                         {session.exercises.map((exercise, index) => (
-                          <div key={index} className="rounded-2xl bg-ink border border-white/10 p-3 space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-slate-500">Ejercicio {index + 1}</span>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateSession(session.weekday, (current) => ({
-                                    ...current,
-                                    exercises: current.exercises.filter((_, i) => i !== index),
-                                  }))
-                                }
-                                className="text-[#FF0000] hover:text-[#FF4D4D]"
-                                aria-label="Quitar ejercicio"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                            <div className="flex items-center gap-2">
+                          <div key={index} className="rounded-2xl bg-ink border border-white/10 overflow-hidden">
+                            <div className="relative h-36">
                               {exercise.name.trim() ? (
-                                <ExerciseThumb name={exercise.name} className="w-12 h-12" />
-                              ) : null}
-                              <input
-                                list="exercise-names"
-                                value={exercise.name}
-                                onChange={(e) =>
-                                  updateSession(session.weekday, (current) => ({
-                                    ...current,
-                                    exercises: current.exercises.map((item, i) =>
-                                      i === index ? { ...item, name: e.target.value } : item
-                                    ),
-                                  }))
-                                }
-                                placeholder="Nombre del ejercicio"
-                                className="w-full h-10 rounded-xl bg-ink border border-white/10 px-3 text-sm text-[#f4f4f5]"
-                              />
+                                <ExercisePhoto
+                                  name={exercise.name}
+                                  className="absolute inset-0 h-full w-full object-cover object-center"
+                                />
+                              ) : (
+                                <div className="absolute inset-0 bg-ink-400" />
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+                              <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between">
+                                <span className="text-xs text-white/70">Ejercicio {index + 1}</span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateSession(session.weekday, (current) => ({
+                                      ...current,
+                                      exercises: current.exercises.filter((_, i) => i !== index),
+                                    }))
+                                  }
+                                  className="text-white/80 hover:text-[#FF4D4D]"
+                                  aria-label="Quitar ejercicio"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
+                            <div className="p-3 space-y-2">
+                            <input
+                              list="exercise-names"
+                              value={exercise.name}
+                              onChange={(e) =>
+                                updateSession(session.weekday, (current) => ({
+                                  ...current,
+                                  exercises: current.exercises.map((item, i) =>
+                                    i === index ? { ...item, name: e.target.value } : item
+                                  ),
+                                }))
+                              }
+                              placeholder="Nombre del ejercicio"
+                              className="w-full h-10 rounded-xl bg-ink border border-white/10 px-3 text-sm text-[#f4f4f5]"
+                            />
                             <div className="grid grid-cols-3 gap-2">
                               <input
                                 type="number"
@@ -587,6 +578,7 @@ export default function CoachPlanEditor() {
                                 placeholder="Músculo"
                                 className="h-10 rounded-xl bg-ink border border-white/10 px-2 text-sm text-[#f4f4f5]"
                               />
+                            </div>
                             </div>
                           </div>
                         ))}

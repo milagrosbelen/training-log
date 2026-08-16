@@ -1,10 +1,12 @@
-import { api } from "./api"
+import { api, readStoredUserId } from "./api"
 
-/**
- * Obtiene el resumen del perfil del usuario (info + estadísticas).
- */
-export async function getProfileSummary() {
-  const { data } = await api.get("/profile-summary")
+let profileCache = null
+let profileCacheUserId = null
+let profileCacheAt = 0
+let profileInflight = null
+const PROFILE_TTL = 3 * 60 * 1000
+
+function normalizeProfile(data) {
   const payload = data?.data ?? data
   return {
     user: payload?.user ?? null,
@@ -15,6 +17,44 @@ export async function getProfileSummary() {
     history: Array.isArray(payload?.history) ? payload.history : [],
     focusAnalytics: payload?.focus_analytics ?? null,
   }
+}
+
+export function peekProfile() {
+  const userId = readStoredUserId()
+  if (!userId || profileCacheUserId !== userId) return null
+  return profileCache
+}
+
+export function clearProfileCache() {
+  profileCache = null
+  profileCacheUserId = null
+  profileCacheAt = 0
+  profileInflight = null
+}
+
+export async function getProfileSummary() {
+  const userId = readStoredUserId()
+  if (
+    profileCache
+    && profileCacheUserId === userId
+    && Date.now() - profileCacheAt < PROFILE_TTL
+  ) {
+    return profileCache
+  }
+  if (profileInflight) return profileInflight
+
+  profileInflight = api.get("/profile-summary")
+    .then(({ data }) => {
+      profileCache = normalizeProfile(data)
+      profileCacheUserId = readStoredUserId()
+      profileCacheAt = Date.now()
+      return profileCache
+    })
+    .finally(() => {
+      profileInflight = null
+    })
+
+  return profileInflight
 }
 
 /**

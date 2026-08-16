@@ -1,7 +1,8 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom"
+import { useEffect } from "react"
 import { ClipboardList, LogOut, Users } from "lucide-react"
 import { logout } from "../services/authService"
-
+import { prefetchCoachData } from "../services/prefetch"
 const EMBER = "#FF4F2A"
 
 const items = [
@@ -11,6 +12,10 @@ const items = [
 
 export default function AdminLayout() {
   const navigate = useNavigate()
+
+  useEffect(() => {
+    prefetchCoachData()
+  }, [])
 
   const handleLogout = async () => {
     await logout()

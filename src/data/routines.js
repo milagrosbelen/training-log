@@ -15,6 +15,8 @@ export const ROUTINES = {
   "Tren inferior": {
     "Cuádriceps": [
       "Sentadilla",
+      "Sentadilla smith",
+      "Hack",
       "Prensa",
       "Sillón de cuádriceps"
     ],
@@ -25,6 +27,7 @@ export const ROUTINES = {
     ],
     "Glúteos": [
       "Hip thrust",
+      "Búlgaras caminando con mancuernas",
       "Subidas al cajón",
       "Peso muerto",
       "Patada de glúteos",
@@ -33,7 +36,13 @@ export const ROUTINES = {
     ],
     "Isquios": [
       "Peso muerto",
+      "Camilla de isquios",
       "Sillón de isquios"
+    ],
+    "Movilidad": [
+      "Calentamiento día 1 piernas",
+      "Movilidad de piernas",
+      "Movilidad para el día de glúteos"
     ]
   },
   "Tren superior": {
@@ -66,6 +75,9 @@ export const ROUTINES = {
       "Crunch normal",
       "Elevación de piernas",
       "Plancha"
+    ],
+    "Movilidad": [
+      "Movilidad con banda para torso"
     ]
   }
 }

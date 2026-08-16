@@ -59,6 +59,18 @@ const CATALOG = {
     secondary: ["gluteos", "isquios"],
     cues: ["Pies al ancho de hombros", "Rodillas al rastro de los pies", "Pecho arriba"],
   },
+  "sentadilla-smith": {
+    type: "compuesto",
+    primary: "cuadriceps",
+    secondary: ["gluteos"],
+    cues: ["Barra guiada", "Pies un poco adelante", "Bajada controlada"],
+  },
+  hack: {
+    type: "compuesto",
+    primary: "cuadriceps",
+    secondary: ["gluteos"],
+    cues: ["Espalda pegada", "Talones apoyados", "No bloquees rodillas"],
+  },
   prensa: {
     type: "compuesto",
     primary: "cuadriceps",
@@ -101,6 +113,12 @@ const CATALOG = {
     secondary: ["cuadriceps"],
     cues: ["Paso completo al cajón", "Rodilla estable", "Subí sin impulso"],
   },
+  "bulgaras-caminando-con-mancuernas": {
+    type: "compuesto",
+    primary: "gluteos",
+    secondary: ["cuadriceps"],
+    cues: ["Paso largo", "Torso erguido", "Rodilla alineada"],
+  },
   "peso-muerto": {
     type: "compuesto",
     primary: "gluteos",
@@ -130,6 +148,30 @@ const CATALOG = {
     primary: "isquios",
     secondary: ["gluteos"],
     cues: ["Cadera pegada", "Curl sin impulso", "Bajada lenta"],
+  },
+  "camilla-de-isquios": {
+    type: "aislamiento",
+    primary: "isquios",
+    secondary: ["gluteos"],
+    cues: ["Cadera pegada a la camilla", "Talones al glúteo", "Bajada lenta"],
+  },
+  "calentamiento-dia-1-piernas": {
+    type: "aislamiento",
+    primary: "cuadriceps",
+    secondary: ["isquios", "gluteos"],
+    cues: ["Movimiento controlado", "Sin rebotar", "Rango amplio"],
+  },
+  "movilidad-de-piernas": {
+    type: "aislamiento",
+    primary: "cuadriceps",
+    secondary: ["isquios", "gluteos"],
+    cues: ["Movimiento controlado", "Sin rebotar", "Rango amplio"],
+  },
+  "movilidad-para-el-dia-de-gluteos": {
+    type: "aislamiento",
+    primary: "gluteos",
+    secondary: [],
+    cues: ["Banda tensa", "Pasos cortos", "Rodillas hacia afuera"],
   },
   dominadas: {
     type: "compuesto",
@@ -209,6 +251,12 @@ const CATALOG = {
     secondary: ["hombros"],
     cues: ["Cuerpo en línea", "Glúteos activos", "Sin hundir cadera"],
   },
+  "movilidad-con-banda-para-torso": {
+    type: "aislamiento",
+    primary: "abdominales",
+    secondary: ["espalda"],
+    cues: ["Cadera quieta", "Rotá desde el torso", "Sin rebotar"],
+  },
 }
 
 const KEYWORD_RULES = [
@@ -217,11 +265,12 @@ const KEYWORD_RULES = [
   { test: /militar|vuelo|hombro|laterales/, primary: "hombros", secondary: ["triceps"], type: "aislamiento" },
   { test: /triceps|fondo|extension/, primary: "triceps", secondary: [], type: "aislamiento" },
   { test: /biceps|curl|scott|martillo|barra w/, primary: "biceps", secondary: [], type: "aislamiento" },
-  { test: /sentadilla|prensa|cuadriceps/, primary: "cuadriceps", secondary: ["gluteos"], type: "compuesto" },
-  { test: /hip thrust|glute|patada|cajon|abduc/, primary: "gluteos", secondary: ["isquios"], type: "compuesto" },
-  { test: /peso muerto|isquio/, primary: "isquios", secondary: ["gluteos", "espalda"], type: "compuesto" },
+  { test: /sentadilla|prensa|cuadriceps|hack|smith/, primary: "cuadriceps", secondary: ["gluteos"], type: "compuesto" },
+  { test: /hip thrust|glute|patada|cajon|abduc|bulgara/, primary: "gluteos", secondary: ["isquios"], type: "compuesto" },
+  { test: /camilla|sillon.*isq|isq.*sillon|femoral/, primary: "isquios", secondary: ["gluteos"], type: "aislamiento" },
+  { test: /peso muerto/, primary: "isquios", secondary: ["gluteos", "espalda"], type: "compuesto" },
   { test: /aductor|sumo/, primary: "aductor", secondary: ["gluteos"], type: "compuesto" },
-  { test: /crunch|plancha|abdomen|piernas/, primary: "abdominales", secondary: [], type: "aislamiento" },
+  { test: /crunch|plancha|abdomen|piernas|movilidad/, primary: "abdominales", secondary: [], type: "aislamiento" },
 ]
 
 const DEFAULT_CUES = {

@@ -10,9 +10,10 @@ export default function ExercisePhoto({ name, className = "", dimmed = true }) {
 
   return (
     <img
+      key={src}
       src={src}
-      alt=""
-      className={`${className} ${dimmed ? "brightness-[0.58]" : ""}`}
+      alt={name || ""}
+      className={`${className} ${dimmed ? "brightness-[0.78]" : ""}`}
       onError={() => {
         if (src !== EXERCISE_PHOTO_FALLBACK) setSrc(EXERCISE_PHOTO_FALLBACK)
       }}
