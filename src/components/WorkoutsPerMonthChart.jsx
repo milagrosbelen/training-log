@@ -14,6 +14,7 @@ import { useMemo } from "react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
 import { Calendar } from "lucide-react"
 import { getWorkoutsPerMonth } from "../utils/chartData"
+import { colors } from "../theme"
 
 /**
  * Props que recibe este componente:
@@ -77,7 +78,7 @@ function WorkoutsPerMonthChart({ workouts }) {
             data={chartData}
             margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#475569" opacity={0.3} />
+            <CartesianGrid strokeDasharray="3 3" stroke={colors.line} opacity={0.3} />
             
             {/**
              * XAxis: Eje horizontal (meses)
@@ -87,8 +88,8 @@ function WorkoutsPerMonthChart({ workouts }) {
              */}
             <XAxis
               dataKey="monthLabel"
-              stroke="#94a3b8"
-              tick={{ fill: "#94a3b8", fontSize: 12 }}
+              stroke={colors.muted}
+              tick={{ fill: colors.muted, fontSize: 12 }}
               angle={-45}
               textAnchor="end"
               height={80}
@@ -98,19 +99,19 @@ function WorkoutsPerMonthChart({ workouts }) {
              * YAxis: Eje vertical (cantidad de entrenamientos)
              */}
             <YAxis
-              stroke="#94a3b8"
-              tick={{ fill: "#94a3b8", fontSize: 12 }}
-              label={{ value: "Cantidad", angle: -90, position: "insideLeft", fill: "#94a3b8" }}
+              stroke={colors.muted}
+              tick={{ fill: colors.muted, fontSize: 12 }}
+              label={{ value: "Cantidad", angle: -90, position: "insideLeft", fill: colors.muted }}
             />
             
             <Tooltip
               contentStyle={{
-                backgroundColor: "#1e293b",
-                border: "1px solid #475569",
+                backgroundColor: colors.surface,
+                border: `1px solid ${colors.line}`,
                 borderRadius: "8px",
                 color: "#fff"
               }}
-              labelStyle={{ color: "#94a3b8" }}
+              labelStyle={{ color: colors.muted }}
             />
             
             <Legend />
@@ -118,12 +119,12 @@ function WorkoutsPerMonthChart({ workouts }) {
             {/**
              * Bar: La barra del gráfico
              * - dataKey: qué propiedad graficar ("count")
-             * - fill: color de las barras (verde neon)
+             * - fill: color de las barras (ember)
              * - radius: bordes redondeados en las barras
              */}
             <Bar
               dataKey="count"
-              fill="#2AF447"
+              fill={colors.ember}
               radius={[8, 8, 0, 0]}
               name="Entrenamientos"
             />

@@ -167,6 +167,9 @@ function WorkoutSummary({ workout, allWorkouts, onEdit, onDelete }) {
                     </p>
                   </div>
                 </div>
+                {exercise.notes ? (
+                  <p className="mt-3 text-sm text-slate-400 leading-relaxed">{exercise.notes}</p>
+                ) : null}
               </div>
             ))}
           </div>
@@ -181,7 +184,7 @@ function WorkoutSummary({ workout, allWorkouts, onEdit, onDelete }) {
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <button
           onClick={onEdit}
-          className="flex-1 bg-[#2AF447] border-2 border-[#3dff5c] text-black font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base shadow-[0_0_12px_rgba(42,244,71,0.3)] hover:bg-[#3dff5c] hover:border-[#5eff7a] hover:shadow-[0_0_16px_rgba(42,244,71,0.4)] hover:scale-[1.02] active:scale-[0.98]"
+          className="flex-1 bg-ember border-2 border-ember-400 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base shadow-ember hover:bg-ember-400 hover:border-ember-300 hover:scale-[1.02] active:scale-[0.98]"
         >
           <Edit className="w-4 h-4" />
           Modificar

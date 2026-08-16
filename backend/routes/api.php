@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\AlumnaController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ExerciseController;
+use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\WorkoutController;
 use Illuminate\Http\Request;
@@ -26,9 +28,16 @@ Route::options('/{any}', function () {
 
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/pin', [AuthController::class, 'loginPin']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', fn (Request $request) => $request->user());
+    Route::get('/user', function (Request $request) {
+        $user = $request->user();
+        $user->applyConfiguredCoachRole();
+        $user->refresh();
+
+        return response()->json($user->toPublicArray());
+    });
     Route::get('/profile-summary', [ProfileController::class, 'summary']);
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::get('/profile/focus', [ProfileController::class, 'getFocus']);
@@ -44,4 +53,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/exercises/{exercise}', [ExerciseController::class, 'update']);
     Route::patch('/exercises/{exercise}', [ExerciseController::class, 'update']);
     Route::delete('/exercises/{exercise}', [ExerciseController::class, 'destroy']);
+
+    Route::get('/plans/me', [PlanController::class, 'mine']);
+    Route::post('/plans/me/progress', [PlanController::class, 'progress']);
+
+    Route::middleware('coach')->group(function () {
+        Route::get('/clients', [PlanController::class, 'clients']);
+        Route::get('/alumnas', [AlumnaController::class, 'index']);
+        Route::post('/alumnas', [AlumnaController::class, 'store']);
+        Route::put('/alumnas/{user}', [AlumnaController::class, 'update']);
+        Route::get('/plans/users/{user}', [PlanController::class, 'showForUser']);
+        Route::put('/plans/users/{user}', [PlanController::class, 'upsertForUser']);
+        Route::delete('/plans/users/{user}', [PlanController::class, 'destroyForUser']);
+    });
 });

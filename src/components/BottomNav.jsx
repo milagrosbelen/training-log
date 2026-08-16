@@ -1,54 +1,48 @@
-import { NavLink, Link } from "react-router-dom"
-import { TrendingUp, Plus, User } from "lucide-react"
+import { NavLink } from "react-router-dom"
+import { Home, CalendarDays, BarChart3, User } from "lucide-react"
+
+const EMBER = "#FF4F2A"
+
+const items = [
+  { to: "/dashboard", label: "Inicio", icon: Home },
+  { to: "/plan", label: "Plan", icon: CalendarDays },
+  { to: "/progreso", label: "Progreso", icon: BarChart3 },
+  { to: "/profile", label: "Perfil", icon: User },
+]
 
 export default function BottomNav() {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-slate-800/95 backdrop-blur-sm border-t border-slate-700/50 shadow-[0_-2px_12px_rgba(0,0,0,0.12)]"
-      style={{ minHeight: "70px" }}
+      className="fixed bottom-4 left-4 right-4 z-50 md:hidden"
       aria-label="Navegación principal"
     >
-      <div className="flex items-center justify-evenly h-[70px] max-w-md mx-auto px-6 sm:px-8">
-        <NavLink
-          to="/progreso"
-          aria-label="Progreso"
-          className="flex items-center justify-center flex-1 h-full !text-[#2AF447] transition-colors duration-200"
-        >
-          <TrendingUp
-            className="w-6 h-6 flex-shrink-0"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </NavLink>
-
-        <Link
-          to="/dashboard"
-          aria-label="Crear entrenamiento"
-          className="flex items-center justify-center flex-shrink-0 -mt-7 w-16 h-16 rounded-full bg-[#2AF447] border-2 border-[#3dff5c] shadow-[0_0_12px_rgba(42,244,71,0.35)] transition-all duration-200 hover:bg-[#3dff5c] hover:border-[#5eff7a] hover:shadow-[0_0_16px_rgba(42,244,71,0.45)] hover:scale-[1.02] active:scale-[0.98]"
-        >
-          <span className="!text-[#0a0a0a]">
-            <Plus
-              className="w-8 h-8 flex-shrink-0"
-              strokeWidth={2.5}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </span>
-        </Link>
-
-        <NavLink
-          to="/profile"
-          aria-label="Perfil"
-          className="flex items-center justify-center flex-1 h-full !text-[#2AF447] transition-colors duration-200"
-        >
-          <User
-            className="w-6 h-6 flex-shrink-0"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </NavLink>
+      <div className="bottom-dock flex items-center justify-around h-[68px] max-w-md mx-auto px-2 rounded-[28px]">
+        {items.map(({ to, label, icon: Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === "/dashboard"}
+            aria-label={label}
+            className="flex flex-col items-center justify-center gap-1 min-w-[64px] no-underline transition-transform duration-200"
+          >
+            {({ isActive }) => (
+              <>
+                <span
+                  className="flex h-9 w-9 items-center justify-center rounded-2xl transition-colors"
+                  style={isActive ? { backgroundColor: "rgba(255, 79, 42, 0.18)", color: EMBER } : { color: "#7A7A80" }}
+                >
+                  <Icon className="w-5 h-5" strokeWidth={isActive ? 2.2 : 1.8} />
+                </span>
+                <span
+                  className="text-[11px] font-semibold"
+                  style={{ color: isActive ? EMBER : "#7A7A80" }}
+                >
+                  {label}
+                </span>
+              </>
+            )}
+          </NavLink>
+        ))}
       </div>
     </nav>
   )

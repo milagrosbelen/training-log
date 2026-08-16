@@ -63,7 +63,7 @@ export default function Progreso() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1B1B2C] text-white flex items-center justify-center pb-24 md:pb-0">
+      <div className="min-h-screen bg-ink text-white flex items-center justify-center pb-24 md:pb-0">
         <p className="text-slate-400">Cargando progreso...</p>
       </div>
     )
@@ -71,7 +71,7 @@ export default function Progreso() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#1B1B2C] text-white flex items-center justify-center px-4 pb-24 md:pb-0">
+      <div className="min-h-screen bg-ink text-white flex items-center justify-center px-4 pb-24 md:pb-0">
         <p className="text-red-400 text-center">{error}</p>
       </div>
     )
@@ -84,7 +84,7 @@ export default function Progreso() {
   })
 
   return (
-    <div className="min-h-screen bg-[#1B1B2C] text-white">
+    <div className="min-h-screen bg-ink text-white">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 md:pb-8">
         <div className="space-y-6">
           <MonthlySummary
@@ -95,7 +95,7 @@ export default function Progreso() {
             onMonthNext={handleMonthNext}
             canGoNext={canGoNext}
           />
-          <div className="border-t border-[#2C2C40] pt-6">
+          <div className="border-t border-ink-400 pt-6">
             <ProgressCharts workouts={workouts} monthWorkouts={monthWorkouts} />
           </div>
         </div>

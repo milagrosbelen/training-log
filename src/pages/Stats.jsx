@@ -62,7 +62,7 @@ export default function Stats() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center pb-20 md:pb-0">
+      <div className="min-h-screen bg-ink text-white flex items-center justify-center pb-20 md:pb-0">
         <p className="text-slate-400">Cargando estadísticas...</p>
       </div>
     )
@@ -70,7 +70,7 @@ export default function Stats() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center px-4 pb-20 md:pb-0">
+      <div className="min-h-screen bg-ink text-white flex items-center justify-center px-4 pb-20 md:pb-0">
         <p className="text-red-400 text-center">{error}</p>
       </div>
     )
@@ -83,7 +83,7 @@ export default function Stats() {
   })
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-ink text-white">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 md:pb-8">
         <div className="space-y-6">
           <MonthlySummary

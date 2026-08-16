@@ -26,43 +26,45 @@ export default function Welcome() {
     navigate("/dashboard", { replace: true })
   }
 
-  const firstName = user?.name?.trim().split(/\s+/)[0] || ""
+  const firstName = user?.name?.trim().split(/\s+/)[0] || "atleta"
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-slate-950 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-slate-600 border-t-[#2AF447] rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-ink-400 border-t-ember rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center px-6"
-      style={{ isolation: "isolate" }}
-    >
+    <div className="min-h-screen flex flex-col items-center justify-center px-6">
       <div
-        className="w-full max-w-lg text-center"
+        className="w-full max-w-md text-center"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(8px)",
           transition: "opacity 350ms ease-in-out, transform 350ms ease-in-out",
         }}
       >
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight">
-          ¿Estás listo/a para entrenar hoy,{" "}
-          <span className="text-[#2AF447]">{firstName || "atleta"}</span>?
+        <p className="text-[11px] font-medium tracking-[0.28em] text-slate-500 uppercase mb-8">
+          MILOGIT
+        </p>
+        <p className="text-lg text-slate-400">¿Lista para entrenar hoy?</p>
+        <h1
+          className="mt-2 text-5xl sm:text-6xl font-semibold tracking-tight leading-none"
+          style={{ color: "#FF4F2A", textShadow: "0 0 28px rgba(255,79,42,0.45)" }}
+        >
+          {firstName}
         </h1>
 
-        <div className="mt-16">
-          <button
-            type="button"
-            onClick={handleEnter}
-            className="inline-flex items-center justify-center bg-[#2AF447] text-black font-bold py-3.5 px-10 rounded-xl transition-colors duration-200 hover:bg-[#3dff5c] active:opacity-90 focus:outline-none focus:ring-2 focus:ring-[#2AF447] focus:ring-offset-2 focus:ring-offset-slate-950"
-          >
-            Entrar a MiLogit
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleEnter}
+          className="mt-14 inline-flex items-center justify-center w-full max-w-xs h-14 rounded-full text-white text-[17px] font-semibold shadow-ember transition-all duration-200 hover:brightness-110 active:scale-[0.97]"
+          style={{ backgroundColor: "#FF4F2A" }}
+        >
+          Empezar
+        </button>
       </div>
     </div>
   )

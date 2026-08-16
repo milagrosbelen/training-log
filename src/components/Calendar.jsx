@@ -1,25 +1,26 @@
 import { useState } from "react"
-import { ChevronLeft, ChevronRight, Lock } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { dateToISOString } from "../utils/dateUtils"
 
-const DAYS_OF_WEEK = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
+const DAYS_OF_WEEK = ["L", "M", "X", "J", "V", "S", "D"]
 const MONTHS = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ]
 
-function Calendar({ selectedDate, onDateSelect, workouts }) {
+function normalizeDate(value) {
+  if (!value) return ""
+  return String(value).slice(0, 10)
+}
+
+function Calendar({ selectedDate, onDateSelect, workouts = [], trainedDates = [] }) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const trainedSet = new Set(
+    [
+      ...(Array.isArray(trainedDates) ? trainedDates : []),
+      ...(Array.isArray(workouts) ? workouts.map((w) => normalizeDate(w.date)) : []),
+    ].filter(Boolean)
+  )
 
   const getDaysInMonth = (date) => {
     const year = date.getFullYear()
@@ -27,40 +28,24 @@ function Calendar({ selectedDate, onDateSelect, workouts }) {
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
-    const startingDayOfWeek = firstDay.getDay()
+    const mondayIndex = (firstDay.getDay() + 6) % 7
 
     const days = []
-    
-    // Días vacíos al inicio
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null)
-    }
-    
-    // Días del mes
+    for (let i = 0; i < mondayIndex; i++) days.push(null)
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(new Date(year, month, day))
     }
-    
     return days
   }
 
   const hasWorkout = (date) => {
     if (!date) return false
-    const dateStr = dateToISOString(date)
-    return workouts.some((w) => w.date === dateStr)
-  }
-
-  const isWorkoutLocked = (date) => {
-    if (!date) return false
-    const dateStr = dateToISOString(date)
-    const workout = workouts.find((w) => w.date === dateStr)
-    return workout && workout.locked === true
+    return trainedSet.has(dateToISOString(date))
   }
 
   const isSelected = (date) => {
     if (!date) return false
-    const dateStr = dateToISOString(date)
-    return selectedDate === dateStr
+    return normalizeDate(selectedDate) === dateToISOString(date)
   }
 
   const isToday = (date) => {
@@ -73,91 +58,86 @@ function Calendar({ selectedDate, onDateSelect, workouts }) {
     )
   }
 
-  const handleDateClick = (date) => {
-    if (!date) return
-    const dateStr = dateToISOString(date)
-    onDateSelect(dateStr)
-  }
-
-  const goToPreviousMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
-  }
-
-  const goToNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
-  }
-
   const days = getDaysInMonth(currentMonth)
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-5 sm:p-6 lg:p-10 lg:text-lg shadow-lg border border-slate-700/50">
-      {/* Header del calendario con mejor espaciado */}
-      <div className="flex items-center justify-between mb-6">
+    <div
+      className="relative rounded-[28px] bg-ink-200/85 backdrop-blur-xl border border-white/10 px-4 py-5"
+      style={{
+        boxShadow:
+          "0 24px 60px rgba(0,0,0,0.55), 0 0 40px rgba(255,79,42,0.12), 0 1px 0 rgba(255,255,255,0.06) inset",
+        transform: "translateY(-4px)",
+      }}
+    >
+      <div className="flex items-center justify-between mb-5">
         <button
-          onClick={goToPreviousMonth}
-          className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
+          type="button"
+          onClick={() =>
+            setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
+          }
+          className="h-9 w-9 rounded-full bg-ember/10 text-ember flex items-center justify-center hover:bg-ember hover:text-ink transition-colors"
           aria-label="Mes anterior"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
-        <h2 className="text-base sm:text-lg font-semibold text-white">
+        <h2 className="text-[17px] font-semibold tracking-tight text-white">
           {MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
         </h2>
         <button
-          onClick={goToNextMonth}
-          className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
+          type="button"
+          onClick={() =>
+            setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
+          }
+          className="h-9 w-9 rounded-full bg-ember/10 text-ember flex items-center justify-center hover:bg-ember hover:text-ink transition-colors"
           aria-label="Mes siguiente"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Días de la semana - más compactos */}
-      <div className="grid grid-cols-7 gap-1.5 lg:gap-3 mb-2">
+      <div className="grid grid-cols-7 mb-3">
         {DAYS_OF_WEEK.map((day) => (
-          <div key={day} className="text-center text-xs lg:text-base font-medium text-slate-400 py-1 lg:py-3">
+          <div key={day} className="text-center text-[11px] font-medium tracking-wide text-slate-500 py-1">
             {day}
           </div>
         ))}
       </div>
 
-      {/* Días del mes - mejor espaciado y diseño */}
-      <div className="grid grid-cols-7 gap-1.5 lg:gap-3">
+      <div className="grid grid-cols-7 gap-y-2">
         {days.map((date, index) => {
-          if (!date) {
-            return <div key={`empty-${index}`} className="aspect-square" />
-          }
+          if (!date) return <div key={`empty-${index}`} className="h-10" />
 
           const dateStr = dateToISOString(date)
-          const workout = hasWorkout(date)
-          const locked = isWorkoutLocked(date)
+          const trained = hasWorkout(date)
           const selected = isSelected(date)
           const today = isToday(date)
 
           return (
             <button
               key={dateStr}
-              onClick={() => handleDateClick(date)}
-              className={`
-                aspect-square lg:h-16 lg:w-full lg:text-xl lg:font-bold rounded-lg transition-all duration-200 text-sm font-medium
-                flex items-center justify-center relative border
-                ${selected 
-                  ? "bg-slate-700/80 text-white border-[#2AF447] shadow-[0_0_8px_rgba(42,244,71,0.25)] scale-105" 
-                  : "bg-slate-700/50 text-slate-200 border-slate-600/60 hover:bg-slate-700 hover:border-slate-500/60 hover:scale-105"
-                }
-                ${today && !selected ? "ring-2 ring-[#2AF447]/50" : ""}
-              `}
+              type="button"
+              onClick={() => onDateSelect(dateStr)}
+              className="flex items-center justify-center h-10 bg-transparent"
             >
-              {date.getDate()}
-              {workout && !selected && (
-                locked ? (
-                  <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2" title="Entrenamiento guardado">
-                    <Lock className="w-3 h-3 text-[#2AF447] opacity-90" strokeWidth={2.5} />
-                  </span>
-                ) : (
-                  <span className="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-[#2AF447] rounded-full" />
-                )
-              )}
+              <span
+                className={`relative h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold tabular-nums transition-all duration-200 ${
+                  selected
+                    ? "bg-[#FF4F2A] text-ink shadow-ember"
+                    : today
+                      ? "text-[#FF4F2A] ring-2 ring-[#FF4F2A]"
+                      : trained
+                        ? "text-white"
+                        : "text-slate-400"
+                }`}
+              >
+                {date.getDate()}
+                {trained && (
+                  <span
+                    className="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-[#FF4F2A]"
+                    aria-hidden
+                  />
+                )}
+              </span>
             </button>
           )
         })}
@@ -167,4 +147,3 @@ function Calendar({ selectedDate, onDateSelect, workouts }) {
 }
 
 export default Calendar
-

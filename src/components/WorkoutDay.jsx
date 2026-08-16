@@ -354,9 +354,9 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
               className={`
                 px-4 py-3 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-between
                 ${
-                  selectedMainGroup === mainGroup
-                    ? "bg-neon-500 text-black shadow-md shadow-neon-500/20"
-                    : "bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50"
+                    selectedMainGroup === mainGroup
+                    ? "bg-ember text-ink shadow-md shadow-ember/30"
+                    : "bg-slate-700/50 text-slate-300 hover:bg-ember/20 hover:text-ember border border-slate-600/50"
                 }
               `}
             >
@@ -381,8 +381,8 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
                     px-4 py-2.5 rounded-lg font-medium text-xs transition-all duration-200
                     ${
                       selectedMuscleGroup === muscleGroup
-                        ? "bg-neon-500/80 text-black shadow-md shadow-neon-500/20"
-                        : "bg-slate-700/30 text-slate-300 hover:bg-slate-700/50 hover:text-white border border-slate-600/30"
+                        ? "bg-ember text-ink shadow-md shadow-ember/30"
+                        : "bg-slate-700/30 text-slate-300 hover:bg-ember/20 hover:text-ember border border-slate-600/30"
                     }
                   `}
                 >
@@ -416,7 +416,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
                       ${
                         isAlreadyAdded
                           ? "bg-slate-700/20 text-slate-500 cursor-not-allowed line-through"
-                          : "bg-slate-700/50 text-slate-200 hover:bg-neon-500 hover:text-black border border-slate-600/50"
+                          : "bg-slate-700/50 text-slate-200 hover:bg-ember hover:text-ink border border-slate-600/50"
                       }
                     `}
                   >
@@ -583,7 +583,7 @@ function WorkoutDay({ date, workout, onSave, onDiscard }) {
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <button
           onClick={handleSave}
-          className="flex-1 bg-[#2AF447] border-2 border-[#3dff5c] text-black font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base shadow-[0_0_12px_rgba(42,244,71,0.3)] hover:bg-[#3dff5c] hover:border-[#5eff7a] hover:shadow-[0_0_16px_rgba(42,244,71,0.4)] hover:scale-[1.02] active:scale-[0.98]"
+          className="flex-1 bg-ember border-2 border-ember-400 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base shadow-ember hover:bg-ember-400 hover:border-ember-300 hover:scale-[1.02] active:scale-[0.98]"
         >
           <Save className="w-4 h-4" />
           GUARDAR ENTRENAMIENTO

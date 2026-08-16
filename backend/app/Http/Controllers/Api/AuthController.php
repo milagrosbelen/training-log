@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    /**
-     * Ensure JSON body is merged into request (fix for proxy/axios sometimes not parsing).
-     */
     private function ensureJsonParsed(Request $request): void
     {
         $content = $request->getContent();
@@ -24,52 +21,11 @@ class AuthController extends Controller
         }
     }
 
-    public function register(Request $request): JsonResponse
+    public function register(): JsonResponse
     {
-        $this->ensureJsonParsed($request);
-
-        try {
-            $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ], [
-            'name.required' => 'El nombre es obligatorio.',
-            'email.required' => 'El email es obligatorio.',
-            'email.email' => 'El email debe ser válido.',
-            'email.unique' => 'Este email ya está registrado.',
-            'password.required' => 'La contraseña es obligatoria.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.confirmed' => 'Las contraseñas no coinciden.',
-        ]);
-
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => strtolower($validated['email']),
-            'password' => $validated['password'], // El modelo User tiene cast 'hashed'
-        ]);
-
-        $token = $user->createToken('auth-token')->plainTextToken;
-
         return response()->json([
-            'message' => 'Usuario registrado correctamente',
-            'user' => $user,
-            'token' => $token,
-            'token_type' => 'Bearer',
-        ], 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
-            \Log::error('Register error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'request_content' => $request->getContent(),
-            ]);
-            return response()->json([
-                'message' => config('app.debug')
-                    ? 'Error: ' . $e->getMessage()
-                    : 'Error al crear la cuenta. Intentá de nuevo.',
-            ], 500);
-        }
+            'message' => 'El registro público está cerrado. Tu entrenadora crea tu acceso.',
+        ], 403);
     }
 
     public function login(Request $request): JsonResponse
@@ -83,22 +39,70 @@ class AuthController extends Controller
 
         $user = User::where('email', strtolower($validated['email']))->first();
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
+        if (
+            !$user
+            || !$user->isCoach()
+            || !Hash::check($validated['password'], $user->password)
+        ) {
             return response()->json([
                 'message' => 'Las credenciales proporcionadas son incorrectas.',
-                'errors' => [
-                    'email' => ['Las credenciales proporcionadas son incorrectas.'],
-                ],
             ], 401);
         }
 
-        $user->tokens()->delete();
+        if (!$user->is_active) {
+            return response()->json([
+                'message' => 'Esta cuenta está desactivada.',
+            ], 403);
+        }
 
+        $user->tokens()->delete();
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'message' => 'Sesión iniciada correctamente',
-            'user' => $user,
+            'user' => $user->toPublicArray(),
+            'token' => $token,
+            'token_type' => 'Bearer',
+        ]);
+    }
+
+    public function loginPin(Request $request): JsonResponse
+    {
+        $this->ensureJsonParsed($request);
+
+        $validated = $request->validate([
+            'username' => ['required', 'string', 'max:40'],
+            'pin' => ['required', 'string', 'min:4', 'max:6'],
+        ]);
+
+        $username = strtolower(trim($validated['username']));
+        $user = User::query()
+            ->where('role', User::ROLE_CLIENT)
+            ->whereRaw('LOWER(username) = ?', [$username])
+            ->first();
+
+        $invalid = !$user
+            || !$user->pin_hash
+            || !Hash::check($validated['pin'], $user->pin_hash);
+
+        if ($invalid) {
+            return response()->json([
+                'message' => 'Los datos son incorrectos.',
+            ], 401);
+        }
+
+        if (!$user->is_active) {
+            return response()->json([
+                'message' => 'Tu acceso está desactivado. Hablá con tu entrenadora.',
+            ], 403);
+        }
+
+        $user->tokens()->delete();
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Sesión iniciada correctamente',
+            'user' => $user->toPublicArray(),
             'token' => $token,
             'token_type' => 'Bearer',
         ]);

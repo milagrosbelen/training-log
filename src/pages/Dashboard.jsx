@@ -1,151 +1,56 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { Navigate, Link } from "react-router-dom"
-import { ChevronLeft, Plus } from "lucide-react"
-import Calendar from "../components/Calendar"
-import WorkoutDay from "../components/WorkoutDay"
-import WorkoutSummary from "../components/WorkoutSummary"
+import { ChevronLeft } from "lucide-react"
+import HomeInicio from "../components/HomeInicio"
 import MonthlySummary from "../components/MonthlySummary"
-import CopyWorkoutModal from "../components/CopyWorkoutModal"
 import ProgressCharts from "../components/ProgressCharts"
-import Toast from "../components/Toast"
-import { getWorkouts, saveWorkout, deleteWorkout } from "../services/workoutService"
-import { isAuthenticated } from "../services/authService"
-import { getRandomQuote, emptyStateQuotes, successQuotes, workoutDayQuotes } from "../utils/motivationalQuotes"
+import { ToastHost } from "../components/Toast"
+import { getWorkouts } from "../services/workoutService"
+import { getStoredUser, isAuthenticated } from "../services/authService"
 
 function Dashboard() {
   const [workouts, setWorkouts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [selectedDate, setSelectedDate] = useState("")
   const [currentView, setCurrentView] = useState("calendar")
   const [summaryMonth, setSummaryMonth] = useState(new Date().getMonth())
   const [summaryYear, setSummaryYear] = useState(new Date().getFullYear())
-  const [editingDate, setEditingDate] = useState(null)
-  const [showCopyModal, setShowCopyModal] = useState(false)
-  const [copiedWorkout, setCopiedWorkout] = useState(null)
   const [toast, setToast] = useState(null)
   const [error, setError] = useState("")
-  const workoutRef = useRef(null)
-
-  if (!isAuthenticated()) {
-    return <Navigate to="/" replace />
-  }
-
-  const loadWorkouts = async () => {
-    setError("")
-    setLoading(true)
-    try {
-      const data = await getWorkouts()
-      setWorkouts(Array.isArray(data) ? data : [])
-    } catch (err) {
-      const msg = err.response?.data?.message ?? "Error al cargar los entrenamientos."
-      setError(msg)
-      setWorkouts([])
-    } finally {
-      setLoading(false)
-    }
-  }
+  const authenticated = isAuthenticated()
 
   useEffect(() => {
+    if (!authenticated) return
+    let cancelled = false
+    async function loadWorkouts() {
+      setError("")
+      setLoading(true)
+      try {
+        const data = await getWorkouts()
+        if (!cancelled) setWorkouts(Array.isArray(data) ? data : [])
+      } catch (err) {
+        if (!cancelled) {
+          const msg = err.response?.data?.message ?? "Error al cargar los entrenamientos."
+          setError(msg)
+          setWorkouts([])
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
     loadWorkouts()
-  }, [])
+    return () => {
+      cancelled = true
+    }
+  }, [authenticated])
+
+  if (!authenticated) {
+    return <Navigate to="/" replace />
+  }
 
   const handleDateSelect = (date) => {
     setSelectedDate(date)
     setCurrentView("calendar")
-    if (editingDate !== date) {
-      setEditingDate(null)
-      setCopiedWorkout(null)
-    }
-    const existingWorkout = workouts.find((w) => w.date === date && w.locked)
-    if (!existingWorkout && workouts.some((w) => w.locked)) {
-      setShowCopyModal(true)
-    } else {
-      setShowCopyModal(false)
-    }
-    setTimeout(() => {
-      workoutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-    }, 100)
-  }
-
-  const handleSaveWorkout = async (workoutData) => {
-    setError("")
-    setSaving(true)
-    try {
-      const saved = await saveWorkout(workoutData)
-      const existingIndex = workouts.findIndex((w) => w.date === saved.date)
-      let updated
-      if (existingIndex >= 0) {
-        updated = [...workouts]
-        updated[existingIndex] = saved
-      } else {
-        updated = [...workouts, saved]
-      }
-      setWorkouts(updated)
-      setCopiedWorkout(null)
-      setEditingDate(null)
-      setToast({ message: `Entrenamiento guardado correctamente. ${getRandomQuote(successQuotes)}`, type: "success" })
-    } catch (err) {
-      const msg = err.response?.data?.message ?? err.response?.data?.errors
-        ? Object.values(err.response.data.errors || {}).flat().join(" ")
-        : "Error al guardar el entrenamiento"
-      setToast({ message: msg, type: "error" })
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleDiscardWorkout = () => {
-    setEditingDate(null)
-    setCopiedWorkout(null)
-    const currentWorkout = workouts.find((w) => w.date === selectedDate)
-    if (!currentWorkout || !currentWorkout.locked) {
-      setSelectedDate("")
-    }
-  }
-
-  const getCurrentWorkout = () => {
-    return workouts.find((w) => w.date === selectedDate) || null
-  }
-
-  const handleEditWorkout = () => {
-    setEditingDate(selectedDate)
-  }
-
-  const handleDeleteWorkout = async () => {
-    const currentWorkout = getCurrentWorkout()
-    if (!currentWorkout?.id) return
-    if (!window.confirm("¿Estás seguro de que querés eliminar este entrenamiento?")) return
-    try {
-      await deleteWorkout(currentWorkout.id)
-      setWorkouts(workouts.filter((w) => w.id !== currentWorkout.id))
-      setSelectedDate("")
-      setEditingDate(null)
-      setToast({ message: "Entrenamiento eliminado correctamente", type: "success" })
-    } catch (err) {
-      setToast({ message: err.response?.data?.message ?? "Error al eliminar", type: "error" })
-    }
-  }
-
-  const handleCopyWorkout = (workoutToCopy) => {
-    setShowCopyModal(false)
-    setCopiedWorkout(workoutToCopy)
-    setEditingDate(selectedDate)
-  }
-
-  const handleCloseCopyModal = () => {
-    setShowCopyModal(false)
-  }
-
-  const shouldShowSummary = () => {
-    if (!selectedDate) return false
-    const currentWorkout = getCurrentWorkout()
-    return currentWorkout && currentWorkout.locked && editingDate !== selectedDate
-  }
-
-  const getWorkoutForEditing = () => {
-    if (copiedWorkout && copiedWorkout.date === selectedDate) return copiedWorkout
-    return getCurrentWorkout()
   }
 
   const now = new Date()
@@ -187,17 +92,17 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white relative">
-      <header className="hidden md:flex bg-slate-800/95 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-50 shadow-lg">
+    <div className="min-h-screen bg-ink text-white relative z-10">
+      <header className="hidden md:flex bg-ink-200/95 backdrop-blur-sm border-b border-white/5 sticky top-0 z-50 shadow-lg">
         <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <span className="text-xl font-bold text-[#2AF447] [text-shadow:0_0_20px_rgba(42,244,71,0.4)] tracking-wide">MiLogit</span>
+            <span className="text-xl font-bold text-ember [text-shadow:0_0_20px_rgba(235,87,61,0.4)] tracking-wide">MiLogit</span>
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => { setCurrentView("calendar"); setSelectedDate("") }}
                 className={`text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                   currentView === "calendar"
-                    ? "bg-neon-500 text-black shadow-md shadow-neon-500/20"
+                    ? "bg-ember text-white shadow-ember-sm"
                     : "text-slate-300 hover:text-white hover:bg-slate-700/50"
                 }`}
               >
@@ -207,12 +112,18 @@ function Dashboard() {
                 onClick={handleViewSummary}
                 className={`text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                   currentView === "summary"
-                    ? "bg-neon-500 text-black shadow-md shadow-neon-500/20"
+                    ? "bg-ember text-white shadow-ember-sm"
                     : "text-slate-300 hover:text-white hover:bg-slate-700/50"
                 }`}
               >
                 Progreso
               </button>
+              <Link
+                to="/plan"
+                className="text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-lg font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
+              >
+                Plan
+              </Link>
               <Link
                 to="/profile"
                 className="text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-lg font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
@@ -232,73 +143,18 @@ function Dashboard() {
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center min-h-[40vh]">
-            <p className="text-slate-400">Cargando entrenamientos...</p>
+          <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3">
+            <div className="w-8 h-8 border-2 border-ink-400 border-t-ember rounded-full animate-spin" />
+            <p className="text-slate-300">Cargando entrenamientos...</p>
           </div>
         ) : currentView === "calendar" ? (
           <div className="space-y-6">
-            {workouts.length === 0 && !selectedDate ? (
-              <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
-                <div className="space-y-3">
-                  <h2 className="text-2xl sm:text-3xl font-semibold text-white">
-                    Todavía no registraste entrenamientos
-                  </h2>
-                  <p className="text-base sm:text-lg text-slate-400">Empezá agregando tu primer día 💪</p>
-                  <p className="text-sm text-slate-500 italic mt-2">{getRandomQuote(emptyStateQuotes)}</p>
-                </div>
-                <button
-                  onClick={() => handleDateSelect(new Date().toISOString().split("T")[0])}
-                  className="bg-neon-500 hover:bg-neon-600 text-black font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base shadow-lg shadow-neon-500/20"
-                >
-                  <Plus className="w-5 h-5" />
-                  Agregar mi primer entrenamiento
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-6">
-                <div className="lg:w-full lg:mx-auto">
-                  <Calendar
-                    selectedDate={selectedDate}
-                    onDateSelect={handleDateSelect}
-                    workouts={workouts}
-                  />
-                  {!selectedDate && (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-slate-500">Elegí un día del calendario y registrá tu entrenamiento 💪</p>
-                    </div>
-                  )}
-                </div>
-                <div className="lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:min-h-0 [scrollbar-width:thin] [scrollbar-color:rgb(51_65_85)_rgb(15_23_42)]">
-                  {selectedDate && (
-                    <div ref={workoutRef} className="space-y-6 pt-2 border-t border-slate-700/50">
-                    <div>
-                      <h2 className="text-lg sm:text-xl font-semibold text-white">
-                        {shouldShowSummary() ? "Entrenamiento guardado" : "Entrenamiento del día"}
-                      </h2>
-                      {!shouldShowSummary() && (
-                        <p className="text-xs text-slate-500 italic mt-1">{getRandomQuote(workoutDayQuotes)}</p>
-                      )}
-                    </div>
-                    {shouldShowSummary() ? (
-                      <WorkoutSummary
-                        workout={getCurrentWorkout()}
-                        allWorkouts={workouts}
-                        onEdit={handleEditWorkout}
-                        onDelete={handleDeleteWorkout}
-                      />
-                    ) : (
-                      <WorkoutDay
-                        date={selectedDate}
-                        workout={getWorkoutForEditing()}
-                        onSave={handleSaveWorkout}
-                        onDiscard={handleDiscardWorkout}
-                      />
-                    )}
-                  </div>
-                )}
-                </div>
-              </div>
-            )}
+            <HomeInicio
+              userName={getStoredUser()?.name}
+              workouts={Array.isArray(workouts) ? workouts : []}
+              selectedDate={selectedDate}
+              onSelectDate={handleDateSelect}
+            />
           </div>
         ) : (
           <div className="space-y-6">
@@ -331,20 +187,7 @@ function Dashboard() {
         )}
       </main>
 
-      {showCopyModal && (
-        <CopyWorkoutModal
-          workouts={workouts}
-          selectedDate={selectedDate}
-          onCopy={handleCopyWorkout}
-          onClose={handleCloseCopyModal}
-        />
-      )}
-
-      {toast && (
-        <div className="fixed top-4 right-4 z-50">
-          <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
-        </div>
-      )}
+      <ToastHost toast={toast} onClose={() => setToast(null)} />
     </div>
   )
 }

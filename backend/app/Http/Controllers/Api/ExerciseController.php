@@ -19,6 +19,7 @@ class ExerciseController extends Controller
             'reps' => ['nullable', 'integer', 'min:0'],
             'sets' => ['nullable', 'integer', 'min:1'],
             'order' => ['nullable', 'integer', 'min:0'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         $workout = Workout::findOrFail($validated['workout_id']);
@@ -35,6 +36,7 @@ class ExerciseController extends Controller
             'reps' => $validated['reps'] ?? null,
             'sets' => $validated['sets'] ?? 1,
             'order' => $validated['order'] ?? $workout->exercises()->max('order') + 1,
+            'notes' => $validated['notes'] ?? null,
         ]);
 
         return response()->json([
@@ -57,6 +59,7 @@ class ExerciseController extends Controller
             'reps' => ['nullable', 'integer', 'min:0'],
             'sets' => ['nullable', 'integer', 'min:1'],
             'order' => ['nullable', 'integer', 'min:0'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         $exercise->update($validated);

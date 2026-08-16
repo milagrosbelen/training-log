@@ -1,29 +1,35 @@
-import { api, TOKEN_KEY } from "./api"
+import { api, TOKEN_KEY, USER_KEY } from "./api"
+
+function persistUser(user) {
+  if (user) {
+    localStorage.setItem(USER_KEY, JSON.stringify(user))
+  }
+}
+
+function persistSession(data) {
+  const token = (data?.token ?? data?.data?.token)?.trim?.() ?? data?.token
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token)
+  }
+  const user = data?.user ?? data?.data?.user
+  persistUser(user)
+  return data
+}
 
 export async function login(email, password) {
   const { data } = await api.post("/auth/login", {
     email: email?.trim()?.toLowerCase(),
     password,
   })
-  const token = (data?.token ?? data?.data?.token)?.trim?.() ?? data?.token
-  if (token) {
-    localStorage.setItem(TOKEN_KEY, token)
-  }
-  return data
+  return persistSession(data)
 }
 
-export async function register({ name, email, password, password_confirmation }) {
-  const { data } = await api.post("/auth/register", {
-    name: name?.trim(),
-    email: email?.trim()?.toLowerCase(),
-    password,
-    password_confirmation,
+export async function loginWithPin(username, pin) {
+  const { data } = await api.post("/auth/pin", {
+    username: username?.trim()?.toLowerCase(),
+    pin: String(pin ?? "").trim(),
   })
-  const token = (data?.token ?? data?.data?.token)?.trim?.() ?? data?.token
-  if (token) {
-    localStorage.setItem(TOKEN_KEY, token)
-  }
-  return data
+  return persistSession(data)
 }
 
 export async function logout() {
@@ -31,6 +37,7 @@ export async function logout() {
     await api.post("/auth/logout")
   } finally {
     localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(USER_KEY)
   }
 }
 
@@ -42,7 +49,22 @@ export function isAuthenticated() {
   return !!getToken()
 }
 
+export function getStoredUser() {
+  try {
+    const raw = localStorage.getItem(USER_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+export function isCoach(user = getStoredUser()) {
+  return user?.role === "coach"
+}
+
 export async function getCurrentUser() {
   const { data } = await api.get("/user")
-  return data ?? null
+  const user = data ?? null
+  persistUser(user)
+  return user
 }

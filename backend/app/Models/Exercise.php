@@ -21,6 +21,7 @@ class Exercise extends Model
         'reps',
         'sets',
         'order',
+        'notes',
     ];
 
     /**

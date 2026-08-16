@@ -110,7 +110,7 @@ function MonthlySummary({ workouts, month, year, onMonthPrev, onMonthNext, canGo
           <button
             type="button"
             onClick={() => onMonthPrev?.()}
-            className="flex-shrink-0 p-2 rounded-xl text-slate-400 hover:text-[#2AF447] hover:bg-[#2C2C40] transition-colors"
+            className="flex-shrink-0 p-2 rounded-xl text-slate-400 hover:text-ember hover:bg-ink-200 transition-colors"
             aria-label="Mes anterior"
           >
             <ChevronLeft className="w-6 h-6" strokeWidth={2.5} />
@@ -122,7 +122,7 @@ function MonthlySummary({ workouts, month, year, onMonthPrev, onMonthNext, canGo
             type="button"
             onClick={() => onMonthNext?.()}
             disabled={!canGoNext}
-            className="flex-shrink-0 p-2 rounded-xl text-slate-400 hover:text-[#2AF447] hover:bg-[#2C2C40] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-400 transition-colors"
+            className="flex-shrink-0 p-2 rounded-xl text-slate-400 hover:text-ember hover:bg-ink-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-400 transition-colors"
             aria-label="Mes siguiente"
           >
             <ChevronRight className="w-6 h-6" strokeWidth={2.5} />
@@ -137,10 +137,10 @@ function MonthlySummary({ workouts, month, year, onMonthPrev, onMonthNext, canGo
         </p>
         <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">
           {MONTHS[month]} en<br />
-          <span className="text-[#2AF447] [text-shadow:0_0_20px_rgba(42,244,71,0.3)]">Movimiento</span>
+          <span className="text-ember [text-shadow:0_0_20px_rgba(235,87,61,0.3)]">Movimiento</span>
         </h1>
         <div className="flex flex-wrap items-baseline gap-2 pt-2">
-          <span className="text-4xl sm:text-5xl font-bold text-[#2AF447] tabular-nums [text-shadow:0_0_24px_rgba(42,244,71,0.35)]">
+          <span className="text-4xl sm:text-5xl font-bold text-ember tabular-nums [text-shadow:0_0_24px_rgba(235,87,61,0.35)]">
             {daysWithWorkout}
           </span>
           <span className="text-lg sm:text-xl text-slate-200 font-medium">
@@ -160,7 +160,7 @@ function MonthlySummary({ workouts, month, year, onMonthPrev, onMonthNext, canGo
       </div>
 
       {/* 2. Tarjeta Días de Entrenamiento */}
-      <div className="bg-[#2C2C40] rounded-2xl p-6 sm:p-7 border border-[#3d3d52] shadow-xl shadow-black/20">
+      <div className="bg-ink-200 rounded-2xl p-6 sm:p-7 border border-ink-400 shadow-xl shadow-black/20">
         <h3 className="text-base font-semibold text-white mb-1">
           Días de Entrenamiento
         </h3>
@@ -176,7 +176,7 @@ function MonthlySummary({ workouts, month, year, onMonthPrev, onMonthNext, canGo
                 r="50"
                 fill="none"
                 strokeWidth="8"
-                className="stroke-[#4a4a60]"
+                className="stroke-ink-400"
               />
               <circle
                 cx="60"
@@ -186,8 +186,8 @@ function MonthlySummary({ workouts, month, year, onMonthPrev, onMonthNext, canGo
                 strokeWidth="8"
                 strokeLinecap="round"
                 strokeDasharray={`${strokeDash} 314`}
-                className="stroke-[#2AF447] transition-all duration-700 ease-out"
-                style={{ filter: "drop-shadow(0 0 12px rgba(42,244,71,0.45))" }}
+                className="stroke-ember transition-all duration-700 ease-out"
+                style={{ filter: "drop-shadow(0 0 12px rgba(235,87,61,0.45))" }}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -203,7 +203,7 @@ function MonthlySummary({ workouts, month, year, onMonthPrev, onMonthNext, canGo
       </div>
 
       {/* 3. Tarjeta Calificación del Mes */}
-      <div className="bg-[#2C2C40] rounded-2xl p-6 sm:p-7 border border-[#3d3d52] shadow-xl shadow-black/20">
+      <div className="bg-ink-200 rounded-2xl p-6 sm:p-7 border border-ink-400 shadow-xl shadow-black/20">
         <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-4">
           Calificación del Mes
         </p>
@@ -218,7 +218,7 @@ function MonthlySummary({ workouts, month, year, onMonthPrev, onMonthNext, canGo
                   viewBox="0 0 20 20"
                   className={`w-6 h-6 sm:w-7 sm:h-7 ${
                     i < rating.stars
-                      ? "text-[#2AF447] fill-[#2AF447] drop-shadow-[0_0_8px_rgba(42,244,71,0.5)]"
+                      ? "text-ember fill-ember drop-shadow-[0_0_8px_rgba(235,87,61,0.5)]"
                       : "text-slate-500 fill-slate-600/30"
                   }`}
                 >
@@ -227,14 +227,14 @@ function MonthlySummary({ workouts, month, year, onMonthPrev, onMonthNext, canGo
               ))}
             </div>
           </div>
-          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#2AF447]/15 border-2 border-[#2AF447] flex items-center justify-center shadow-[0_0_12px_rgba(42,244,71,0.25)]">
-            <span className="text-sm font-bold text-[#2AF447] tabular-nums">{rating.value}/5</span>
+          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-ember/15 border-2 border-ember flex items-center justify-center shadow-[0_0_12px_rgba(235,87,61,0.25)]">
+            <span className="text-sm font-bold text-ember tabular-nums">{rating.value}/5</span>
           </div>
         </div>
       </div>
 
       {/* 4. Tarjeta Meta del Mes */}
-      <div className="bg-[#2C2C40] rounded-2xl p-6 sm:p-7 border border-[#3d3d52] shadow-xl shadow-black/20 transition-all duration-300">
+      <div className="bg-ink-200 rounded-2xl p-6 sm:p-7 border border-ink-400 shadow-xl shadow-black/20 transition-all duration-300">
         <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-4">
           Meta del Mes
         </p>
@@ -247,13 +247,13 @@ function MonthlySummary({ workouts, month, year, onMonthPrev, onMonthNext, canGo
               onChange={(e) => setFocusDraft(e.target.value)}
               placeholder="Define tu foco..."
               autoFocus
-              className="flex-1 px-4 py-3 rounded-xl bg-[#1B1B2C] border border-[#3d3d52] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#2AF447]/50 focus:border-[#2AF447]/50 transition-all duration-200"
+              className="flex-1 px-4 py-3 rounded-xl bg-ink border border-ink-400 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ember/50 focus:border-ember/50 transition-all duration-200"
             />
             <button
               type="button"
               onClick={handleSaveFocus}
               disabled={!focusDraft.trim() || savingFocus}
-              className="px-5 py-3 rounded-xl bg-[#2AF447] text-[#0d0d14] font-semibold text-sm shadow-[0_0_20px_rgba(42,244,71,0.3)] hover:bg-[#3dff5c] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#2AF447] transition-all duration-200 flex-shrink-0"
+              className="px-5 py-3 rounded-xl bg-ember text-white font-semibold text-sm shadow-[0_0_20px_rgba(235,87,61,0.3)] hover:bg-ember-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-ember transition-all duration-200 flex-shrink-0"
             >
               {savingFocus ? "Guardando..." : "OK"}
             </button>
@@ -266,7 +266,7 @@ function MonthlySummary({ workouts, month, year, onMonthPrev, onMonthNext, canGo
             <button
               type="button"
               onClick={handleStartEditFocus}
-              className="flex-shrink-0 p-2 rounded-lg text-slate-400 hover:text-[#2AF447] hover:bg-[#2AF447]/10 transition-all duration-200"
+              className="flex-shrink-0 p-2 rounded-lg text-slate-400 hover:text-ember hover:bg-ember/10 transition-all duration-200"
               aria-label="Editar foco"
             >
               <Pencil className="w-4 h-4" strokeWidth={2} />
@@ -280,7 +280,7 @@ function MonthlySummary({ workouts, month, year, onMonthPrev, onMonthNext, canGo
             <button
               type="button"
               onClick={handleStartEditFocus}
-              className="px-5 py-2.5 rounded-xl bg-[#2AF447] text-[#0d0d14] font-semibold text-sm shadow-[0_0_20px_rgba(42,244,71,0.3)] hover:bg-[#3dff5c] hover:shadow-[0_0_24px_rgba(42,244,71,0.4)] transition-all duration-200 flex-shrink-0 self-start sm:self-center"
+              className="px-5 py-2.5 rounded-xl bg-ember text-white font-semibold text-sm shadow-[0_0_20px_rgba(235,87,61,0.3)] hover:bg-ember-400 hover:shadow-[0_0_24px_rgba(235,87,61,0.4)] transition-all duration-200 flex-shrink-0 self-start sm:self-center"
             >
               Definir foco
             </button>

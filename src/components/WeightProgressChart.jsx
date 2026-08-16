@@ -14,6 +14,7 @@ import { useState, useMemo, useEffect } from "react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
 import { TrendingUp } from "lucide-react"
 import { getAllExerciseNames, getWeightHistoryForExercise } from "../utils/chartData"
+import { colors } from "../theme"
 
 const TIME_FILTERS = [
   { id: "all", label: "Todo el tiempo", months: null },
@@ -118,7 +119,7 @@ function WeightProgressChart({ workouts = [] }) {
     return (
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 shadow-md border border-slate-700/50">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-[#2AF447]" />
+          <TrendingUp className="w-5 h-5 text-ember" />
           Progreso de Peso por Ejercicio
         </h3>
         <p className="text-slate-400 text-sm">
@@ -133,7 +134,7 @@ function WeightProgressChart({ workouts = [] }) {
       {/* Header del gráfico */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-[#2AF447]" />
+          <TrendingUp className="w-5 h-5 text-ember" />
           Progreso de Peso por Ejercicio
         </h3>
         <p className="text-sm text-slate-400">
@@ -150,7 +151,7 @@ function WeightProgressChart({ workouts = [] }) {
           <select
             value={selectedExercise}
             onChange={handleExerciseChange}
-            className="w-full bg-slate-700/50 text-white py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2AF447] focus:bg-slate-700 border border-slate-600/50"
+            className="w-full bg-slate-700/50 text-white py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ember focus:bg-slate-700 border border-slate-600/50"
           >
             {exerciseNames.map((name) => (
               <option key={name} value={name}>
@@ -167,7 +168,7 @@ function WeightProgressChart({ workouts = [] }) {
             <select
               value={timeFilter}
               onChange={(e) => setTimeFilter(e.target.value)}
-              className="w-full bg-slate-700/50 text-white py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2AF447] focus:bg-slate-700 border border-slate-600/50"
+              className="w-full bg-slate-700/50 text-white py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ember focus:bg-slate-700 border border-slate-600/50"
             >
               {TIME_FILTERS.map((f) => (
                 <option key={f.id} value={f.id}>
@@ -202,7 +203,7 @@ function WeightProgressChart({ workouts = [] }) {
                * - strokeDasharray: hace las líneas punteadas
                * - stroke: color de las líneas (gris semitransparente)
                */}
-              <CartesianGrid strokeDasharray="3 3" stroke="#475569" opacity={0.3} />
+              <CartesianGrid strokeDasharray="3 3" stroke={colors.line} opacity={0.3} />
               
               {/**
                * XAxis: Eje horizontal (fechas)
@@ -212,8 +213,8 @@ function WeightProgressChart({ workouts = [] }) {
                */}
               <XAxis
                 dataKey="dateLabel"
-                stroke="#94a3b8"
-                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                stroke={colors.muted}
+                tick={{ fill: colors.muted, fontSize: 12 }}
               />
               
               {/**
@@ -223,9 +224,9 @@ function WeightProgressChart({ workouts = [] }) {
                * - label: etiqueta del eje
                */}
               <YAxis
-                stroke="#94a3b8"
-                tick={{ fill: "#94a3b8", fontSize: 12 }}
-                label={{ value: "Peso (kg)", angle: -90, position: "insideLeft", fill: "#94a3b8" }}
+                stroke={colors.muted}
+                tick={{ fill: colors.muted, fontSize: 12 }}
+                label={{ value: "Peso (kg)", angle: -90, position: "insideLeft", fill: colors.muted }}
               />
               
               {/**
@@ -235,12 +236,12 @@ function WeightProgressChart({ workouts = [] }) {
                */}
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#1e293b",
-                  border: "1px solid #475569",
+                  backgroundColor: colors.surface,
+                  border: `1px solid ${colors.line}`,
                   borderRadius: "8px",
                   color: "#fff"
                 }}
-                labelStyle={{ color: "#94a3b8" }}
+                labelStyle={{ color: colors.muted }}
               />
               
               {/**
@@ -252,7 +253,7 @@ function WeightProgressChart({ workouts = [] }) {
                * Line: La línea del gráfico
                * - type: tipo de línea ("monotone" = suave)
                * - dataKey: qué propiedad graficar ("weight")
-               * - stroke: color de la línea (verde neon)
+               * - stroke: color de la línea (ember)
                * - strokeWidth: grosor de la línea
                * - dot: muestra puntos en cada dato
                * - name: nombre que aparece en la leyenda
@@ -260,9 +261,9 @@ function WeightProgressChart({ workouts = [] }) {
               <Line
                 type="monotone"
                 dataKey="weight"
-                stroke="#2AF447"
+                stroke={colors.ember}
                 strokeWidth={2}
-                dot={{ fill: "#2AF447", r: 4 }}
+                dot={{ fill: colors.ember, r: 4 }}
                 activeDot={{ r: 6 }}
                 name="Peso (kg)"
               />

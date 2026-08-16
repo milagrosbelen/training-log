@@ -6,7 +6,7 @@ import { logout } from "../services/authService"
 import { isAuthenticated } from "../services/authService"
 import { Navigate } from "react-router-dom"
 import { formatDateShort } from "../utils/dateUtils"
-import Toast from "../components/Toast"
+import { ToastHost } from "../components/Toast"
 
 function getInitial(name) {
   if (!name || !String(name).trim()) return "?"
@@ -130,7 +130,7 @@ function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex flex-col">
+      <div className="min-h-screen bg-ink text-white flex flex-col">
         <ProfileHeader />
         <main className="flex-1 flex items-center justify-center pb-24 md:pb-0">
           <p className="text-slate-400">Cargando perfil...</p>
@@ -141,7 +141,7 @@ function Profile() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex flex-col">
+      <div className="min-h-screen bg-ink text-white flex flex-col">
         <ProfileHeader />
         <main className="flex-1 flex items-center justify-center px-4 pb-24 md:pb-0">
           <p className="text-red-400 text-center">{error}</p>
@@ -155,7 +155,7 @@ function Profile() {
   const displayName = isEditing ? editName : user?.name
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-ink text-white">
       <ProfileHeader />
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 md:pb-8 space-y-8">
         {/* Header: Avatar → Nombre → Email → Botón */}
@@ -217,7 +217,7 @@ function Profile() {
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="Tu nombre"
-                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-neon-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl bg-ink-300 border border-slate-600 text-[#f4f4f5] placeholder:text-slate-400 caret-ember scheme-dark focus:outline-none focus:ring-2 focus:ring-ember focus:border-transparent"
               />
             </div>
 
@@ -268,7 +268,7 @@ function Profile() {
               <button
                 onClick={handleSaveEdit}
                 disabled={saving}
-                className="flex-1 sm:flex-initial px-6 py-3 rounded-xl bg-neon-500 hover:bg-neon-600 disabled:opacity-60 text-black font-semibold transition-colors"
+                className="flex-1 sm:flex-initial px-6 py-3 rounded-xl bg-neon-500 hover:bg-neon-600 disabled:opacity-60 text-white font-semibold transition-colors"
               >
                 {saving ? "Guardando..." : "Guardar"}
               </button>
@@ -298,24 +298,20 @@ function Profile() {
 
         {/* Branding */}
         <div className="py-10 flex justify-center">
-          <span className="text-xl font-bold text-[#2AF447]/85 tracking-tight">
+          <span className="text-xl font-bold text-ember/90 tracking-tight">
             MiLogit
           </span>
         </div>
       </main>
 
-      {toast && (
-        <div className="fixed top-4 right-4 z-50">
-          <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
-        </div>
-      )}
+      <ToastHost toast={toast} onClose={() => setToast(null)} />
     </div>
   )
 }
 
 function ProfileHeader() {
   return (
-    <header className="hidden md:block bg-slate-800/95 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-50 shadow-lg">
+    <header className="hidden md:block bg-ink-200/95 backdrop-blur-sm border-b border-white/5 sticky top-0 z-50 shadow-lg">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link
@@ -326,7 +322,12 @@ function ProfileHeader() {
             <span>Volver</span>
           </Link>
           <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Perfil</h1>
-          <div className="w-16 sm:w-20" aria-hidden />
+          <Link
+            to="/plan"
+            className="text-sm text-slate-400 hover:text-white transition-colors"
+          >
+            Plan
+          </Link>
         </div>
       </div>
     </header>

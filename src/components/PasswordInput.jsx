@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
 
 const baseInputClass =
-  "w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-neon-500 focus:border-transparent disabled:opacity-60 pr-11"
+  "w-full px-4 py-3 rounded-xl bg-ink-300 border border-slate-600 text-[#f4f4f5] placeholder:text-slate-400 caret-ember scheme-dark focus:outline-none focus:ring-2 focus:ring-ember focus:border-transparent disabled:opacity-60 pr-11"
 
 /**
  * Input de contraseña con toggle para mostrar/ocultar.

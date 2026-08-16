@@ -1,6 +1,7 @@
 import axios from "axios"
 
 const TOKEN_KEY = "auth_token"
+const USER_KEY = "auth_user"
 
 // Desarrollo: proxy Vite a localhost. Producción: /api (Vercel hace proxy a Render via vercel.json)
 // Si VITE_API_URL está definida, se usa (para deploy sin proxy). Sino, /api para proxy Vercel→Render
@@ -40,10 +41,11 @@ api.interceptors.response.use(
     const isLoginRequest = error.config?.url?.includes("/auth/login")
     if (error.response?.status === 401 && !isLoginRequest) {
       localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(USER_KEY)
       window.location.href = "/"
     }
     return Promise.reject(error)
   }
 )
 
-export { api, TOKEN_KEY }
+export { api, TOKEN_KEY, USER_KEY }

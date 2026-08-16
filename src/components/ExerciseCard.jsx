@@ -89,7 +89,7 @@ function ExerciseCard({ exercise, onUpdate, onDelete, onMoveUp, onMoveDown, canM
           type="text"
           value={exercise.name}
           onChange={(e) => handleNameChange(e.target.value)}
-          className="text-white font-semibold text-base sm:text-lg bg-transparent border-none outline-none focus:ring-2 focus:ring-neon-500 rounded px-2 -ml-2 flex-1 min-w-0 placeholder:text-slate-500"
+          className="text-[#f4f4f5] font-semibold text-base sm:text-lg bg-ink-300 border border-white/10 outline-none focus:ring-2 focus:ring-ember rounded-lg px-3 py-1.5 -ml-2 flex-1 min-w-0 placeholder:text-slate-400 caret-ember"
           placeholder="Nombre del ejercicio"
         />
         <div className="flex items-center gap-4 flex-shrink-0">
