@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ExerciseController;
 use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\SessionController;
 use App\Http\Controllers\Api\WorkoutController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -73,6 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         return response()->json($user->toPublicArray());
     });
+    Route::get('/session', [SessionController::class, 'alumna']);
     Route::get('/profile-summary', [ProfileController::class, 'summary']);
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::get('/profile/focus', [ProfileController::class, 'getFocus']);
@@ -95,6 +97,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/plans/me/progress', [PlanController::class, 'progress']);
 
     Route::middleware('coach')->group(function () {
+        Route::get('/coach-session', [SessionController::class, 'coach']);
         Route::get('/clients', [PlanController::class, 'clients']);
         Route::get('/alumnas', [AlumnaController::class, 'index']);
         Route::post('/alumnas', [AlumnaController::class, 'store']);

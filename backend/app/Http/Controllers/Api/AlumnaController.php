@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Plan;
 use App\Models\User;
+use App\Services\CoachRosterService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -15,22 +15,8 @@ class AlumnaController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $coach = $request->user();
-        $planUserIds = Plan::query()->whereIn(
-            'user_id',
-            $coach->alumnas()->pluck('id')
-        )->pluck('user_id')->all();
-
-        $alumnas = $coach->alumnas()
-            ->where('role', User::ROLE_CLIENT)
-            ->orderBy('name')
-            ->get();
-
         return response()->json([
-            'data' => $alumnas->map(fn (User $alumna) => [
-                ...$alumna->toPublicArray(),
-                'has_plan' => in_array($alumna->id, $planUserIds, true),
-            ]),
+            'data' => CoachRosterService::alumnasFor($request->user()),
         ]);
     }
 

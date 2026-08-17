@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import { ChevronLeft, ChevronRight, Flame, Moon, Sun } from "lucide-react"
 import { dateToISOString, formatDateShort } from "../utils/dateUtils"
 import { getExerciseProgressStatus } from "../utils/exerciseProgress"
-import { getMyPlan } from "../services/planService"
+import { getMyPlan, peekPlan } from "../services/planService"
 import Calendar from "./Calendar"
 import BrandLogo from "./BrandLogo"
 import { getStoredUser } from "../services/authService"
@@ -138,12 +138,16 @@ function sparklinePaths(values, width = 168, height = 64) {
 
 export default function HomeInicio({ userName, workouts = [], selectedDate, onSelectDate }) {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()))
-  const [planDates, setPlanDates] = useState([])
+  const [planDates, setPlanDates] = useState(() => {
+    const plan = peekPlan()
+    const dates = Array.isArray(plan?.trained_dates) ? plan.trained_dates : []
+    return dates.map((date) => String(date).slice(0, 10)).filter(Boolean)
+  })
   const list = Array.isArray(workouts) ? workouts : []
 
   useEffect(() => {
     let cancelled = false
-    getMyPlan()
+    getMyPlan({ skipLoading: true })
       .then((plan) => {
         if (cancelled) return
         const dates = Array.isArray(plan?.trained_dates) ? plan.trained_dates : []

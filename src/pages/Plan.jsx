@@ -53,7 +53,7 @@ export default function Plan() {
     if (!authenticated || coach) return
     let cancelled = false
 
-    getMyPlan()
+    getMyPlan({ skipLoading: true })
       .then((data) => {
         if (cancelled) return
         setPlan(data)

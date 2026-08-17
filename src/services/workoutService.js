@@ -49,39 +49,86 @@ let workoutsCacheUserId = null
 let workoutsCacheAt = 0
 let workoutsInflight = null
 const WORKOUTS_TTL = 3 * 60 * 1000
+const WORKOUTS_STORAGE_PREFIX = "milogit_workouts_"
+
+function workoutsStorageKey(userId) {
+  return `${WORKOUTS_STORAGE_PREFIX}${userId}`
+}
+
+function readStoredWorkouts(userId) {
+  if (!userId) return null
+  try {
+    const raw = localStorage.getItem(workoutsStorageKey(userId))
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+function writeStoredWorkouts(userId, list) {
+  if (!userId) return
+  try {
+    localStorage.setItem(workoutsStorageKey(userId), JSON.stringify(list))
+  } catch {
+    // Quota / private mode.
+  }
+}
+
+export function hydrateWorkouts(workouts) {
+  const list = (Array.isArray(workouts) ? workouts : []).map(apiToFrontend)
+  const userId = readStoredUserId()
+  workoutsCache = list
+  workoutsCacheUserId = userId
+  workoutsCacheAt = Date.now()
+  writeStoredWorkouts(userId, list)
+  return list
+}
 
 export function peekWorkouts() {
   const userId = readStoredUserId()
-  if (!userId || workoutsCacheUserId !== userId || !Array.isArray(workoutsCache)) return null
+  if (!userId) return null
+  if (workoutsCacheUserId === userId && Array.isArray(workoutsCache)) return workoutsCache
+  const stored = readStoredWorkouts(userId)
+  if (!stored) return null
+  workoutsCache = stored
+  workoutsCacheUserId = userId
+  workoutsCacheAt = Date.now()
   return workoutsCache
 }
 
 export function clearWorkoutsCache() {
+  const userId = readStoredUserId()
   workoutsCache = null
   workoutsCacheUserId = null
   workoutsCacheAt = 0
   workoutsInflight = null
+  try {
+    if (userId) localStorage.removeItem(workoutsStorageKey(userId))
+  } catch {
+    // ignore
+  }
 }
 
 export async function getWorkouts({ skipLoading = false } = {}) {
-  const userId = readStoredUserId()
-  const hasCache = Array.isArray(workoutsCache) && workoutsCacheUserId === userId
+  const cached = peekWorkouts()
+  const hasCache = Array.isArray(cached)
   if (hasCache && Date.now() - workoutsCacheAt < WORKOUTS_TTL) {
-    return workoutsCache
+    return cached
   }
-  if (workoutsInflight) return workoutsInflight
+  if (workoutsInflight) return hasCache ? cached : workoutsInflight
 
   workoutsInflight = api.get("/workouts", { skipLoading: skipLoading || hasCache })
-    .then(({ data }) => {
-      const list = (data.data ?? []).map(apiToFrontend)
-      workoutsCache = list
-      workoutsCacheUserId = readStoredUserId()
-      workoutsCacheAt = Date.now()
-      return list
-    })
+    .then(({ data }) => hydrateWorkouts(data.data ?? []))
     .finally(() => {
       workoutsInflight = null
     })
+
+  if (hasCache) {
+    workoutsInflight.catch(() => {})
+    return cached
+  }
 
   return workoutsInflight
 }
@@ -102,18 +149,18 @@ export async function saveWorkout(workoutData) {
   }
   const { data } = await api.post("/workouts", payload)
   const workout = apiToFrontend(data.data)
-  if (Array.isArray(workoutsCache) && workout) {
-    const rest = workoutsCache.filter((item) => item.date !== workout.date)
-    workoutsCache = [workout, ...rest]
-    workoutsCacheAt = Date.now()
+  if (workout) {
+    const current = peekWorkouts() || []
+    hydrateWorkouts([workout, ...current.filter((item) => item.date !== workout.date)])
   }
   return workout
 }
 
 export async function deleteWorkout(id) {
   await api.delete(`/workouts/${id}`)
-  if (Array.isArray(workoutsCache)) {
-    workoutsCache = workoutsCache.filter((item) => item.id !== id)
+  const current = peekWorkouts()
+  if (Array.isArray(current)) {
+    hydrateWorkouts(current.filter((item) => item.id !== id))
   }
 }
 

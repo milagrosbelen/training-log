@@ -3,13 +3,6 @@ import { Routes, Route, Navigate, Outlet } from "react-router-dom"
 import Login from "./pages/Login"
 import AuthenticatedLayout from "./components/AuthenticatedLayout"
 import AdminLayout from "./components/AdminLayout"
-import Dashboard from "./pages/Dashboard"
-import Plan from "./pages/Plan"
-import Progreso from "./pages/Progreso"
-import Stats from "./pages/Stats"
-import Profile from "./pages/Profile"
-import AdminAlumnas from "./pages/AdminAlumnas"
-import CoachPlanEditor from "./components/plan/CoachPlanEditor"
 import {
   getCurrentUser,
   getStoredUser,
@@ -63,18 +56,18 @@ export default function AppRoutes() {
 
         <Route element={<RequireAlumna />}>
           <Route element={<AuthenticatedLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/plan" element={<Plan />} />
-            <Route path="/progreso" element={<Progreso />} />
-            <Route path="/stats" element={<Stats />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/dashboard" element={null} />
+            <Route path="/plan" element={null} />
+            <Route path="/progreso" element={null} />
+            <Route path="/stats" element={null} />
+            <Route path="/profile" element={null} />
           </Route>
         </Route>
 
         <Route element={<RequireAdmin />}>
           <Route element={<AdminLayout />}>
-            <Route path="/admin" element={<AdminAlumnas />} />
-            <Route path="/admin/plan" element={<CoachPlanEditor />} />
+            <Route path="/admin" element={null} />
+            <Route path="/admin/plan" element={null} />
           </Route>
         </Route>
 

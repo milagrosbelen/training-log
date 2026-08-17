@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use App\Models\User;
+use App\Services\CoachRosterService;
+use App\Services\PlanAssembler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -22,9 +24,9 @@ class PlanController extends Controller
         }
 
         try {
-            $plan = $user->assignedPlan()->with(['user', 'completions'])->first();
+            $payload = PlanAssembler::payloadForUser($user);
 
-            if (!$plan) {
+            if (!$payload) {
                 return response()->json([
                     'message' => 'Todavía no tenés un plan asignado.',
                     'data' => null,
@@ -32,7 +34,7 @@ class PlanController extends Controller
             }
 
             return response()->json([
-                'data' => $this->toPayload($plan),
+                'data' => $payload,
             ]);
         } catch (\Throwable $e) {
             report($e);
@@ -46,27 +48,8 @@ class PlanController extends Controller
 
     public function clients(Request $request): JsonResponse
     {
-        $coach = $request->user();
-        $clients = $coach->alumnas()
-            ->where('role', User::ROLE_CLIENT)
-            ->orderBy('name')
-            ->get();
-
-        $planUserIds = Plan::query()
-            ->whereIn('user_id', $clients->pluck('id'))
-            ->pluck('user_id')
-            ->all();
-
         return response()->json([
-            'data' => $clients->map(fn (User $client) => [
-                'id' => $client->id,
-                'name' => $client->name,
-                'username' => $client->username,
-                'email' => $client->email,
-                'is_active' => (bool) $client->is_active,
-                'training_type' => $client->training_type ?: User::TRAINING_GYM,
-                'has_plan' => in_array($client->id, $planUserIds, true),
-            ]),
+            'data' => CoachRosterService::alumnasFor($request->user()),
         ]);
     }
 
@@ -93,10 +76,8 @@ class PlanController extends Controller
             ], 422);
         }
 
-        $plan = $user->assignedPlan()->with(['user', 'coach', 'completions'])->first();
-
         return response()->json([
-            'data' => $plan ? $this->toPayload($plan) : null,
+            'data' => PlanAssembler::payloadForUser($user),
         ]);
     }
 
@@ -156,11 +137,9 @@ class PlanController extends Controller
             ]
         );
 
-        $plan->load(['user', 'coach', 'completions']);
-
         return response()->json([
             'message' => 'Plan guardado correctamente.',
-            'data' => $this->toPayload($plan),
+            'data' => PlanAssembler::payloadForUser($user),
         ]);
     }
 
@@ -234,11 +213,9 @@ class PlanController extends Controller
             ]
         );
 
-        $plan->load(['user', 'coach', 'completions']);
-
         return response()->json([
             'message' => 'Progreso actualizado.',
-            'data' => $this->toPayload($plan),
+            'data' => PlanAssembler::payloadForUser($user),
         ]);
     }
 
@@ -271,67 +248,4 @@ class PlanController extends Controller
             ->all();
     }
 
-    private function toPayload(Plan $plan): array
-    {
-        $sessions = is_array($plan->sessions) ? $plan->sessions : [];
-        $weekCompletions = collect($plan->completions ?? [])
-            ->where('week_number', $plan->week_current)
-            ->keyBy('weekday');
-
-        $trainedWeekdays = [];
-        $progressByWeekday = [];
-
-        foreach ($sessions as $session) {
-            if (!is_array($session) || !array_key_exists('weekday', $session)) {
-                continue;
-            }
-
-            $weekday = (int) $session['weekday'];
-            $total = count($session['exercises'] ?? []);
-            $completed = $weekCompletions->get($weekday)?->completed_exercises ?? [];
-            $doneCount = count($completed);
-            $progressByWeekday[$weekday] = [
-                'completed' => $doneCount,
-                'total' => $total,
-                'indexes' => array_values($completed),
-            ];
-
-            if ($total > 0 && $doneCount >= $total) {
-                $trainedWeekdays[] = $weekday;
-            }
-        }
-
-        $trainedDates = collect($plan->completions ?? [])
-            ->filter(function ($completion) use ($sessions) {
-                $session = collect($sessions)->first(function ($item) use ($completion) {
-                    return is_array($item)
-                        && (int) ($item['weekday'] ?? -1) === (int) $completion->weekday;
-                });
-                $total = count(is_array($session) ? ($session['exercises'] ?? []) : []);
-                $done = count($completion->completed_exercises ?? []);
-
-                return $total > 0 && $done >= $total;
-            })
-            ->map(fn ($completion) => $completion->updated_at?->toDateString())
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-
-        return [
-            'id' => $plan->id,
-            'user_id' => $plan->user_id,
-            'user_name' => $plan->user?->name,
-            'training_type' => $plan->user?->training_type ?: User::TRAINING_GYM,
-            'coach_name' => $plan->coach?->name,
-            'week_current' => $plan->week_current,
-            'week_total' => $plan->week_total,
-            'days_per_week' => $plan->days_per_week ?? count($sessions),
-            'objective' => $plan->objective,
-            'sessions' => $sessions,
-            'trained_weekdays' => $trainedWeekdays,
-            'trained_dates' => $trainedDates,
-            'progress_by_weekday' => $progressByWeekday,
-        ];
-    }
 }

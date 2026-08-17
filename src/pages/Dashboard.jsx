@@ -7,6 +7,7 @@ import { ToastHost } from "../components/Toast"
 import BrandLogo from "../components/BrandLogo"
 import { getWorkouts, peekWorkouts } from "../services/workoutService"
 import { getStoredUser, isAuthenticated } from "../services/authService"
+import { rememberTab } from "../services/tabPrefetch"
 
 function Dashboard() {
   const [workouts, setWorkouts] = useState(() => peekWorkouts() || [])
@@ -72,12 +73,14 @@ function Dashboard() {
               </button>
               <Link
                 to="/plan"
+                onMouseEnter={() => rememberTab("/plan")}
                 className="text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-lg font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
               >
                 Plan
               </Link>
               <Link
                 to="/profile"
+                onMouseEnter={() => rememberTab("/profile")}
                 className="text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-lg font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
               >
                 Perfil

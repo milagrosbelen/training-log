@@ -1,7 +1,14 @@
 export const POSE_STATUSES = [
-  { id: "sale", label: "Me sale" },
-  { id: "bien", label: "Me sale bien" },
+  { id: "vi", label: "La vi en clase", short: "La vi", rank: 1, kind: "reto" },
+  { id: "aprendiendo", label: "La estoy aprendiendo", short: "Reto", rank: 2, kind: "reto" },
+  { id: "apoyo", label: "Me sale con apoyo", short: "A medias", rank: 3, kind: "reto" },
+  { id: "sale", label: "Me sale", short: "Me sale", rank: 4, kind: "mantener" },
+  { id: "domino", label: "La domino", short: "La domino", rank: 5, kind: "mantener" },
 ]
+
+export const POSE_STATUS_IDS = POSE_STATUSES.map((item) => item.id)
+
+export const YOGA_CLASS_WEEKDAYS = [1, 3]
 
 export const POSE_FAMILIES = [
   {
@@ -105,16 +112,34 @@ export function getPoseImage(image) {
   return `/poses/${image}.png`
 }
 
+export function poseStatusMeta(status) {
+  return POSE_STATUSES.find((item) => item.id === status) || null
+}
+
+export function poseStatusRank(status) {
+  return poseStatusMeta(status)?.rank || 0
+}
+
+export function isMaintainedStatus(status) {
+  return poseStatusRank(status) >= 4
+}
+
+export function isChallengeStatus(status) {
+  const rank = poseStatusRank(status)
+  return rank >= 1 && rank <= 3
+}
+
 export function resolvePoseLevels(family, saved = {}) {
   return family.levels.map((level, index) => {
     const stored = saved[level.id]
     const previous = family.levels[index - 1]
-    const previousBien = index === 0 || saved[previous.id] === "bien"
-    const open = Boolean(stored) || level.startUnlocked || previousBien
+    const previousReady = index === 0 || isMaintainedStatus(saved[previous.id]?.status)
+    const open = Boolean(stored) || level.startUnlocked || previousReady
     if (!open) {
       return { ...level, status: "locked", open: false }
     }
-    const status = stored === "sale" || stored === "bien" ? stored : "open"
-    return { ...level, status, open: true }
+    const statusId = typeof stored === "object" && stored ? stored.status : stored
+    const status = poseStatusMeta(statusId) ? statusId : "open"
+    return { ...level, status, open: true, lastPracticed: stored?.last_practiced || "" }
   })
 }

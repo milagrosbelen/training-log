@@ -118,7 +118,7 @@ export default function CoachPlanEditor() {
       setForm(next)
       setActiveWeekday(next.sessions[0]?.weekday ?? 0)
     }
-    getClientPlan(selectedUserId)
+    getClientPlan(selectedUserId, { skipLoading: true })
       .then((plan) => {
         const next = formFromPlan(plan)
         setForm(next)

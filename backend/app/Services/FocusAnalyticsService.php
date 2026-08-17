@@ -140,10 +140,7 @@ class FocusAnalyticsService
         ];
     }
 
-    /**
-     * Calcula el progreso del mes respecto al mes anterior.
-     */
-    public static function computeFocusAnalytics(User $user): ?array
+    public static function computeFromWorkouts(User $user, array $workouts): ?array
     {
         $focus = $user->focus;
         if (!$focus || trim($focus) === '') {
@@ -152,31 +149,69 @@ class FocusAnalyticsService
 
         $keywords = self::getKeywordsForFocus($focus);
         $now = Carbon::now();
-        $currentYear = $now->year;
-        $currentMonth = $now->month;
+        $prev = $now->copy()->subMonth();
 
-        $currentWorkouts = self::getFocusWorkouts($user, $currentYear, $currentMonth);
-        $prevMonth = $now->copy()->subMonth();
-        $prevWorkouts = self::getFocusWorkouts($user, $prevMonth->year, $prevMonth->month);
+        $current = self::extractMetricsFromPayloads($workouts, $keywords, $now->year, $now->month);
+        $previous = self::extractMetricsFromPayloads($workouts, $keywords, $prev->year, $prev->month);
 
-        $current = self::extractMetrics($currentWorkouts, $keywords);
-        $previous = self::extractMetrics($prevWorkouts, $keywords);
+        return self::buildAnalytics(trim($focus), $current, $previous);
+    }
 
-        // Si no hay datos del mes actual, considerar insuficientes
+    /**
+     * Calcula el progreso del mes respecto al mes anterior.
+     */
+    public static function computeFocusAnalytics(User $user): ?array
+    {
+        return self::computeFromWorkouts($user, WorkoutAssembler::listForUser($user));
+    }
+
+    private static function extractMetricsFromPayloads(array $workouts, array $keywords, int $year, int $month): array
+    {
+        $prefix = sprintf('%04d-%02d', $year, $month);
+        $matching = [];
+
+        foreach ($workouts as $workout) {
+            $date = (string) ($workout['date'] ?? '');
+            if (!str_starts_with($date, $prefix)) {
+                continue;
+            }
+
+            $exercises = [];
+            foreach ($workout['exercises'] ?? [] as $exercise) {
+                $name = (string) ($exercise['name'] ?? '');
+                if (self::exerciseMatchesFocus($name, $keywords)) {
+                    $exercises[] = (object) [
+                        'name' => $name,
+                        'sets' => $exercise['sets'] ?? 1,
+                        'reps' => $exercise['reps'] ?? 0,
+                        'weight' => $exercise['weight'] ?? 0,
+                    ];
+                }
+            }
+
+            if ($exercises) {
+                $matching[] = (object) ['exercises' => $exercises];
+            }
+        }
+
+        return self::extractMetrics(collect($matching), $keywords);
+    }
+
+    private static function buildAnalytics(string $focus, array $current, array $previous): array
+    {
         if ($current['sessions'] === 0) {
             return [
-                'focus' => trim($focus),
+                'focus' => $focus,
                 'sufficient_data' => false,
                 'message' => 'Aún no hay datos suficientes para analizar tu foco.',
                 'sessions' => 0,
             ];
         }
 
-        $sessions = $current['sessions'];
         $progressPct = null;
         $weightChange = null;
         $volumeChange = null;
-        $status = 'en_progreso'; // en_progreso | mejorando | estable | necesita_atencion
+        $status = 'en_progreso';
 
         if ($previous['sessions'] > 0) {
             if ($previous['total_volume'] > 0) {
@@ -201,9 +236,9 @@ class FocusAnalyticsService
         }
 
         return [
-            'focus' => trim($focus),
+            'focus' => $focus,
             'sufficient_data' => true,
-            'sessions' => $sessions,
+            'sessions' => $current['sessions'],
             'progress_pct' => $progressPct,
             'weight_change' => $weightChange,
             'volume_change' => $volumeChange,

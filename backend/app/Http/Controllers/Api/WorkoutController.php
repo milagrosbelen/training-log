@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Exercise;
 use App\Models\Workout;
+use App\Services\WorkoutAssembler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -11,14 +13,8 @@ class WorkoutController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $workouts = $request->user()
-            ->workouts()
-            ->with('exercises')
-            ->orderBy('date', 'desc')
-            ->get();
-
         return response()->json([
-            'data' => $workouts,
+            'data' => WorkoutAssembler::listForUser($request->user()),
         ]);
     }
 
@@ -72,17 +68,27 @@ class WorkoutController extends Controller
 
         if (isset($validated['exercises'])) {
             $workout->exercises()->delete();
+            $now = now();
+            $rows = [];
             foreach ($validated['exercises'] as $i => $ex) {
                 $name = trim($ex['name'] ?? '');
-                if ($name === '') continue;
-                $workout->exercises()->create([
+                if ($name === '') {
+                    continue;
+                }
+                $rows[] = [
+                    'workout_id' => $workout->id,
                     'name' => $name,
                     'weight' => isset($ex['weight']) && $ex['weight'] !== '' ? $ex['weight'] : null,
                     'reps' => isset($ex['reps']) && $ex['reps'] !== '' ? $ex['reps'] : null,
                     'sets' => $ex['sets'] ?? 1,
                     'order' => $ex['order'] ?? $i,
                     'notes' => isset($ex['notes']) ? trim((string) $ex['notes']) : null,
-                ]);
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+            if ($rows) {
+                Exercise::insert($rows);
             }
         }
 

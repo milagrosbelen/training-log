@@ -43,7 +43,5 @@ export function shouldTrackLoading(config) {
   if (!config || config.skipLoading) return false
   const url = String(config.url || "")
   const method = String(config.method || "get").toLowerCase()
-  if (url.includes("/ping") || /\/user\/?$/.test(url) || url.includes("/logout")) return false
-  if (method !== "get" && !url.includes("/auth/login") && !url.includes("/auth/pin")) return false
-  return true
+  return method === "post" && (url.includes("/auth/login") || url.includes("/auth/pin"))
 }

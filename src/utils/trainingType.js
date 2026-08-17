@@ -26,6 +26,10 @@ export function isHomeTraining(source) {
   return normalizeTrainingType(source.training_type) === TRAINING_HOME
 }
 
+export function usesPoseLadder(user) {
+  return String(user?.username || "").toLowerCase() === "milagros"
+}
+
 export function trainingTypeMeta(source) {
   const id = normalizeTrainingType(typeof source === "string" ? source : source?.training_type)
   return TRAINING_TYPES.find((item) => item.id === id) || TRAINING_TYPES[0]

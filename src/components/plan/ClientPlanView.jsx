@@ -5,12 +5,14 @@ import {
   Play,
 } from "lucide-react"
 import { WEEKDAYS, firstName, todayWeekday } from "../../utils/planUtils"
-import { isHomeTraining } from "../../utils/trainingType"
+import { isHomeTraining, usesPoseLadder } from "../../utils/trainingType"
 import { savePlanProgress } from "../../services/planService"
 import { getWorkouts, peekWorkouts, logSessionExercise } from "../../services/workoutService"
 import PlanDesktopHeader from "./PlanDesktopHeader"
 import ExerciseHeroCard from "./ExerciseHeroCard"
 import ExerciseDetail from "./ExerciseDetail"
+import PoseDaySection from "./PoseDaySection"
+import { isYogaClassWeekday } from "../../utils/poseLadder"
 
 const BLAZE = "#FF5C00"
 const BLAZE_GLOW = "rgba(255, 92, 0, 0.55)"
@@ -50,6 +52,8 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
   const trained = new Set((plan.trained_weekdays || []).map(Number))
   const displayName = firstName(plan.user_name || user?.name)
   const hideWeight = isHomeTraining(user) || isHomeTraining(plan)
+  const poseLadder = usesPoseLadder(user)
+  const yogaClassDay = poseLadder && isYogaClassWeekday(selectedDay)
   const total = session?.exercises?.length || 0
   const done = Math.min(progress.completed || 0, total)
   const percent = total > 0 ? Math.round((done / total) * 100) : 0
@@ -60,7 +64,7 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
     || WEEKDAYS.find((day) => sessionsByDay[day.key])
 
   useEffect(() => {
-    getWorkouts()
+    getWorkouts({ skipLoading: true })
       .then((list) => setWorkouts(Array.isArray(list) ? list : []))
       .catch(() => {})
   }, [])
@@ -262,6 +266,8 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
           </div>
         )}
 
+        {yogaClassDay ? <PoseDaySection mode="class" /> : null}
+
         {session ? (
           <>
             <div className="mt-8 flex items-start justify-between gap-3">
@@ -346,6 +352,8 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
             </p>
           </section>
         )}
+
+        {poseLadder && !yogaClassDay ? <PoseDaySection mode="practice" /> : null}
       </div>
 
       {activeExercise ? (

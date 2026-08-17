@@ -3,7 +3,7 @@ import { getStoredUser } from "../../services/authService"
 import { getMyPlan, peekPlan } from "../../services/planService"
 import { getWorkouts, peekWorkouts } from "../../services/workoutService"
 import { buildProgressStory, formatKg } from "../../utils/progressStory"
-import { isHomeTraining } from "../../utils/trainingType"
+import { isHomeTraining, usesPoseLadder } from "../../utils/trainingType"
 import BrandLogo from "../BrandLogo"
 import PoseProgressSection from "./PoseProgressSection"
 
@@ -188,6 +188,7 @@ export default function AlumnaProgressView({ workouts: workoutsProp }) {
     [workouts, plan]
   )
   const home = isHomeTraining(getStoredUser()) || isHomeTraining(plan)
+  const poseLadder = usesPoseLadder(getStoredUser())
 
   const liftLabel = story.lift && story.lift.delta > 0
     ? `+${formatKg(story.lift.delta)}KG`
@@ -387,9 +388,9 @@ export default function AlumnaProgressView({ workouts: workoutsProp }) {
           </ol>
         )}
 
-        {home ? (
+        {poseLadder ? (
           <PoseProgressSection />
-        ) : (
+        ) : home ? null : (
           <>
             <p className="mt-10 text-[11px] font-semibold tracking-[0.22em] uppercase" style={{ color: BLAZE }}>
               Cómo subís

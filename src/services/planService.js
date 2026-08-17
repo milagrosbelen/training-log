@@ -44,6 +44,10 @@ function rememberPlan(plan) {
   return planCache
 }
 
+export function hydratePlan(plan) {
+  return rememberPlan(plan ?? null)
+}
+
 function isAuthError(err) {
   const status = err?.response?.status
   return status === 401 || status === 403
@@ -94,55 +98,66 @@ export function clearPlanCache() {
 }
 
 export async function getMyPlan({ skipLoading = false } = {}) {
-  const userId = readStoredUserId()
-  const hasCache = planCacheUserId === userId && planCache !== undefined
+  const cached = peekPlan()
+  const hasCache = cached !== undefined
   if (hasCache && Date.now() - planCacheAt < PLAN_TTL) {
-    return planCache
+    return cached
   }
-  if (planInflight) return planInflight
+  if (planInflight) return hasCache ? cached : planInflight
 
-  const silent = skipLoading || hasCache || peekPlan() !== undefined
+  const silent = skipLoading || hasCache
 
   planInflight = (async () => {
-    let lastError = null
-    for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return rememberPlan(await requestMyPlan(silent))
+    } catch (err) {
+      if (isAuthError(err)) throw err
+      if (hasCache) return cached
       try {
-        const plan = await requestMyPlan(silent)
-        return rememberPlan(plan)
-      } catch (err) {
-        lastError = err
-        if (isAuthError(err)) throw err
-        if (attempt < 2) await wait(1200 * (attempt + 1))
+        await wait(800)
+        return rememberPlan(await requestMyPlan(true))
+      } catch (retryErr) {
+        if (hasCache) return cached
+        throw retryErr
       }
     }
-    const cached = peekPlan()
-    if (cached !== undefined) return cached
-    throw lastError
   })().finally(() => {
     planInflight = null
   })
 
+  if (hasCache) {
+    planInflight.catch(() => {})
+    return cached
+  }
+
   return planInflight
 }
 
+export function hydrateClients(list) {
+  clientsCache = Array.isArray(list) ? list : []
+  clientsCacheUserId = readStoredUserId()
+  clientsCacheAt = Date.now()
+  return clientsCache
+}
+
 export async function getClients({ skipLoading = false } = {}) {
-  const userId = readStoredUserId()
-  const hasCache = Array.isArray(clientsCache) && clientsCacheUserId === userId
+  const cached = peekClients()
+  const hasCache = Array.isArray(cached)
   if (hasCache && Date.now() - clientsCacheAt < PLAN_TTL) {
-    return clientsCache
+    return cached
   }
-  if (clientsInflight) return clientsInflight
+  if (clientsInflight) return hasCache ? cached : clientsInflight
 
   clientsInflight = api.get("/clients", { skipLoading: skipLoading || hasCache })
-    .then(({ data }) => {
-      clientsCache = data?.data ?? []
-      clientsCacheUserId = readStoredUserId()
-      clientsCacheAt = Date.now()
-      return clientsCache
-    })
+    .then(({ data }) => hydrateClients(data?.data ?? []))
     .finally(() => {
       clientsInflight = null
     })
+
+  if (hasCache) {
+    clientsInflight.catch(() => {})
+    return cached
+  }
 
   return clientsInflight
 }
@@ -159,12 +174,12 @@ export function peekClientPlan(alumnaId) {
   return clientPlans.get(key)
 }
 
-export async function getClientPlan(userId) {
+export async function getClientPlan(userId, { skipLoading = false } = {}) {
   const key = String(userId)
   if (clientPlans.has(key)) return clientPlans.get(key)
   if (clientPlansInflight.has(key)) return clientPlansInflight.get(key)
 
-  const request = api.get(`/plans/users/${userId}`)
+  const request = api.get(`/plans/users/${userId}`, { skipLoading })
     .then(({ data }) => {
       const plan = data?.data ?? null
       clientPlans.set(key, plan)
