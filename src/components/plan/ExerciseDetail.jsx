@@ -247,7 +247,9 @@ export default function ExerciseDetail({
               </div>
             </div>
             <p className="mt-3 text-[12px] text-slate-500">
-              En naranja, la zona que más trabaja. El resto queda de apoyo.
+              {meta.primary === "completo"
+                ? "En naranja, trabaja el cuerpo entero."
+                : "En naranja, la zona que más trabaja. El resto queda de apoyo."}
             </p>
           </section>
 

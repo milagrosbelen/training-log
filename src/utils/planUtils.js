@@ -42,7 +42,7 @@ export function emptyExercise() {
     name: "",
     sets: 4,
     reps: "8-10",
-    rest_seconds: 90,
+    rest_seconds: 60,
     tip: "",
     muscle: "",
   }
@@ -83,8 +83,20 @@ export function emptyPlanForm() {
   }
 }
 
+export const REST_MINUTE_OPTIONS = [0, 1, 2, 3, 4, 5]
+
+export function restMinutesFromSeconds(seconds) {
+  const minutes = Math.round((Number(seconds) || 0) / 60)
+  return Math.min(5, Math.max(0, minutes))
+}
+
+export function restSecondsFromMinutes(minutes) {
+  const value = Math.min(5, Math.max(0, Number(minutes) || 0))
+  return value * 60
+}
+
 export function formatRest(seconds) {
-  const value = Number(seconds) || 0
-  if (value <= 0) return "sin descanso"
-  return `${value}s descanso`
+  const minutes = restMinutesFromSeconds(seconds)
+  if (minutes <= 0) return "0 descanso"
+  return minutes === 1 ? "1 min" : `${minutes} min`
 }

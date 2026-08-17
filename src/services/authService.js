@@ -28,10 +28,11 @@ export async function login(email, password) {
   return persistSession(data)
 }
 
-export async function loginWithPin(username, pin) {
+export async function loginWithPin(username, pin, role = "alumna") {
   const { data } = await api.post("/auth/pin", {
     username: username?.trim()?.toLowerCase(),
     pin: String(pin ?? "").trim(),
+    role: role === "coach" ? "coach" : "client",
   })
   return persistSession(data)
 }

@@ -33,7 +33,9 @@ export const ROUTINES = {
       "Peso muerto",
       "Patada de glúteos",
       "Patada lateral",
-      "Abducción con banda"
+      "Patada de glúteos lateral en polea",
+      "Abducción con banda",
+      "Máquina de abducción"
     ],
     "Isquios": [
       "Peso muerto",
@@ -41,10 +43,14 @@ export const ROUTINES = {
       "Sillón de isquios"
     ],
     "Movilidad": [
+      "Movilidad dinámica",
       "Calentamiento día 1 piernas",
       "Movilidad de piernas",
       "Calentamiento con banda en las piernas",
       "Movilidad para el día de glúteos"
+    ],
+    "Completo": [
+      "Cinta"
     ]
   },
   "Tren superior": {
@@ -71,7 +77,8 @@ export const ROUTINES = {
     "Bíceps": [
       "Banco Scott",
       "Barra W",
-      "Martillo"
+      "Martillo",
+      "Curl de bíceps en banco inclinado"
     ],
     "Abdominales": [
       "Crunch normal",
@@ -81,7 +88,11 @@ export const ROUTINES = {
       "Abs para oblicuos con pelota"
     ],
     "Movilidad": [
+      "Movilidad dinámica",
       "Movilidad con banda para torso"
+    ],
+    "Completo": [
+      "Cinta"
     ]
   }
 }

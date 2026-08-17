@@ -63,40 +63,59 @@ class AuthController extends Controller
         $this->ensureJsonParsed($request);
 
         $validated = $request->validate([
-            'username' => ['required', 'string', 'max:40'],
-            'pin' => ['required', 'string', 'min:4', 'max:6'],
+            'username' => ['required', 'string', 'max:80'],
+            'pin' => ['required', 'string', 'min:4', 'max:72'],
+            'role' => ['nullable', 'in:client,coach,alumna'],
         ]);
 
         $username = strtolower(trim($validated['username']));
-        $user = User::query()
-            ->where('role', User::ROLE_CLIENT)
-            ->where('username', $username)
-            ->first([
-                'id',
-                'name',
-                'username',
-                'email',
-                'role',
-                'avatar',
-                'focus',
-                'is_active',
-                'pin_hash',
-            ]);
+        $role = $validated['role'] ?? User::ROLE_CLIENT;
+        if ($role === 'alumna') {
+            $role = User::ROLE_CLIENT;
+        }
 
-        $invalid = !$user
-            || !$user->pin_hash
-            || !Hash::check($validated['pin'], $user->pin_hash);
+        $query = User::query()->where('role', $role);
 
-        if ($invalid) {
+        if ($role === User::ROLE_COACH) {
+            $query->where(function ($inner) use ($username) {
+                $inner->where('username', $username)->orWhere('email', $username);
+            });
+        } else {
+            $query->where('username', $username);
+        }
+
+        $user = $query->first([
+            'id',
+            'name',
+            'username',
+            'email',
+            'password',
+            'role',
+            'avatar',
+            'focus',
+            'is_active',
+            'pin_hash',
+        ]);
+
+        $pin = $validated['pin'];
+        $validPin = $user && $user->pin_hash && Hash::check($pin, $user->pin_hash);
+        $validPassword = $role === User::ROLE_COACH
+            && $user
+            && $user->password
+            && Hash::check($pin, $user->password);
+
+        if (!$user || (!$validPin && !$validPassword)) {
             return response()->json([
                 'message' => 'Los datos son incorrectos.',
             ], 401);
         }
 
         if (!$user->is_active) {
-            return response()->json([
-                'message' => 'Tu acceso está desactivado. Hablá con tu entrenadora.',
-            ], 403);
+            $message = $role === User::ROLE_COACH
+                ? 'Esta cuenta está desactivada.'
+                : 'Tu acceso está desactivado. Hablá con tu entrenadora.';
+
+            return response()->json(['message' => $message], 403);
         }
 
         return $this->authPayload($user);

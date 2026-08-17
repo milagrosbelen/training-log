@@ -37,8 +37,11 @@ const KNOWN_FILES = new Set([
   "maquina-de-abductor",
   "maquina-de-aductor",
   "martillo",
+  "curl-biceps-banco-inclinado",
+  "patada-de-gluteos-lateral-en-polea",
   "movilidad-con-banda-para-torso",
   "movilidad-de-piernas",
+  "movilidad-dinamica",
   "movilidad-para-el-dia-de-gluteos",
   "patada-de-gluteos",
   "patada-lateral",
@@ -96,6 +99,26 @@ const IMAGE_ALIASES = {
   "abs-oblicuos": "abs-para-oblicuos-con-pelota",
   "abs-con-pelota": "abs-para-oblicuos-con-pelota",
   "oblicuos": "abs-para-oblicuos-con-pelota",
+  "curl-en-banco-inclinado": "curl-biceps-banco-inclinado",
+  "curl-de-biceps-en-banco-inclinado": "curl-biceps-banco-inclinado",
+  "curl-de-biceps-banco-inclinado": "curl-biceps-banco-inclinado",
+  "curl-inclinado": "curl-biceps-banco-inclinado",
+  "curl-biceps-inclinado": "curl-biceps-banco-inclinado",
+  "biceps-banco-inclinado": "curl-biceps-banco-inclinado",
+  "pullover": "pull-over",
+  "pull-over-en-polea": "pull-over",
+  "pullover-en-polea": "pull-over",
+  "fondos-en-banco": "fondos",
+  "fondos-en-el-banco": "fondos",
+  "fondo-en-banco": "fondos",
+  "maquina-de-abduccion": "maquina-de-abductor",
+  "maquina-abduccion": "maquina-de-abductor",
+  "abduccion-maquina": "maquina-de-abductor",
+  "patada-lateral": "patada-de-gluteos-lateral-en-polea",
+  "patada-lateral-en-polea": "patada-de-gluteos-lateral-en-polea",
+  "patada-de-gluteos-lateral": "patada-de-gluteos-lateral-en-polea",
+  "movilidad-dinamica-sin-banda": "movilidad-dinamica",
+  "movilidad-dinamica-sin-bandas": "movilidad-dinamica",
 }
 
 const KEYWORD_FILES = [
@@ -105,14 +128,18 @@ const KEYWORD_FILES = [
   { test: /calentamiento.*banda|banda.*calentamiento|calentamiento.*pierna.*banda|banda.*pierna/, file: "calentamiento-con-banda-movilidad" },
   { test: /movilidad.*glute|glute.*movilidad|dia de glute/, file: "calentamiento-con-banda-movilidad" },
   { test: /calentamiento.*pierna|dia.?1.*pierna|pierna.*calentamiento/, file: "calentamiento-dia-1-piernas" },
-  { test: /movilidad.*pierna|estiramiento|dinamico/, file: "movilidad-de-piernas" },
+  { test: /movilidad.*dinamica|dinamica/, file: "movilidad-dinamica" },
+  { test: /movilidad.*pierna|estiramiento/, file: "movilidad-de-piernas" },
   { test: /torso.*banda|banda.*torso/, file: "movilidad-con-banda-para-torso" },
   { test: /smith/, file: "sentadilla-smith" },
   { test: /hack/, file: "hack" },
-  { test: /calentamiento/, file: "calentamiento-con-banda-movilidad" },
+  { test: /curl.*inclin|inclin.*curl|biceps.*inclin|inclin.*biceps/, file: "curl-biceps-banco-inclinado" },
+  { test: /maquina.*abduc|abduc.*maquina|abductor/, file: "maquina-de-abductor" },
+  { test: /patada.*lateral.*polea|lateral.*polea|patada.*polea/, file: "patada-de-gluteos-lateral-en-polea" },
+  { test: /patada.*lateral|lateral.*patada/, file: "patada-de-gluteos-lateral-en-polea" },
+  { test: /patada/, file: "patada-de-gluteos" },
   { test: /abduccion|banda.*camin/, file: "abduccion-lateral-con-banda-caminando" },
   { test: /aductor/, file: "maquina-de-aductor" },
-  { test: /abductor/, file: "maquina-de-abductor" },
   { test: /prensa/, file: "prensa" },
   { test: /sillon.*cuad|cuad.*sillon|extension.*pierna/, file: "sillon-de-cuadriceps" },
   { test: /sumo/, file: "sentadilla-sumo" },
@@ -121,8 +148,6 @@ const KEYWORD_FILES = [
   { test: /hip.?thrust/, file: "hip-thrust" },
   { test: /cajon|step.?up/, file: "subidas-al-cajon" },
   { test: /peso.?muerto/, file: "peso-muerto" },
-  { test: /patada.*lateral|lateral.*patada/, file: "patada-lateral" },
-  { test: /patada/, file: "patada-de-gluteos" },
   { test: /dominad/, file: "dominadas" },
   { test: /jalon/, file: "jalon-al-pecho" },
   { test: /remo/, file: "remo-sentado" },
@@ -147,6 +172,7 @@ const KEYWORD_FILES = [
 ]
 
 export const EXERCISE_PHOTO_FALLBACK = "/home-hero-bench.png"
+const IMAGE_VERSION = "3"
 
 export function resolveExerciseImageFile(name) {
   const slug = slugExercise(name)
@@ -167,5 +193,5 @@ export function resolveExerciseImageFile(name) {
 export function getExerciseImage(name) {
   const file = resolveExerciseImageFile(name)
   if (!file) return EXERCISE_PHOTO_FALLBACK
-  return `/exercises/${file}.png`
+  return `/exercises/${file}.png?v=${IMAGE_VERSION}`
 }

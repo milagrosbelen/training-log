@@ -11,6 +11,7 @@ export const MUSCLE_LABELS = {
   gluteos: "Glúteos",
   isquios: "Isquios",
   aductor: "Aductor",
+  completo: "Completo",
 }
 
 const MUSCLE_FROM_LABEL = Object.fromEntries(
@@ -51,7 +52,7 @@ const CATALOG = {
     type: "compuesto",
     primary: "pecho",
     secondary: ["triceps", "hombros"],
-    cues: ["Torso levemente inclinado", "Codos a 45°", "Bajada controlada"],
+    cues: ["Manos al borde del banco", "Codos atrás", "Bajada controlada"],
   },
   sentadilla: {
     type: "compuesto",
@@ -143,6 +144,24 @@ const CATALOG = {
     secondary: [],
     cues: ["Rodillas hacia afuera", "Tensión constante", "Sin mover la lumbar"],
   },
+  "maquina-de-abduccion": {
+    type: "aislamiento",
+    primary: "gluteos",
+    secondary: [],
+    cues: ["Espalda pegada", "Abrí las rodillas", "Sin rebotar"],
+  },
+  "maquina-de-abductor": {
+    type: "aislamiento",
+    primary: "gluteos",
+    secondary: [],
+    cues: ["Espalda pegada", "Abrí las rodillas", "Sin rebotar"],
+  },
+  "patada-de-gluteos-lateral-en-polea": {
+    type: "aislamiento",
+    primary: "gluteos",
+    secondary: [],
+    cues: ["Torso estable", "Pierna al costado", "Sin girar la cadera"],
+  },
   "sillon-de-isquios": {
     type: "aislamiento",
     primary: "isquios",
@@ -166,6 +185,12 @@ const CATALOG = {
     primary: "cuadriceps",
     secondary: ["isquios", "gluteos"],
     cues: ["Movimiento controlado", "Sin rebotar", "Rango amplio"],
+  },
+  "movilidad-dinamica": {
+    type: "aislamiento",
+    primary: "cuadriceps",
+    secondary: ["gluteos", "isquios"],
+    cues: ["Sin bandas", "Rango amplio", "Movimiento controlado"],
   },
   "movilidad-para-el-dia-de-gluteos": {
     type: "aislamiento",
@@ -207,7 +232,7 @@ const CATALOG = {
     type: "aislamiento",
     primary: "espalda",
     secondary: ["pecho"],
-    cues: ["Codos semi-flexionados", "Estirón amplio", "Sin arquear lumbar"],
+    cues: ["Polea alta", "Brazos semi-extendidos", "Llevá la soga a la cadera"],
   },
   "press-militar": {
     type: "compuesto",
@@ -245,6 +270,24 @@ const CATALOG = {
     secondary: [],
     cues: ["Agarre neutro", "Codos quietos", "Control en la bajada"],
   },
+  "curl-en-banco-inclinado": {
+    type: "aislamiento",
+    primary: "biceps",
+    secondary: [],
+    cues: ["Espalda pegada al banco", "Brazos atrás", "Sin impulso"],
+  },
+  "curl-biceps-banco-inclinado": {
+    type: "aislamiento",
+    primary: "biceps",
+    secondary: [],
+    cues: ["Espalda pegada al banco", "Brazos atrás", "Sin impulso"],
+  },
+  "curl-de-biceps-en-banco-inclinado": {
+    type: "aislamiento",
+    primary: "biceps",
+    secondary: [],
+    cues: ["Espalda pegada al banco", "Brazos atrás", "Sin impulso"],
+  },
   "crunch-normal": {
     type: "aislamiento",
     primary: "abdominales",
@@ -281,9 +324,16 @@ const CATALOG = {
     secondary: ["espalda"],
     cues: ["Cadera quieta", "Rotá desde el torso", "Sin rebotar"],
   },
+  cinta: {
+    type: "compuesto",
+    primary: "completo",
+    secondary: [],
+    cues: ["Postura erguida", "Paso natural", "Respirá constante"],
+  },
 }
 
 const KEYWORD_RULES = [
+  { test: /cinta|eliptica|cardio|full.?body|cuerpo.?completo|todo.?el.?cuerpo/, primary: "completo", secondary: [], type: "compuesto" },
   { test: /banca|press inclin|flexion|cruce|pec fly|aperturas/, primary: "pecho", secondary: ["triceps", "hombros"], type: "compuesto" },
   { test: /dominad|jalon|remo|pull ?over|espalda/, primary: "espalda", secondary: ["biceps"], type: "compuesto" },
   { test: /militar|vuelo|hombro|laterales/, primary: "hombros", secondary: ["triceps"], type: "aislamiento" },
@@ -310,12 +360,22 @@ const DEFAULT_CUES = {
   gluteos: ["Empujá con talones", "Pausa arriba", "Sin arquear lumbar"],
   isquios: ["Cadera hacia atrás", "Espalda neutra", "Control en la bajada"],
   aductor: ["Rodillas hacia afuera", "Cadera quieta", "Rango controlado"],
+  completo: ["Postura estable", "Movimiento controlado", "Respirá constante"],
+}
+
+const MUSCLE_ALIASES = {
+  "cuerpo completo": "completo",
+  "full body": "completo",
+  fullbody: "completo",
+  "todo el cuerpo": "completo",
+  cardio: "completo",
 }
 
 function muscleKeyFromLabel(value) {
   const raw = String(value || "").trim().toLowerCase()
   if (!raw) return ""
   if (MUSCLE_FROM_LABEL[raw]) return MUSCLE_FROM_LABEL[raw]
+  if (MUSCLE_ALIASES[raw]) return MUSCLE_ALIASES[raw]
   const slug = slugExercise(raw).replace(/-/g, "")
   return Object.keys(MUSCLE_LABELS).find((key) => key.replace(/-/g, "") === slug) || ""
 }

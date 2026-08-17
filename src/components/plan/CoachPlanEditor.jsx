@@ -18,6 +18,10 @@ import {
   firstName,
   parseObjectives,
   joinObjectives,
+  formatRest,
+  REST_MINUTE_OPTIONS,
+  restMinutesFromSeconds,
+  restSecondsFromMinutes,
 } from "../../utils/planUtils"
 import {
   getClients,
@@ -611,7 +615,7 @@ export default function CoachPlanEditor() {
                             />
                             <p className="text-[12px] text-slate-400">
                               {exercise.sets || 0}x{exercise.reps || "—"}
-                              {exercise.rest_seconds ? ` · ${exercise.rest_seconds}s` : ""}
+                              {` · ${formatRest(exercise.rest_seconds)}`}
                             </p>
                           </div>
                           {filled ? (
@@ -688,21 +692,27 @@ export default function CoachPlanEditor() {
                             className="h-9 rounded-xl bg-black border border-white/10 px-2 text-sm text-[#f4f4f5]"
                             aria-label="Reps"
                           />
-                          <input
-                            type="number"
-                            min={0}
-                            value={exercise.rest_seconds}
+                          <select
+                            value={restMinutesFromSeconds(exercise.rest_seconds)}
                             onChange={(e) =>
                               updateSession(activeSession.weekday, (current) => ({
                                 ...current,
                                 exercises: current.exercises.map((item, i) =>
-                                  i === index ? { ...item, rest_seconds: Number(e.target.value) || 0 } : item
+                                  i === index
+                                    ? { ...item, rest_seconds: restSecondsFromMinutes(e.target.value) }
+                                    : item
                                 ),
                               }))
                             }
                             className="h-9 rounded-xl bg-black border border-white/10 px-2 text-sm text-[#f4f4f5]"
-                            aria-label="Descanso"
-                          />
+                            aria-label="Descanso en minutos"
+                          >
+                            {REST_MINUTE_OPTIONS.map((minutes) => (
+                              <option key={minutes} value={minutes}>
+                                {minutes === 0 ? "0 descanso" : minutes === 1 ? "1 min" : `${minutes} min`}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div className="px-2.5 pb-2.5 grid grid-cols-[1fr_110px_52px] gap-2 items-center">
                           <input

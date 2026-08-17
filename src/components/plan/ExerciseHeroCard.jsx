@@ -1,8 +1,8 @@
 import { Check } from "lucide-react"
 
 import { resolveExerciseMeta } from "../../data/exerciseCatalog"
-
 import ExercisePhoto from "../ExercisePhoto"
+import { formatRest } from "../../utils/planUtils"
 
 
 
@@ -107,8 +107,7 @@ export default function ExerciseHeroCard({
         <p className="mt-1.5 text-sm text-white/85 leading-snug">
 
           {exercise.sets} series · {exercise.reps} reps
-
-          {exercise.rest_seconds ? ` · ${exercise.rest_seconds}s` : ""}
+          {` · ${formatRest(exercise.rest_seconds)}`}
 
         </p>
 

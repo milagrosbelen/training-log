@@ -1,7 +1,6 @@
 import { useEffect } from "react"
 import { Routes, Route, Navigate, Outlet } from "react-router-dom"
 import Login from "./pages/Login"
-import LoginAdmin from "./pages/LoginAdmin"
 import AuthenticatedLayout from "./components/AuthenticatedLayout"
 import AdminLayout from "./components/AdminLayout"
 import Dashboard from "./pages/Dashboard"
@@ -38,7 +37,7 @@ function RequireAlumna() {
 }
 
 function RequireAdmin() {
-  if (!isAuthenticated()) return <Navigate to="/acceso" replace />
+  if (!isAuthenticated()) return <Navigate to="/" replace />
   if (!isCoach()) return <Navigate to="/dashboard" replace />
   return <Outlet />
 }
@@ -58,7 +57,7 @@ export default function AppRoutes() {
       <LoadingOverlay />
       <Routes>
         <Route path="/" element={<RequireGuest><Login /></RequireGuest>} />
-        <Route path="/acceso" element={<RequireGuest><LoginAdmin /></RequireGuest>} />
+        <Route path="/acceso" element={<Navigate to="/" replace />} />
         <Route path="/register" element={<Navigate to="/" replace />} />
         <Route path="/welcome" element={<Navigate to={isAuthenticated() ? homeForUser() : "/"} replace />} />
 
