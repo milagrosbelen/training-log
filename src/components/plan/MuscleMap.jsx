@@ -6,7 +6,7 @@ const FRONT = {
   abdominales: "/anatomy/anatomy-front-abdominales.jpg",
   cuadriceps: "/anatomy/anatomy-front-cuadriceps.jpg",
   aductor: "/anatomy/anatomy-front-aductor.jpg",
-  completo: "/anatomy/anatomy-front-completo.jpg",
+  completo: "/anatomy/anatomy-front-completo.png?v=3",
 }
 
 const BACK = {
@@ -15,14 +15,15 @@ const BACK = {
   triceps: "/anatomy/anatomy-back-triceps.jpg",
   gluteos: "/anatomy/anatomy-back-gluteos.jpg",
   isquios: "/anatomy/anatomy-back-isquios.jpg",
-  completo: "/anatomy/anatomy-back-completo.jpg",
+  "gluteos-isquios": "/anatomy/anatomy-back-gluteos-isquios.jpg?v=1",
+  completo: "/anatomy/anatomy-back-completo.jpg?v=2",
 }
 
 const FRONT_BASE = "/anatomy/anatomy-front.jpg"
 const BACK_BASE = "/anatomy/anatomy-back.jpg"
 const BACK_LEGS = "/anatomy/anatomy-back-legs.jpg"
 
-const LOWER = new Set(["gluteos", "isquios", "cuadriceps", "aductor"])
+const LOWER = new Set(["gluteos", "isquios", "gluteos-isquios", "cuadriceps", "aductor"])
 const FULL_BODY = new Set(["completo"])
 
 export function anatomySrc(primary, view) {

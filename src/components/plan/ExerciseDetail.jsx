@@ -220,7 +220,7 @@ export default function ExerciseDetail({
               </ul>
               <div className="relative">
                 <MuscleMap
-                  primary={meta.primary}
+                  primary={meta.mapKey || meta.primary}
                   view={view}
                   className="w-full h-[220px] rounded-[22px] bg-black"
                 />
@@ -247,9 +247,11 @@ export default function ExerciseDetail({
               </div>
             </div>
             <p className="mt-3 text-[12px] text-slate-500">
-              {meta.primary === "completo"
+              {meta.mapKey === "completo"
                 ? "En naranja, trabaja el cuerpo entero."
-                : "En naranja, la zona que más trabaja. El resto queda de apoyo."}
+                : meta.mapKey === "gluteos-isquios"
+                  ? "En naranja, glúteos e isquios juntos."
+                  : "En naranja, la zona que más trabaja. El resto queda de apoyo."}
             </p>
           </section>
 

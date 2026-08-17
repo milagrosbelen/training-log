@@ -10,6 +10,7 @@ export const MUSCLE_LABELS = {
   cuadriceps: "Cuádriceps",
   gluteos: "Glúteos",
   isquios: "Isquios",
+  "gluteos-isquios": "Glúteos e isquios",
   aductor: "Aductor",
   completo: "Completo",
 }
@@ -21,7 +22,7 @@ const MUSCLE_FROM_LABEL = Object.fromEntries(
   ])
 )
 
-const BACK_MUSCLES = new Set(["espalda", "gluteos", "isquios"])
+const BACK_MUSCLES = new Set(["espalda", "gluteos", "isquios", "gluteos-isquios"])
 
 const CATALOG = {
   "press-de-banca": {
@@ -187,10 +188,10 @@ const CATALOG = {
     cues: ["Movimiento controlado", "Sin rebotar", "Rango amplio"],
   },
   "movilidad-dinamica": {
-    type: "aislamiento",
-    primary: "cuadriceps",
-    secondary: ["gluteos", "isquios"],
-    cues: ["Sin bandas", "Rango amplio", "Movimiento controlado"],
+    type: "compuesto",
+    primary: "completo",
+    secondary: [],
+    cues: ["Rango amplio", "Movimiento controlado", "Respirá constante"],
   },
   "movilidad-para-el-dia-de-gluteos": {
     type: "aislamiento",
@@ -333,7 +334,7 @@ const CATALOG = {
 }
 
 const KEYWORD_RULES = [
-  { test: /cinta|eliptica|cardio|full.?body|cuerpo.?completo|todo.?el.?cuerpo/, primary: "completo", secondary: [], type: "compuesto" },
+  { test: /cinta|eliptica|cardio|full.?body|cuerpo.?completo|todo.?el.?cuerpo|movilidad.?dinamica/, primary: "completo", secondary: [], type: "compuesto" },
   { test: /banca|press inclin|flexion|cruce|pec fly|aperturas/, primary: "pecho", secondary: ["triceps", "hombros"], type: "compuesto" },
   { test: /dominad|jalon|remo|pull ?over|espalda/, primary: "espalda", secondary: ["biceps"], type: "compuesto" },
   { test: /militar|vuelo|hombro|laterales/, primary: "hombros", secondary: ["triceps"], type: "aislamiento" },
@@ -359,6 +360,7 @@ const DEFAULT_CUES = {
   cuadriceps: ["Rodillas alineadas", "Peso en talones", "Torso estable"],
   gluteos: ["Empujá con talones", "Pausa arriba", "Sin arquear lumbar"],
   isquios: ["Cadera hacia atrás", "Espalda neutra", "Control en la bajada"],
+  "gluteos-isquios": ["Cadera hacia atrás", "Empujá con talones", "Espalda neutra"],
   aductor: ["Rodillas hacia afuera", "Cadera quieta", "Rango controlado"],
   completo: ["Postura estable", "Movimiento controlado", "Respirá constante"],
 }
@@ -369,6 +371,9 @@ const MUSCLE_ALIASES = {
   fullbody: "completo",
   "todo el cuerpo": "completo",
   cardio: "completo",
+  "gluteos e isquios": "gluteos-isquios",
+  "glúteos e isquios": "gluteos-isquios",
+  "isquios y gluteos": "gluteos-isquios",
 }
 
 function muscleKeyFromLabel(value) {
@@ -404,10 +409,16 @@ export function resolveExerciseMeta(exercise) {
   const listed = CATALOG[slug]
   const inferred = listed || fromKeywords(name)
   const assigned = muscleKeyFromLabel(exercise?.muscle)
-
-  const primary = assigned || inferred?.primary || "pecho"
+  const inferredPrimary = inferred?.primary || ""
+  const primary = inferredPrimary === "completo"
+    ? "completo"
+    : (assigned || inferredPrimary || "pecho")
   const secondary = (inferred?.secondary || []).filter((key) => key !== primary)
   const type = inferred?.type || "compuesto"
+  const zones = new Set([primary, ...secondary])
+  const mapKey = primary === "gluteos-isquios" || (type === "compuesto" && zones.has("gluteos") && zones.has("isquios"))
+    ? "gluteos-isquios"
+    : primary
 
   return {
     name,
@@ -418,7 +429,8 @@ export function resolveExerciseMeta(exercise) {
     secondary,
     secondaryLabels: secondary.map((key) => MUSCLE_LABELS[key]).filter(Boolean),
     muscles: [primary, ...secondary],
+    mapKey,
     cues: inferred?.cues || DEFAULT_CUES[primary] || DEFAULT_CUES.pecho,
-    preferredView: BACK_MUSCLES.has(primary) ? "back" : "front",
+    preferredView: BACK_MUSCLES.has(mapKey) || BACK_MUSCLES.has(primary) ? "back" : "front",
   }
 }

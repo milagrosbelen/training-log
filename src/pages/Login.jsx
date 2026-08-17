@@ -98,9 +98,10 @@ export default function Login() {
               id="login-user"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              placeholder="usuario"
               autoCapitalize="none"
               autoCorrect="off"
-              autoComplete="username"
+              autoComplete="off"
               required
               disabled={loading}
               className={fieldClass}
@@ -119,7 +120,8 @@ export default function Login() {
               maxLength={role === "alumna" ? 6 : 72}
               value={pin}
               onChange={(e) => handlePinChange(e.target.value)}
-              autoComplete="current-password"
+              placeholder="••••"
+              autoComplete="off"
               required
               disabled={loading}
               className={`${fieldClass} tracking-[0.45em]`}

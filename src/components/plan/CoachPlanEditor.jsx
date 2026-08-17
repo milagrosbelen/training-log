@@ -588,7 +588,7 @@ export default function CoachPlanEditor() {
                               />
                             ) : hasMuscle ? (
                               <MuscleMap
-                                primary={meta.primary}
+                                primary={meta.mapKey || meta.primary}
                                 view={meta.preferredView}
                                 className="h-full w-full"
                               />
@@ -745,7 +745,7 @@ export default function CoachPlanEditor() {
                           <div className="h-9 w-[52px] rounded-xl overflow-hidden bg-[#1a1a1a]">
                             {hasMuscle ? (
                               <MuscleMap
-                                primary={meta.primary}
+                                primary={meta.mapKey || meta.primary}
                                 view={meta.preferredView}
                                 className="h-full w-full"
                               />
