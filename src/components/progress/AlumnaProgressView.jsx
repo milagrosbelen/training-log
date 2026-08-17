@@ -147,43 +147,44 @@ function WeightSparkline({ chart }) {
 export default function AlumnaProgressView({ workouts: workoutsProp }) {
   const [workouts, setWorkouts] = useState(() => workoutsProp || peekWorkouts() || [])
   const [plan, setPlan] = useState(() => peekPlan() ?? null)
-  const [error, setError] = useState("")
 
   useEffect(() => {
-    if (workoutsProp) setWorkouts(workoutsProp)
+    if (workoutsProp) setWorkouts(Array.isArray(workoutsProp) ? workoutsProp : [])
   }, [workoutsProp])
 
   useEffect(() => {
+    let cancelled = false
+
     async function load() {
-      try {
-        const [planData, workoutData] = await Promise.all([
-          getMyPlan(),
-          workoutsProp ? Promise.resolve(workoutsProp) : getWorkouts(),
-        ])
-        setPlan(planData)
-        setWorkouts(Array.isArray(workoutData) ? workoutData : [])
-        setError("")
-      } catch (err) {
-        if (!(workoutsProp || peekWorkouts())?.length) {
-          setError(err.response?.data?.message ?? "No se pudo cargar el progreso.")
-        }
+      const [planResult, workoutResult] = await Promise.allSettled([
+        getMyPlan(),
+        workoutsProp ? Promise.resolve(workoutsProp) : getWorkouts(),
+      ])
+      if (cancelled) return
+
+      if (planResult.status === "fulfilled") {
+        setPlan(planResult.value ?? null)
+      }
+
+      if (workoutResult.status === "fulfilled") {
+        setWorkouts(Array.isArray(workoutResult.value) ? workoutResult.value : [])
+      } else {
+        setWorkouts((current) => (
+          current.length ? current : peekWorkouts() || []
+        ))
       }
     }
+
     load()
-  }, [])
+    return () => {
+      cancelled = true
+    }
+  }, [workoutsProp])
 
   const story = useMemo(
     () => buildProgressStory(workouts, plan, getStoredUser()?.name),
     [workouts, plan]
   )
-
-  if (error && workouts.length === 0) {
-    return (
-      <div className="min-h-[50vh] flex items-center justify-center px-6 pb-24 bg-black">
-        <p className="text-red-400 text-center">{error}</p>
-      </div>
-    )
-  }
 
   const liftLabel = story.lift && story.lift.delta > 0
     ? `+${formatKg(story.lift.delta)}KG`

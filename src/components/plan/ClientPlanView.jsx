@@ -262,14 +262,25 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
 
         {session ? (
           <>
-            <div className="mt-8">
-              <h2 className="font-display font-black italic tracking-tight text-[28px] leading-tight text-white">
-                Día {session.day_number} · {session.title}
-              </h2>
-              <p className="mt-2 flex items-center gap-2 text-[13px] font-medium" style={{ color: BLAZE }}>
-                <Headphones className="w-4 h-4" />
-                Coach asignó esta sesión
-              </p>
+            <div className="mt-8 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="font-display font-black italic tracking-tight text-[28px] leading-tight text-white">
+                  Día {session.day_number} · {session.title}
+                </h2>
+                <p className="mt-2 flex items-center gap-2 text-[13px] font-medium" style={{ color: BLAZE }}>
+                  <Headphones className="w-4 h-4 shrink-0" />
+                  Coach asignó esta sesión
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleStartGuided}
+                disabled={!total}
+                className="mt-1 shrink-0 h-10 px-4 rounded-full text-white text-[13px] font-bold tracking-wide disabled:opacity-40"
+                style={{ backgroundColor: BLAZE, boxShadow: `0 0 18px ${BLAZE_GLOW}` }}
+              >
+                {done > 0 && done < total ? "Seguir" : "Empezar"}
+              </button>
             </div>
 
             <div className="mt-5 space-y-4">
