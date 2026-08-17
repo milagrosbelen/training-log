@@ -32,18 +32,15 @@ export function clearProfileCache() {
   profileInflight = null
 }
 
-export async function getProfileSummary() {
+export async function getProfileSummary({ skipLoading = false } = {}) {
   const userId = readStoredUserId()
-  if (
-    profileCache
-    && profileCacheUserId === userId
-    && Date.now() - profileCacheAt < PROFILE_TTL
-  ) {
+  const hasCache = Boolean(profileCache) && profileCacheUserId === userId
+  if (hasCache && Date.now() - profileCacheAt < PROFILE_TTL) {
     return profileCache
   }
   if (profileInflight) return profileInflight
 
-  profileInflight = api.get("/profile-summary")
+  profileInflight = api.get("/profile-summary", { skipLoading: skipLoading || hasCache })
     .then(({ data }) => {
       profileCache = normalizeProfile(data)
       profileCacheUserId = readStoredUserId()

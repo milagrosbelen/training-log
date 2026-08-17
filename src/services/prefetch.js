@@ -4,12 +4,12 @@ import { getProfileSummary } from "./profileService"
 import { getWorkouts } from "./workoutService"
 
 export function prefetchAlumnaData() {
-  getWorkouts().catch(() => {})
-  getMyPlan().catch(() => {})
-  getProfileSummary().catch(() => {})
+  getWorkouts({ skipLoading: true }).catch(() => {})
+  getMyPlan({ skipLoading: true }).catch(() => {})
+  getProfileSummary({ skipLoading: true }).catch(() => {})
 }
 
 export function prefetchCoachData() {
-  getAlumnas().catch(() => {})
-  getClients().catch(() => {})
+  getAlumnas({ skipLoading: true }).catch(() => {})
+  getClients({ skipLoading: true }).catch(() => {})
 }

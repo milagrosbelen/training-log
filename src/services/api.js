@@ -1,4 +1,5 @@
 import axios from "axios"
+import { beginLoading, endLoading, shouldTrackLoading } from "../utils/loadingGate"
 
 const TOKEN_KEY = "auth_token"
 const USER_KEY = "auth_user"
@@ -38,14 +39,19 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+    if (shouldTrackLoading(config)) beginLoading()
     return config
   },
   (error) => Promise.reject(error)
 )
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (shouldTrackLoading(response.config)) endLoading()
+    return response
+  },
   (error) => {
+    if (shouldTrackLoading(error.config)) endLoading()
     // No redirigir si el 401 viene del login (credenciales incorrectas)
     const isLoginRequest =
       error.config?.url?.includes("/auth/login") || error.config?.url?.includes("/auth/pin")
@@ -84,7 +90,7 @@ let warmupPromise = null
 
 export function warmupApi() {
   if (!warmupPromise) {
-    warmupPromise = api.get("/ping").catch(() => {}).finally(() => {
+    warmupPromise = api.get("/ping", { skipLoading: true }).catch(() => {}).finally(() => {
       warmupPromise = null
     })
   }

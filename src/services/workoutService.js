@@ -63,18 +63,15 @@ export function clearWorkoutsCache() {
   workoutsInflight = null
 }
 
-export async function getWorkouts() {
+export async function getWorkouts({ skipLoading = false } = {}) {
   const userId = readStoredUserId()
-  if (
-    Array.isArray(workoutsCache)
-    && workoutsCacheUserId === userId
-    && Date.now() - workoutsCacheAt < WORKOUTS_TTL
-  ) {
+  const hasCache = Array.isArray(workoutsCache) && workoutsCacheUserId === userId
+  if (hasCache && Date.now() - workoutsCacheAt < WORKOUTS_TTL) {
     return workoutsCache
   }
   if (workoutsInflight) return workoutsInflight
 
-  workoutsInflight = api.get("/workouts")
+  workoutsInflight = api.get("/workouts", { skipLoading: skipLoading || hasCache })
     .then(({ data }) => {
       const list = (data.data ?? []).map(apiToFrontend)
       workoutsCache = list

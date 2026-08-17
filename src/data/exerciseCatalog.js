@@ -173,6 +173,18 @@ const CATALOG = {
     secondary: [],
     cues: ["Banda tensa", "Pasos cortos", "Rodillas hacia afuera"],
   },
+  "calentamiento-con-banda-en-las-piernas": {
+    type: "aislamiento",
+    primary: "gluteos",
+    secondary: [],
+    cues: ["Banda sobre las rodillas", "Pasos cortos", "Rodillas hacia afuera"],
+  },
+  "calentamiento-con-banda-movilidad": {
+    type: "aislamiento",
+    primary: "gluteos",
+    secondary: [],
+    cues: ["Banda sobre las rodillas", "Pasos cortos", "Rodillas hacia afuera"],
+  },
   dominadas: {
     type: "compuesto",
     primary: "espalda",
@@ -251,6 +263,18 @@ const CATALOG = {
     secondary: ["hombros"],
     cues: ["Cuerpo en línea", "Glúteos activos", "Sin hundir cadera"],
   },
+  "abs-completo-con-disco": {
+    type: "aislamiento",
+    primary: "abdominales",
+    secondary: [],
+    cues: ["Disco pegado al pecho", "Enrollá el torso", "Lumbar controlada"],
+  },
+  "abs-para-oblicuos-con-pelota": {
+    type: "aislamiento",
+    primary: "abdominales",
+    secondary: [],
+    cues: ["Rotá desde el torso", "Pelota estable", "Sin tirar del cuello"],
+  },
   "movilidad-con-banda-para-torso": {
     type: "aislamiento",
     primary: "abdominales",
@@ -266,11 +290,13 @@ const KEYWORD_RULES = [
   { test: /triceps|fondo|extension/, primary: "triceps", secondary: [], type: "aislamiento" },
   { test: /biceps|curl|scott|martillo|barra w/, primary: "biceps", secondary: [], type: "aislamiento" },
   { test: /sentadilla|prensa|cuadriceps|hack|smith/, primary: "cuadriceps", secondary: ["gluteos"], type: "compuesto" },
+  { test: /calentamiento.*banda|banda.*pierna|movilidad.*glute|dia de glute/, primary: "gluteos", secondary: [], type: "aislamiento" },
   { test: /hip thrust|glute|patada|cajon|abduc|bulgara/, primary: "gluteos", secondary: ["isquios"], type: "compuesto" },
   { test: /camilla|sillon.*isq|isq.*sillon|femoral/, primary: "isquios", secondary: ["gluteos"], type: "aislamiento" },
   { test: /peso muerto/, primary: "isquios", secondary: ["gluteos", "espalda"], type: "compuesto" },
   { test: /aductor|sumo/, primary: "aductor", secondary: ["gluteos"], type: "compuesto" },
-  { test: /crunch|plancha|abdomen|piernas|movilidad/, primary: "abdominales", secondary: [], type: "aislamiento" },
+  { test: /calentamiento.*pierna|movilidad.*pierna/, primary: "cuadriceps", secondary: ["gluteos", "isquios"], type: "aislamiento" },
+  { test: /crunch|plancha|abdomen|oblicuo/, primary: "abdominales", secondary: [], type: "aislamiento" },
 ]
 
 const DEFAULT_CUES = {
@@ -294,6 +320,12 @@ function muscleKeyFromLabel(value) {
   return Object.keys(MUSCLE_LABELS).find((key) => key.replace(/-/g, "") === slug) || ""
 }
 
+export function suggestedMuscleLabel(name) {
+  const inferred = CATALOG[slugExercise(name)] || fromKeywords(name)
+  if (!inferred?.primary) return ""
+  return MUSCLE_LABELS[inferred.primary] || ""
+}
+
 function fromKeywords(name) {
   const haystack = slugExercise(name).replace(/-/g, " ")
   const rule = KEYWORD_RULES.find((item) => item.test.test(haystack))
@@ -313,7 +345,7 @@ export function resolveExerciseMeta(exercise) {
   const inferred = listed || fromKeywords(name)
   const assigned = muscleKeyFromLabel(exercise?.muscle)
 
-  const primary = inferred?.primary || assigned || "pecho"
+  const primary = assigned || inferred?.primary || "pecho"
   const secondary = (inferred?.secondary || []).filter((key) => key !== primary)
   const type = inferred?.type || "compuesto"
 

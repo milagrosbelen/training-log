@@ -26,18 +26,15 @@ function setAlumnasCache(list) {
   return list
 }
 
-export async function getAlumnas() {
+export async function getAlumnas({ skipLoading = false } = {}) {
   const userId = readStoredUserId()
-  if (
-    Array.isArray(alumnasCache)
-    && alumnasCacheUserId === userId
-    && Date.now() - alumnasCacheAt < TTL
-  ) {
+  const hasCache = Array.isArray(alumnasCache) && alumnasCacheUserId === userId
+  if (hasCache && Date.now() - alumnasCacheAt < TTL) {
     return alumnasCache
   }
   if (alumnasInflight) return alumnasInflight
 
-  alumnasInflight = api.get("/alumnas")
+  alumnasInflight = api.get("/alumnas", { skipLoading: skipLoading || hasCache })
     .then(({ data }) => setAlumnasCache(data?.data ?? []))
     .finally(() => {
       alumnasInflight = null

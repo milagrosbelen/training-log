@@ -38,7 +38,7 @@ export async function loginWithPin(username, pin) {
 
 export async function logout() {
   try {
-    await api.post("/auth/logout")
+    await api.post("/auth/logout", null, { skipLoading: true })
   } finally {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
@@ -72,7 +72,7 @@ export function isCoach(user = getStoredUser()) {
 }
 
 export async function getCurrentUser() {
-  const { data } = await api.get("/user")
+  const { data } = await api.get("/user", { skipLoading: true })
   const user = data ?? null
   persistUser(user)
   return user

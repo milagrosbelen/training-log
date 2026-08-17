@@ -26,6 +26,7 @@ export const ROUTINES = {
       "Sentadilla lateral"
     ],
     "Glúteos": [
+      "Calentamiento con banda en las piernas",
       "Hip thrust",
       "Búlgaras caminando con mancuernas",
       "Subidas al cajón",
@@ -42,6 +43,7 @@ export const ROUTINES = {
     "Movilidad": [
       "Calentamiento día 1 piernas",
       "Movilidad de piernas",
+      "Calentamiento con banda en las piernas",
       "Movilidad para el día de glúteos"
     ]
   },
@@ -74,7 +76,9 @@ export const ROUTINES = {
     "Abdominales": [
       "Crunch normal",
       "Elevación de piernas",
-      "Plancha"
+      "Plancha",
+      "Abs completo con disco",
+      "Abs para oblicuos con pelota"
     ],
     "Movilidad": [
       "Movilidad con banda para torso"

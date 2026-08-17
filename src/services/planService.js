@@ -26,18 +26,15 @@ export function clearPlanCache() {
   planInflight = null
 }
 
-export async function getMyPlan() {
+export async function getMyPlan({ skipLoading = false } = {}) {
   const userId = readStoredUserId()
-  if (
-    planCacheUserId === userId
-    && planCache !== undefined
-    && Date.now() - planCacheAt < PLAN_TTL
-  ) {
+  const hasCache = planCacheUserId === userId && planCache !== undefined
+  if (hasCache && Date.now() - planCacheAt < PLAN_TTL) {
     return planCache
   }
   if (planInflight) return planInflight
 
-  planInflight = api.get("/plans/me")
+  planInflight = api.get("/plans/me", { skipLoading: skipLoading || hasCache })
     .then(({ data }) => {
       planCache = data?.data ?? null
       planCacheUserId = readStoredUserId()
@@ -51,18 +48,15 @@ export async function getMyPlan() {
   return planInflight
 }
 
-export async function getClients() {
+export async function getClients({ skipLoading = false } = {}) {
   const userId = readStoredUserId()
-  if (
-    Array.isArray(clientsCache)
-    && clientsCacheUserId === userId
-    && Date.now() - clientsCacheAt < PLAN_TTL
-  ) {
+  const hasCache = Array.isArray(clientsCache) && clientsCacheUserId === userId
+  if (hasCache && Date.now() - clientsCacheAt < PLAN_TTL) {
     return clientsCache
   }
   if (clientsInflight) return clientsInflight
 
-  clientsInflight = api.get("/clients")
+  clientsInflight = api.get("/clients", { skipLoading: skipLoading || hasCache })
     .then(({ data }) => {
       clientsCache = data?.data ?? []
       clientsCacheUserId = readStoredUserId()

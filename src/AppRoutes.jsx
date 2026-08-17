@@ -20,6 +20,7 @@ import {
 } from "./services/authService"
 import { warmupApi } from "./services/api"
 import OrangeGrain from "./components/OrangeGrain"
+import LoadingOverlay from "./components/LoadingOverlay"
 
 function homeForUser(user = getStoredUser()) {
   return isCoach(user) ? "/admin" : "/dashboard"
@@ -54,6 +55,7 @@ export default function AppRoutes() {
   return (
     <>
       <OrangeGrain />
+      <LoadingOverlay />
       <Routes>
         <Route path="/" element={<RequireGuest><Login /></RequireGuest>} />
         <Route path="/acceso" element={<RequireGuest><LoginAdmin /></RequireGuest>} />

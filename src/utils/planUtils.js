@@ -1,4 +1,5 @@
 import { ROUTINES } from "../data/routines"
+import { MUSCLE_LABELS } from "../data/exerciseCatalog"
 
 export const WEEKDAYS = [
   { key: 0, label: "L", name: "lunes" },
@@ -21,9 +22,7 @@ export const SESSION_TITLES = [
   "Tren inferior",
 ]
 
-export const MUSCLE_OPTIONS = [
-  ...new Set(Object.values(ROUTINES).flatMap((group) => Object.keys(group))),
-]
+export const MUSCLE_OPTIONS = Object.values(MUSCLE_LABELS)
 
 export const EXERCISE_SUGGESTIONS = [
   ...new Set(Object.values(ROUTINES).flatMap((group) => Object.values(group).flat())),

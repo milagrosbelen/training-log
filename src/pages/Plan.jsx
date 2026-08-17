@@ -44,16 +44,7 @@ export default function Plan() {
   }
 
   if (!ready) {
-    return (
-      <div className="min-h-screen bg-black text-white pb-28 font-sans">
-        <PlanDesktopHeader />
-        <div className="max-w-md mx-auto px-5 pt-7">
-          <p className="text-[11px] font-semibold tracking-[0.28em] uppercase text-[#FF5C00]">Tu plan</p>
-          <h1 className="font-display font-black italic tracking-tight text-[40px] leading-[0.9] text-white mt-2">Esta semana</h1>
-          <p className="mt-8 text-sm text-slate-500">Estamos trayendo tu plan...</p>
-        </div>
-      </div>
-    )
+    return <div className="min-h-screen bg-black" />
   }
 
   if (error) {

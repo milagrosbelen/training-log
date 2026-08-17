@@ -4,6 +4,8 @@ import { useSearchParams } from "react-router-dom"
 import { ToastHost } from "../Toast"
 import ConfirmDialog from "../ConfirmDialog"
 import ExercisePhoto from "../ExercisePhoto"
+import MuscleMap from "./MuscleMap"
+import { resolveExerciseMeta, suggestedMuscleLabel } from "../../data/exerciseCatalog"
 import {
   WEEKDAYS,
   SESSION_TITLES,
@@ -569,6 +571,8 @@ export default function CoachPlanEditor() {
                 <div className="mt-3 space-y-3">
                   {activeSession.exercises.map((exercise, index) => {
                     const filled = Boolean(String(exercise.name || "").trim())
+                    const meta = resolveExerciseMeta(exercise)
+                    const hasMuscle = Boolean(String(exercise.muscle || "").trim())
                     return (
                       <div key={`${activeSession.weekday}-${index}`} className="rounded-2xl bg-black border border-white/10 overflow-hidden">
                         <div className="flex items-center gap-3 p-2.5">
@@ -578,20 +582,30 @@ export default function CoachPlanEditor() {
                                 name={exercise.name}
                                 className="h-full w-full object-cover object-center"
                               />
+                            ) : hasMuscle ? (
+                              <MuscleMap
+                                primary={meta.primary}
+                                view={meta.preferredView}
+                                className="h-full w-full"
+                              />
                             ) : null}
                           </div>
                           <div className="min-w-0 flex-1">
                             <input
                               list="exercise-names"
                               value={exercise.name}
-                              onChange={(e) =>
+                              onChange={(e) => {
+                                const nextName = e.target.value
+                                const suggested = suggestedMuscleLabel(nextName)
                                 updateSession(activeSession.weekday, (current) => ({
                                   ...current,
                                   exercises: current.exercises.map((item, i) =>
-                                    i === index ? { ...item, name: e.target.value } : item
+                                    i === index
+                                      ? { ...item, name: nextName, muscle: suggested || item.muscle }
+                                      : item
                                   ),
                                 }))
-                              }
+                              }}
                               placeholder="Nombre del ejercicio"
                               className="w-full bg-transparent border-0 outline-none text-[15px] font-black italic text-white placeholder:text-slate-500 placeholder:not-italic placeholder:font-normal"
                             />
@@ -690,7 +704,7 @@ export default function CoachPlanEditor() {
                             aria-label="Descanso"
                           />
                         </div>
-                        <div className="px-2.5 pb-2.5 grid grid-cols-[1fr_110px] gap-2">
+                        <div className="px-2.5 pb-2.5 grid grid-cols-[1fr_110px_52px] gap-2 items-center">
                           <input
                             value={exercise.tip}
                             onChange={(e) =>
@@ -718,6 +732,15 @@ export default function CoachPlanEditor() {
                             placeholder="Músculo"
                             className="h-9 rounded-xl bg-black border border-white/10 px-2 text-sm text-[#f4f4f5]"
                           />
+                          <div className="h-9 w-[52px] rounded-xl overflow-hidden bg-[#1a1a1a]">
+                            {hasMuscle ? (
+                              <MuscleMap
+                                primary={meta.primary}
+                                view={meta.preferredView}
+                                className="h-full w-full"
+                              />
+                            ) : null}
+                          </div>
                         </div>
                       </div>
                     )

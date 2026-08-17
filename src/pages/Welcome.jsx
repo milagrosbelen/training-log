@@ -30,11 +30,7 @@ export default function Welcome() {
   const firstName = user?.name?.trim().split(/\s+/)[0] || "atleta"
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-ink-400 border-t-ember rounded-full animate-spin" />
-      </div>
-    )
+    return <div className="min-h-screen bg-black" />
   }
 
   return (
