@@ -106,7 +106,7 @@ export default function ExerciseHeroCard({
 
         <p className="mt-1.5 text-sm text-white/85 leading-snug">
 
-          {exercise.sets} series · {exercise.reps} reps
+          {exercise.sets} series · {exercise.reps}
           {` · ${formatRest(exercise.rest_seconds)}`}
 
         </p>

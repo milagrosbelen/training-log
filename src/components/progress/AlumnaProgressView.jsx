@@ -3,7 +3,9 @@ import { getStoredUser } from "../../services/authService"
 import { getMyPlan, peekPlan } from "../../services/planService"
 import { getWorkouts, peekWorkouts } from "../../services/workoutService"
 import { buildProgressStory, formatKg } from "../../utils/progressStory"
+import { isHomeTraining } from "../../utils/trainingType"
 import BrandLogo from "../BrandLogo"
+import PoseProgressSection from "./PoseProgressSection"
 
 const BLAZE = "#FF5C00"
 const BLAZE_GLOW = "rgba(255, 92, 0, 0.55)"
@@ -185,6 +187,7 @@ export default function AlumnaProgressView({ workouts: workoutsProp }) {
     () => buildProgressStory(workouts, plan, getStoredUser()?.name),
     [workouts, plan]
   )
+  const home = isHomeTraining(getStoredUser()) || isHomeTraining(plan)
 
   const liftLabel = story.lift && story.lift.delta > 0
     ? `+${formatKg(story.lift.delta)}KG`
@@ -198,7 +201,7 @@ export default function AlumnaProgressView({ workouts: workoutsProp }) {
         <div className="flex items-center justify-between">
           <BrandLogo size="wide" className="-ml-2" />
           <p className="text-[11px] font-semibold tracking-[0.22em] uppercase" style={{ color: BLAZE }}>
-            Tu historia
+            {home ? "Constancia" : "Tu historia"}
           </p>
         </div>
 
@@ -206,7 +209,9 @@ export default function AlumnaProgressView({ workouts: workoutsProp }) {
           Progreso
         </h1>
         <p className="mt-3 text-[13px] text-slate-400">
-          {story.userName} · {story.weekLabel}
+          {home
+            ? `${story.userName} · ${story.weekDone} de ${story.daysPerWeek} esta semana`
+            : `${story.userName} · ${story.weekLabel}`}
         </p>
 
         <section
@@ -248,25 +253,87 @@ export default function AlumnaProgressView({ workouts: workoutsProp }) {
         </section>
 
         <div className="mt-4 grid grid-cols-3 gap-2.5">
-          <article className={CARD} style={CARD_BORDER}>
-            <p className="font-display font-black italic tracking-tight text-[22px] leading-none" style={{ color: BLAZE }}>
-              {liftLabel}
-            </p>
-            <p className="mt-2 text-[11px] italic text-white/80 leading-tight">{story.lift?.name || "peso"}</p>
-          </article>
-          <article className={CARD} style={CARD_BORDER}>
-            <p className="font-display font-black italic tracking-tight text-[22px] leading-none text-white uppercase">
-              {story.mood}
-            </p>
-            <p className="mt-2 text-[11px] italic text-white/80 leading-tight">cómo te sentiste</p>
-          </article>
-          <article className={CARD} style={CARD_BORDER}>
-            <p className="font-display font-black italic tracking-tight text-[22px] leading-none text-white">
-              {story.commentsCount}
-            </p>
-            <p className="mt-2 text-[11px] italic text-white/80 leading-tight">comentarios</p>
-          </article>
+          {home ? (
+            <>
+              <article className={CARD} style={CARD_BORDER}>
+                <p className="font-display font-black italic tracking-tight text-[22px] leading-none" style={{ color: BLAZE }}>
+                  {story.weekDone}/{story.daysPerWeek}
+                </p>
+                <p className="mt-2 text-[11px] italic text-white/80 leading-tight">esta semana</p>
+              </article>
+              <article className={CARD} style={CARD_BORDER}>
+                <p className="font-display font-black italic tracking-tight text-[22px] leading-none text-white">
+                  {story.monthDone}/{story.monthGoal}
+                </p>
+                <p className="mt-2 text-[11px] italic text-white/80 leading-tight">este mes</p>
+              </article>
+              <article className={CARD} style={CARD_BORDER}>
+                <p className="font-display font-black italic tracking-tight text-[22px] leading-none text-white uppercase">
+                  {story.mood}
+                </p>
+                <p className="mt-2 text-[11px] italic text-white/80 leading-tight">cómo te sentiste</p>
+              </article>
+            </>
+          ) : (
+            <>
+              <article className={CARD} style={CARD_BORDER}>
+                <p className="font-display font-black italic tracking-tight text-[22px] leading-none" style={{ color: BLAZE }}>
+                  {liftLabel}
+                </p>
+                <p className="mt-2 text-[11px] italic text-white/80 leading-tight">{story.lift?.name || "peso"}</p>
+              </article>
+              <article className={CARD} style={CARD_BORDER}>
+                <p className="font-display font-black italic tracking-tight text-[22px] leading-none text-white uppercase">
+                  {story.mood}
+                </p>
+                <p className="mt-2 text-[11px] italic text-white/80 leading-tight">cómo te sentiste</p>
+              </article>
+              <article className={CARD} style={CARD_BORDER}>
+                <p className="font-display font-black italic tracking-tight text-[22px] leading-none text-white">
+                  {story.commentsCount}
+                </p>
+                <p className="mt-2 text-[11px] italic text-white/80 leading-tight">comentarios</p>
+              </article>
+            </>
+          )}
         </div>
+
+        {home ? (
+          <section
+            className="mt-4 rounded-[22px] bg-black border px-4 py-4"
+            style={{ borderColor: "rgba(255,92,0,0.45)" }}
+          >
+            <p className="text-[11px] font-semibold tracking-[0.18em] uppercase" style={{ color: BLAZE }}>
+              Esta semana
+            </p>
+            <div className="mt-3 flex justify-between">
+              {(story.weekDays || []).map((day) => (
+                <div key={day.key} className="flex flex-col items-center min-w-[36px]">
+                  <span
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-[15px] font-bold border-2"
+                    style={
+                      day.trained
+                        ? { backgroundColor: BLAZE, color: "#080809", borderColor: BLAZE, boxShadow: `0 0 12px ${BLAZE_GLOW}` }
+                        : day.hasSession
+                          ? { backgroundColor: "transparent", color: "#fff", borderColor: BLAZE }
+                          : { backgroundColor: "transparent", color: "#8d8d8d", borderColor: "#3a3a3a" }
+                    }
+                  >
+                    {day.label}
+                  </span>
+                  <span className="mt-1 text-[10px] font-semibold" style={{ color: day.trained ? BLAZE : "transparent" }}>
+                    {day.trained ? "Hecho" : "."}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-center text-[13px] italic text-white/80">
+              {story.weekDone >= story.daysPerWeek
+                ? "Semana completa. Eso es constancia."
+                : `Faltan ${Math.max(story.daysPerWeek - story.weekDone, 0)} ${story.daysPerWeek - story.weekDone === 1 ? "día" : "días"} para cerrar la semana.`}
+            </p>
+          </section>
+        ) : null}
 
         <p className="mt-9 text-[11px] font-semibold tracking-[0.22em] uppercase" style={{ color: BLAZE }}>
           Lo que vas dejando
@@ -313,27 +380,33 @@ export default function AlumnaProgressView({ workouts: workoutsProp }) {
                 ) : null}
                 <p className="mt-1 text-[12px] italic text-slate-500">
                   {item.exercise}
-                  {item.weight ? ` ${item.weight} kg` : ""}
+                  {!home && item.weight ? ` ${item.weight} kg` : ""}
                 </p>
               </li>
             ))}
           </ol>
         )}
 
-        <p className="mt-10 text-[11px] font-semibold tracking-[0.22em] uppercase" style={{ color: BLAZE }}>
-          Cómo subís
-        </p>
-        <section
-          className="mt-4 rounded-[28px] bg-black border px-4 py-5"
-          style={{ borderColor: "rgba(255,92,0,0.55)", boxShadow: "0 0 22px rgba(255,92,0,0.12)" }}
-        >
-          <WeightSparkline chart={story.chart} />
-          {story.chart?.points?.length ? (
-            <p className="mt-3 text-[13px] italic font-semibold" style={{ color: BLAZE }}>
-              {liftMotivation(story.chart, story.lift)}
+        {home ? (
+          <PoseProgressSection />
+        ) : (
+          <>
+            <p className="mt-10 text-[11px] font-semibold tracking-[0.22em] uppercase" style={{ color: BLAZE }}>
+              Cómo subís
             </p>
-          ) : null}
-        </section>
+            <section
+              className="mt-4 rounded-[28px] bg-black border px-4 py-5"
+              style={{ borderColor: "rgba(255,92,0,0.55)", boxShadow: "0 0 22px rgba(255,92,0,0.12)" }}
+            >
+              <WeightSparkline chart={story.chart} />
+              {story.chart?.points?.length ? (
+                <p className="mt-3 text-[13px] italic font-semibold" style={{ color: BLAZE }}>
+                  {liftMotivation(story.chart, story.lift)}
+                </p>
+              ) : null}
+            </section>
+          </>
+        )}
       </div>
     </div>
   )

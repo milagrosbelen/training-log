@@ -1,11 +1,17 @@
 import { dateToISOString, parseDateString } from "./dateUtils"
+import { WEEKDAYS, todayWeekday } from "./planUtils"
 
 export const FEELINGS = ["Fácil", "Bien", "Pesado"]
+export const HOME_FEELINGS = ["Ligero", "Bien", "Intenso"]
+
+const ALL_FEELINGS = [...new Set([...FEELINGS, ...HOME_FEELINGS])]
 
 const FEELING_STORY = {
   Pesado: "Fuerte",
   Bien: "Bien",
   Fácil: "Ligero",
+  Ligero: "Ligero",
+  Intenso: "Intenso",
 }
 
 function startOfWeek(date = new Date()) {
@@ -24,7 +30,7 @@ export function formatKg(value) {
 export function parseSessionNote(notes) {
   const raw = String(notes || "").trim()
   if (!raw) return { feeling: "", comment: "" }
-  for (const feeling of FEELINGS) {
+  for (const feeling of ALL_FEELINGS) {
     if (raw === feeling) return { feeling, comment: "" }
     const prefix = `${feeling}.`
     if (raw.startsWith(prefix)) {
@@ -48,9 +54,15 @@ function dayLabel(dateStr) {
 }
 
 function feelingTone(feeling) {
-  if (feeling === "Pesado") return "ember"
+  if (feeling === "Pesado" || feeling === "Intenso") return "ember"
   if (feeling === "Bien") return "gold"
   return "muted"
+}
+
+function weekdayFromDate(dateStr) {
+  const date = parseDateString(dateStr)
+  if (!date) return null
+  return (date.getDay() + 6) % 7
 }
 
 export function buildProgressStory(workouts = [], plan = null, userName = "") {
@@ -60,12 +72,34 @@ export function buildProgressStory(workouts = [], plan = null, userName = "") {
     .sort((a, b) => b.date.localeCompare(a.date))
 
   const weekStart = dateToISOString(startOfWeek())
-  const weekDates = new Set(list.filter((w) => w.date >= weekStart).map((w) => w.date))
-  const weekDone = weekDates.size
+  const monthPrefix = dateToISOString(new Date()).slice(0, 7)
+  const trainedWeekdays = new Set((plan?.trained_weekdays || []).map(Number))
+  for (const workout of list) {
+    if (workout.date >= weekStart) {
+      const weekday = weekdayFromDate(workout.date)
+      if (weekday != null) trainedWeekdays.add(weekday)
+    }
+  }
   const daysPerWeek = Number(plan?.days_per_week) || plan?.sessions?.length || 4
+  const monthDone = new Set([
+    ...list.filter((w) => String(w.date).startsWith(monthPrefix)).map((w) => w.date),
+    ...(plan?.trained_dates || []).filter((date) => String(date).startsWith(monthPrefix)),
+  ]).size
+  const monthGoal = Math.max(daysPerWeek * 4, 1)
+  const plannedWeekdays = new Set((plan?.sessions || []).map((session) => Number(session.weekday)))
+  const weekDays = WEEKDAYS.map((day) => ({
+    key: day.key,
+    label: day.label,
+    trained: trainedWeekdays.has(day.key),
+    isToday: todayWeekday() === day.key,
+    hasSession: plannedWeekdays.has(day.key),
+  }))
+  const weekDone = plannedWeekdays.size
+    ? [...trainedWeekdays].filter((day) => plannedWeekdays.has(day)).length
+    : trainedWeekdays.size
 
   const comments = []
-  const feelingCount = { Fácil: 0, Bien: 0, Pesado: 0 }
+  const feelingCount = { Fácil: 0, Bien: 0, Pesado: 0, Ligero: 0, Intenso: 0 }
   const weightsByExercise = new Map()
 
   for (const workout of list) {
@@ -134,6 +168,9 @@ export function buildProgressStory(workouts = [], plan = null, userName = "") {
     weekDone,
     daysPerWeek,
     weekPct: daysPerWeek > 0 ? Math.min(weekDone / daysPerWeek, 1) : 0,
+    monthDone,
+    monthGoal,
+    weekDays,
     lift,
     mood,
     commentsCount: comments.length,

@@ -1,5 +1,12 @@
 import { ROUTINES } from "../data/routines"
+import {
+  HOME_EXERCISE_SUGGESTIONS,
+  HOME_OBJECTIVE_OPTIONS,
+  HOME_SESSION_TITLES,
+  HOME_ZONE_OPTIONS,
+} from "../data/homeRoutines"
 import { MUSCLE_LABELS } from "../data/exerciseCatalog"
+import { isHomeTraining } from "./trainingType"
 
 export const WEEKDAYS = [
   { key: 0, label: "L", name: "lunes" },
@@ -37,12 +44,12 @@ export function firstName(name) {
   return String(name).trim().split(/\s+/)[0]
 }
 
-export function emptyExercise() {
+export function emptyExercise(home = false) {
   return {
     name: "",
-    sets: 4,
-    reps: "8-10",
-    rest_seconds: 60,
+    sets: home ? 3 : 4,
+    reps: home ? "8-12" : "8-10",
+    rest_seconds: home ? 45 : 60,
     tip: "",
     muscle: "",
   }
@@ -99,4 +106,20 @@ export function formatRest(seconds) {
   const minutes = restMinutesFromSeconds(seconds)
   if (minutes <= 0) return "0 descanso"
   return minutes === 1 ? "1 min" : `${minutes} min`
+}
+
+export function sessionTitlesFor(source) {
+  return isHomeTraining(source) ? HOME_SESSION_TITLES : SESSION_TITLES
+}
+
+export function objectiveOptionsFor(source) {
+  return isHomeTraining(source) ? HOME_OBJECTIVE_OPTIONS : OBJECTIVE_OPTIONS
+}
+
+export function exerciseSuggestionsFor(source) {
+  return isHomeTraining(source) ? HOME_EXERCISE_SUGGESTIONS : EXERCISE_SUGGESTIONS
+}
+
+export function zoneOptionsFor(source) {
+  return isHomeTraining(source) ? HOME_ZONE_OPTIONS : MUSCLE_OPTIONS
 }

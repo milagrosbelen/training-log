@@ -3,6 +3,7 @@ import { ArrowLeft, Activity, ChevronRight, Play } from "lucide-react"
 import { slugExercise } from "../../utils/exerciseImages"
 import { resolveExerciseMeta } from "../../data/exerciseCatalog"
 import { formatRest } from "../../utils/planUtils"
+import { FEELINGS, HOME_FEELINGS } from "../../utils/progressStory"
 import ExercisePhoto from "../ExercisePhoto"
 import MuscleMap from "./MuscleMap"
 
@@ -41,7 +42,7 @@ function defaultReps(value) {
   return nums[nums.length - 1]
 }
 
-const FEELINGS = ["Fácil", "Bien", "Pesado"]
+const GYM_FEELINGS = FEELINGS
 
 function parseWeight(value) {
   const n = parseFloat(value)
@@ -75,6 +76,7 @@ function collectHistory(exerciseName, workouts) {
 export default function ExerciseDetail({
   exercise,
   workouts = [],
+  hideWeight = false,
   guided = false,
   guidedLabel = "",
   saving = false,
@@ -124,11 +126,18 @@ export default function ExerciseDetail({
     setLogWeight(previousWeight ? String(previousWeight) : "")
   }, [exercise.name, exercise.sets, exercise.reps])
 
-  const stats = [
-    { value: exercise.sets || "—", label: "Series" },
-    { value: exercise.reps || "—", label: "Repeticiones" },
-    { value: lastWeight ? formatKg(lastWeight) : formatRest(exercise.rest_seconds), label: lastWeight ? "Kg" : "Descanso" },
-  ]
+  const stats = hideWeight
+    ? [
+        { value: exercise.sets || "—", label: "Series" },
+        { value: exercise.reps || "—", label: "Reps / tiempo" },
+        { value: formatRest(exercise.rest_seconds), label: "Descanso" },
+      ]
+    : [
+        { value: exercise.sets || "—", label: "Series" },
+        { value: exercise.reps || "—", label: "Repeticiones" },
+        { value: lastWeight ? formatKg(lastWeight) : formatRest(exercise.rest_seconds), label: lastWeight ? "Kg" : "Descanso" },
+      ]
+  const feelingOptions = hideWeight ? HOME_FEELINGS : GYM_FEELINGS
 
   return (
     <div className="fixed inset-0 z-[70] bg-black text-white overflow-y-auto">
@@ -183,7 +192,7 @@ export default function ExerciseDetail({
             ))}
           </div>
 
-          {lastWeight ? (
+          {!hideWeight && lastWeight ? (
             <div className="mt-5 flex items-center justify-between rounded-2xl bg-[#161616] border border-white/5 px-4 py-3">
               <p className="flex items-center gap-2 text-sm text-slate-300">
                 <Activity className="w-4 h-4 text-ember" />
@@ -266,7 +275,7 @@ export default function ExerciseDetail({
                         <span className="text-slate-400">{row.date}</span>
                         <span className="text-white">
                           {row.sets || "—"} × {row.reps || "—"}
-                          {row.weight ? ` · ${formatKg(row.weight)} kg` : ""}
+                          {!hideWeight && row.weight ? ` · ${formatKg(row.weight)} kg` : ""}
                         </span>
                       </div>
                       {row.notes ? (
@@ -286,7 +295,11 @@ export default function ExerciseDetail({
               <p className="text-[11px] font-medium tracking-[0.18em] uppercase text-slate-500">
                 Cómo te fue
               </p>
-              {lastWeight ? (
+              {hideWeight ? (
+                <p className="mt-2 text-sm text-slate-500">
+                  Anotá series, reps o tiempo. El peso no hace falta: es con tu cuerpo.
+                </p>
+              ) : lastWeight ? (
                 <p className="mt-2 text-sm text-slate-400">
                   Última vez {formatKg(lastWeight)} kg
                   {last?.notes ? ` · ${last.notes}` : ""}
@@ -297,7 +310,8 @@ export default function ExerciseDetail({
                 </p>
               )}
 
-              <div className="mt-4 grid grid-cols-3 gap-2">
+              <div className={`mt-4 grid gap-2 ${hideWeight ? "grid-cols-2" : "grid-cols-3"}`}>
+                {hideWeight ? null : (
                 <label className="block">
                   <span className="text-[11px] uppercase tracking-wide text-slate-500">Kg</span>
                   <input
@@ -311,6 +325,7 @@ export default function ExerciseDetail({
                     className="mt-1 w-full h-12 rounded-xl bg-ink border border-white/10 px-3 text-lg font-semibold text-white"
                   />
                 </label>
+                )}
                 <label className="block">
                   <span className="text-[11px] uppercase tracking-wide text-slate-500">Reps</span>
                   <input
@@ -336,7 +351,7 @@ export default function ExerciseDetail({
                 </label>
               </div>
 
-              {lastWeight && parseWeight(logWeight) > 0 ? (
+              {!hideWeight && lastWeight && parseWeight(logWeight) > 0 ? (
                 <p className={`mt-2 text-[12px] ${
                   parseWeight(logWeight) > lastWeight ? "text-lime" : parseWeight(logWeight) < lastWeight ? "text-slate-500" : "text-slate-400"
                 }`}>
@@ -349,7 +364,7 @@ export default function ExerciseDetail({
               ) : null}
 
               <div className="mt-4 flex gap-2">
-                {FEELINGS.map((item) => (
+                {feelingOptions.map((item) => (
                   <button
                     key={item}
                     type="button"
@@ -380,11 +395,11 @@ export default function ExerciseDetail({
             {guided ? (
               <button
                 type="button"
-                disabled={saving || !parseWeight(logWeight)}
+                disabled={saving || (!hideWeight && !parseWeight(logWeight))}
                 onClick={() => {
                   const noteParts = [feeling, logNote.trim()].filter(Boolean)
                   onComplete?.({
-                    weight: parseWeight(logWeight),
+                    weight: hideWeight ? null : parseWeight(logWeight),
                     reps: parseInt(logReps, 10) || defaultReps(exercise.reps) || null,
                     sets: parseInt(logSets, 10) || exercise.sets || 1,
                     notes: noteParts.join(". "),
@@ -405,7 +420,7 @@ export default function ExerciseDetail({
                 Usar en el entrenamiento
               </button>
             )}
-            {guided && !parseWeight(logWeight) ? (
+            {guided && !hideWeight && !parseWeight(logWeight) ? (
               <p className="text-center text-[12px] text-slate-500">Anotá el peso para guardar el progreso.</p>
             ) : null}
             {error ? <p className="text-center text-sm text-red-400">{error}</p> : null}

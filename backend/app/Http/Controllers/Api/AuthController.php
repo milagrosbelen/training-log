@@ -84,18 +84,7 @@ class AuthController extends Controller
             $query->where('username', $username);
         }
 
-        $user = $query->first([
-            'id',
-            'name',
-            'username',
-            'email',
-            'password',
-            'role',
-            'avatar',
-            'focus',
-            'is_active',
-            'pin_hash',
-        ]);
+        $user = $query->first();
 
         $pin = $validated['pin'];
         $validPin = $user && $user->pin_hash && Hash::check($pin, $user->pin_hash);

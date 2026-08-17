@@ -5,6 +5,7 @@ import { createAlumna, getAlumnas, peekAlumnas, updateAlumna } from "../services
 import { btnGhost, fieldClass } from "../components/AuthFrame"
 import { ToastHost } from "../components/Toast"
 import BrandLogo from "../components/BrandLogo"
+import { TRAINING_GYM, TRAINING_TYPES, trainingTypeMeta } from "../utils/trainingType"
 
 const BLAZE = "#FF5C00"
 const BLAZE_GLOW = "rgba(255, 92, 0, 0.45)"
@@ -21,7 +22,7 @@ export default function AdminAlumnas() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
   const [credentials, setCredentials] = useState(null)
-  const [form, setForm] = useState({ name: "", username: "", pin: "" })
+  const [form, setForm] = useState({ name: "", username: "", pin: "", training_type: TRAINING_GYM })
   const [toast, setToast] = useState(null)
   const [pinTarget, setPinTarget] = useState(null)
   const [newPin, setNewPin] = useState("")
@@ -63,7 +64,7 @@ export default function AdminAlumnas() {
     try {
       const result = await createAlumna(form)
       setCredentials(result.credentials ?? null)
-      setForm({ name: "", username: "", pin: "" })
+      setForm({ name: "", username: "", pin: "", training_type: TRAINING_GYM })
       setShowCreate(false)
       setToast({ message: `${createdName} ya está en el estudio.`, type: "success" })
       await load()
@@ -180,6 +181,7 @@ export default function AdminAlumnas() {
 
       {filtered.map((alumna) => {
         const needsPlan = !alumna.has_plan
+        const typeMeta = trainingTypeMeta(alumna)
         return (
           <article
             key={alumna.id}
@@ -206,6 +208,9 @@ export default function AdminAlumnas() {
                     style={{ borderColor: BLAZE, color: BLAZE }}
                   >
                     {alumna.has_plan ? "Plan listo" : "Sin plan"}
+                  </span>
+                  <span className="rounded-full border border-white/40 px-2.5 py-0.5 text-[11px] font-semibold text-white/85">
+                    {typeMeta.short}
                   </span>
                   {alumna.is_active ? (
                     <span className="rounded-full border border-white/40 px-2.5 py-0.5 text-[11px] font-semibold text-white/85">
@@ -284,6 +289,32 @@ export default function AdminAlumnas() {
               required
               className={fieldClass}
             />
+            <div>
+              <p className="mb-2 text-[11px] tracking-[0.18em] uppercase font-semibold text-slate-400">
+                Tipo de entrenamiento
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {TRAINING_TYPES.map((type) => {
+                  const active = form.training_type === type.id
+                  return (
+                    <button
+                      key={type.id}
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, training_type: type.id }))}
+                      className="rounded-2xl border px-3 py-3 text-left"
+                      style={
+                        active
+                          ? { borderColor: BLAZE, backgroundColor: "rgba(255,92,0,0.12)", boxShadow: `0 0 16px ${BLAZE_GLOW}` }
+                          : { borderColor: "rgba(255,255,255,0.12)", backgroundColor: "transparent" }
+                      }
+                    >
+                      <p className="text-sm font-black italic text-white">{type.label}</p>
+                      <p className="mt-1 text-[11px] leading-snug text-slate-400">{type.description}</p>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
             <button
               type="submit"
               disabled={saving}

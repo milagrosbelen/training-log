@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { Component, useEffect, useState } from "react"
 import { Navigate } from "react-router-dom"
 import { Headphones } from "lucide-react"
 import { getStoredUser, isAuthenticated, isCoach } from "../services/authService"
@@ -7,54 +7,23 @@ import ClientPlanView from "../components/plan/ClientPlanView"
 import CoachPlanEditor from "../components/plan/CoachPlanEditor"
 import PlanDesktopHeader from "../components/plan/PlanDesktopHeader"
 
-export default function Plan() {
-  const user = getStoredUser()
-  const [plan, setPlan] = useState(() => peekPlan() ?? null)
-  const [ready, setReady] = useState(peekPlan() !== undefined)
-  const [error, setError] = useState("")
-  const authenticated = isAuthenticated()
-  const coach = isCoach(user)
-
-  useEffect(() => {
-    if (!authenticated || coach) return
-
-    getMyPlan()
-      .then((data) => {
-        setPlan(data)
-        setError("")
-      })
-      .catch((err) => {
-        setError(err.response?.data?.message ?? "No se pudo cargar el plan.")
-      })
-      .finally(() => {
-        setReady(true)
-      })
-  }, [authenticated, coach])
-
-  if (!authenticated) {
-    return <Navigate to="/" replace />
+class PlanViewGuard extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { crashed: false }
   }
 
-  if (coach) {
-    return <CoachPlanEditor />
+  static getDerivedStateFromError() {
+    return { crashed: true }
   }
 
-  if (plan) {
-    return <ClientPlanView plan={plan} user={user} onPlanChange={setPlan} />
+  render() {
+    if (this.state.crashed) return this.props.fallback
+    return this.props.children
   }
+}
 
-  if (!ready) {
-    return <div className="min-h-screen bg-black" />
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center px-6 pb-24">
-        <p className="text-red-400 text-center">{error}</p>
-      </div>
-    )
-  }
-
+function EmptyPlan() {
   return (
     <div className="min-h-screen bg-black text-white pb-28 font-sans">
       <PlanDesktopHeader />
@@ -71,4 +40,57 @@ export default function Plan() {
       </div>
     </div>
   )
+}
+
+export default function Plan() {
+  const user = getStoredUser()
+  const [plan, setPlan] = useState(() => peekPlan() ?? null)
+  const [ready, setReady] = useState(peekPlan() !== undefined)
+  const authenticated = isAuthenticated()
+  const coach = isCoach(user)
+
+  useEffect(() => {
+    if (!authenticated || coach) return
+    let cancelled = false
+
+    getMyPlan()
+      .then((data) => {
+        if (cancelled) return
+        setPlan(data)
+      })
+      .catch(() => {
+        if (cancelled) return
+        const cached = peekPlan()
+        if (cached !== undefined) setPlan(cached)
+      })
+      .finally(() => {
+        if (!cancelled) setReady(true)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [authenticated, coach])
+
+  if (!authenticated) {
+    return <Navigate to="/" replace />
+  }
+
+  if (coach) {
+    return <CoachPlanEditor />
+  }
+
+  if (plan) {
+    return (
+      <PlanViewGuard fallback={<EmptyPlan />}>
+        <ClientPlanView plan={plan} user={user} onPlanChange={setPlan} />
+      </PlanViewGuard>
+    )
+  }
+
+  if (!ready) {
+    return <div className="min-h-screen bg-black" />
+  }
+
+  return <EmptyPlan />
 }

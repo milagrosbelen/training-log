@@ -5,6 +5,58 @@ let planCacheUserId = null
 let planCacheAt = 0
 let planInflight = null
 const PLAN_TTL = 3 * 60 * 1000
+const PLAN_STORAGE_PREFIX = "milogit_plan_"
+
+function planStorageKey(userId) {
+  return `${PLAN_STORAGE_PREFIX}${userId}`
+}
+
+function readStoredPlan(userId) {
+  if (!userId) return undefined
+  try {
+    const raw = localStorage.getItem(planStorageKey(userId))
+    if (!raw) return undefined
+    return JSON.parse(raw)
+  } catch {
+    return undefined
+  }
+}
+
+function writeStoredPlan(userId, plan) {
+  if (!userId) return
+  try {
+    if (plan == null) {
+      localStorage.removeItem(planStorageKey(userId))
+      return
+    }
+    localStorage.setItem(planStorageKey(userId), JSON.stringify(plan))
+  } catch {
+    // Quota / private mode: keep going with memory cache only.
+  }
+}
+
+function rememberPlan(plan) {
+  const userId = readStoredUserId()
+  planCache = plan ?? null
+  planCacheUserId = userId
+  planCacheAt = Date.now()
+  writeStoredPlan(userId, planCache)
+  return planCache
+}
+
+function isAuthError(err) {
+  const status = err?.response?.status
+  return status === 401 || status === 403
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function requestMyPlan(skipLoading) {
+  const { data } = await api.get("/plans/me", { skipLoading, timeout: 60000 })
+  return data?.data ?? null
+}
 
 let clientsCache = null
 let clientsCacheUserId = null
@@ -15,15 +67,30 @@ let clientPlansInflight = new Map()
 
 export function peekPlan() {
   const userId = readStoredUserId()
-  if (!userId || planCacheUserId !== userId) return undefined
+  if (!userId) return undefined
+  if (planCacheUserId === userId && planCache !== undefined) return planCache
+  const stored = readStoredPlan(userId)
+  if (stored === undefined) return undefined
+  planCache = stored
+  planCacheUserId = userId
+  planCacheAt = Date.now()
   return planCache
 }
 
 export function clearPlanCache() {
+  const userId = readStoredUserId()
   planCache = undefined
   planCacheUserId = null
   planCacheAt = 0
   planInflight = null
+  try {
+    if (userId) localStorage.removeItem(planStorageKey(userId))
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith(PLAN_STORAGE_PREFIX))
+      .forEach((key) => localStorage.removeItem(key))
+  } catch {
+    // ignore
+  }
 }
 
 export async function getMyPlan({ skipLoading = false } = {}) {
@@ -34,16 +101,26 @@ export async function getMyPlan({ skipLoading = false } = {}) {
   }
   if (planInflight) return planInflight
 
-  planInflight = api.get("/plans/me", { skipLoading: skipLoading || hasCache })
-    .then(({ data }) => {
-      planCache = data?.data ?? null
-      planCacheUserId = readStoredUserId()
-      planCacheAt = Date.now()
-      return planCache
-    })
-    .finally(() => {
-      planInflight = null
-    })
+  const silent = skipLoading || hasCache || peekPlan() !== undefined
+
+  planInflight = (async () => {
+    let lastError = null
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        const plan = await requestMyPlan(silent)
+        return rememberPlan(plan)
+      } catch (err) {
+        lastError = err
+        if (isAuthError(err)) throw err
+        if (attempt < 2) await wait(1200 * (attempt + 1))
+      }
+    }
+    const cached = peekPlan()
+    if (cached !== undefined) return cached
+    throw lastError
+  })().finally(() => {
+    planInflight = null
+  })
 
   return planInflight
 }
@@ -139,8 +216,5 @@ export async function savePlanProgress(weekday, completedExercises) {
     weekday,
     completed_exercises: completedExercises,
   })
-  planCache = data?.data ?? planCache
-  planCacheUserId = readStoredUserId()
-  planCacheAt = Date.now()
-  return data?.data ?? null
+  return rememberPlan(data?.data ?? planCache)
 }

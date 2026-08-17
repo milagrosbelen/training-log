@@ -100,6 +100,36 @@ class ProfileController extends Controller
         ]);
     }
 
+    public function getPoses(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'data' => [
+                'pose_progress' => is_array($user->pose_progress) ? $user->pose_progress : [],
+            ],
+        ]);
+    }
+
+    public function updatePoses(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'pose_progress' => ['required', 'array'],
+            'pose_progress.*' => ['nullable', 'string', 'in:sale,bien'],
+        ]);
+
+        $user = $request->user();
+        $user->pose_progress = $validated['pose_progress'];
+        $user->save();
+
+        return response()->json([
+            'message' => 'Progreso de poses actualizado.',
+            'data' => [
+                'pose_progress' => $user->pose_progress,
+            ],
+        ]);
+    }
+
     public function update(Request $request): JsonResponse
     {
         $validated = $request->validate([

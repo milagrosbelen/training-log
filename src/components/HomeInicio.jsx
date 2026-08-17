@@ -6,6 +6,8 @@ import { getExerciseProgressStatus } from "../utils/exerciseProgress"
 import { getMyPlan } from "../services/planService"
 import Calendar from "./Calendar"
 import BrandLogo from "./BrandLogo"
+import { getStoredUser } from "../services/authService"
+import { isHomeTraining } from "../utils/trainingType"
 
 const WEEK_LABELS = ["L", "M", "X", "J", "V", "S", "D"]
 const MONTHS = [
@@ -156,6 +158,7 @@ export default function HomeInicio({ userName, workouts = [], selectedDate, onSe
   }, [])
 
   const firstName = String(userName || "").trim().split(/\s+/)[0] || "atleta"
+  const home = isHomeTraining(getStoredUser())
   const greeting = greetingForNow()
   const today = useMemo(() => dateToISOString(new Date()), [])
   const days = useMemo(() => weekDatesFrom(weekStart), [weekStart])
@@ -196,7 +199,13 @@ export default function HomeInicio({ userName, workouts = [], selectedDate, onSe
   const bestVolume = bestSession ? workoutVolume(bestSession) : 0
   const bestImproved = bestSession ? countImproved(bestSession, list) : 0
   const bestCopy = bestSession
-    ? storyForBest(bestSession, bestVolume, bestImproved, monthName)
+    ? (home
+        ? {
+            eyebrow: `Mejor sesión · ${monthName}`,
+            story: "El día que más te moviste este mes. Seguí anotando: la constancia se ve acá.",
+            title: bestSession?.type?.trim() || "Entrenamiento",
+          }
+        : storyForBest(bestSession, bestVolume, bestImproved, monthName))
     : {
         eyebrow: `Este mes · ${monthName}`,
         story: "Cuando completes una sesión del plan, acá va a aparecer tu mejor clase del mes.",
@@ -280,7 +289,9 @@ export default function HomeInicio({ userName, workouts = [], selectedDate, onSe
           <p className="mt-2 text-sm text-white/85 leading-snug">{bestCopy.story}</p>
           <p className="mt-2 text-xs font-medium" style={{ color: "rgba(255,184,120,0.9)" }}>
             {bestSession
-              ? `${formatDateShort(normalizeDate(bestSession.date))} · ${exerciseCount} ejercicio${exerciseCount === 1 ? "" : "s"} · ${formatVolume(bestVolume)} kg`
+              ? home
+                ? `${formatDateShort(normalizeDate(bestSession.date))} · ${exerciseCount} ejercicio${exerciseCount === 1 ? "" : "s"}`
+                : `${formatDateShort(normalizeDate(bestSession.date))} · ${exerciseCount} ejercicio${exerciseCount === 1 ? "" : "s"} · ${formatVolume(bestVolume)} kg`
               : "La mejor clase del mes se elige con lo que anotes."}
           </p>
         </div>
@@ -395,6 +406,7 @@ export default function HomeInicio({ userName, workouts = [], selectedDate, onSe
           </div>
         </section>
 
+        {home ? null : (
         <section
           className="rounded-[28px] bg-black border border-white/10 px-5 py-6"
           style={{ boxShadow: "0 24px 60px rgba(0,0,0,0.5), 0 0 44px rgba(255,92,0,0.16)" }}
@@ -427,6 +439,7 @@ export default function HomeInicio({ userName, workouts = [], selectedDate, onSe
             </svg>
           </div>
         </section>
+        )}
       </div>
 
       <Calendar

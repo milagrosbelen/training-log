@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class CreateAlumna extends Command
 {
-    protected $signature = 'milogit:create-alumna {name} {username} {pin} {--coach=milagrospedrasa1@gmail.com}';
+    protected $signature = 'milogit:create-alumna {name} {username} {pin} {--coach=milagrospedrasa1@gmail.com} {--type=gym}';
 
     protected $description = 'Crea o actualiza una alumna con usuario y PIN.';
 
@@ -29,6 +29,13 @@ class CreateAlumna extends Command
         $name = trim((string) $this->argument('name'));
         $username = strtolower(trim((string) $this->argument('username')));
         $pin = (string) $this->argument('pin');
+        $trainingType = strtolower(trim((string) $this->option('type')));
+
+        if (!in_array($trainingType, User::TRAINING_TYPES, true)) {
+            $this->error('El tipo tiene que ser gym o home.');
+
+            return self::FAILURE;
+        }
 
         if (!preg_match('/^[0-9]{4,6}$/', $pin)) {
             $this->error('El PIN tiene que tener 4 a 6 números.');
@@ -44,6 +51,7 @@ class CreateAlumna extends Command
             'password' => Str::random(40),
             'is_active' => true,
             'coach_id' => $coach->id,
+            'training_type' => $trainingType,
         ]);
         $user->forceFill([
             'role' => User::ROLE_CLIENT,

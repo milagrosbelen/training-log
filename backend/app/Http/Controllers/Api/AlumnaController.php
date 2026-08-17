@@ -43,6 +43,7 @@ class AlumnaController extends Controller
             'username' => ['required', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9._-]+$/', 'unique:users,username'],
             'pin' => ['required', 'string', 'regex:/^[0-9]{4,6}$/'],
             'focus' => ['nullable', 'string', 'max:100'],
+            'training_type' => ['nullable', 'string', Rule::in(User::TRAINING_TYPES)],
         ], [
             'name.required' => 'El nombre es obligatorio.',
             'username.required' => 'El usuario es obligatorio.',
@@ -62,6 +63,7 @@ class AlumnaController extends Controller
             'email' => $username.'@alumnas.milogit.local',
             'password' => Str::random(40),
             'focus' => $validated['focus'] ?? null,
+            'training_type' => $validated['training_type'] ?? User::TRAINING_GYM,
             'is_active' => true,
             'coach_id' => $coach->id,
         ]);
@@ -102,6 +104,7 @@ class AlumnaController extends Controller
                 Rule::unique('users', 'username')->ignore($user->id),
             ],
             'focus' => ['nullable', 'string', 'max:100'],
+            'training_type' => ['sometimes', 'string', Rule::in(User::TRAINING_TYPES)],
             'is_active' => ['sometimes', 'boolean'],
             'pin' => ['nullable', 'string', 'regex:/^[0-9]{4,6}$/'],
         ]);

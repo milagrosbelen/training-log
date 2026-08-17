@@ -21,18 +21,27 @@ class PlanController extends Controller
             ]);
         }
 
-        $plan = $user->assignedPlan()->with('completions')->first();
+        try {
+            $plan = $user->assignedPlan()->with(['user', 'completions'])->first();
 
-        if (!$plan) {
+            if (!$plan) {
+                return response()->json([
+                    'message' => 'Todavía no tenés un plan asignado.',
+                    'data' => null,
+                ]);
+            }
+
+            return response()->json([
+                'data' => $this->toPayload($plan),
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+
             return response()->json([
                 'message' => 'Todavía no tenés un plan asignado.',
                 'data' => null,
             ]);
         }
-
-        return response()->json([
-            'data' => $this->toPayload($plan),
-        ]);
     }
 
     public function clients(Request $request): JsonResponse
@@ -41,7 +50,7 @@ class PlanController extends Controller
         $clients = $coach->alumnas()
             ->where('role', User::ROLE_CLIENT)
             ->orderBy('name')
-            ->get(['id', 'name', 'email', 'username', 'is_active']);
+            ->get();
 
         $planUserIds = Plan::query()
             ->whereIn('user_id', $clients->pluck('id'))
@@ -55,6 +64,7 @@ class PlanController extends Controller
                 'username' => $client->username,
                 'email' => $client->email,
                 'is_active' => (bool) $client->is_active,
+                'training_type' => $client->training_type ?: User::TRAINING_GYM,
                 'has_plan' => in_array($client->id, $planUserIds, true),
             ]),
         ]);
@@ -83,7 +93,7 @@ class PlanController extends Controller
             ], 422);
         }
 
-        $plan = $user->assignedPlan()->with(['user:id,name', 'coach:id,name', 'completions'])->first();
+        $plan = $user->assignedPlan()->with(['user', 'coach', 'completions'])->first();
 
         return response()->json([
             'data' => $plan ? $this->toPayload($plan) : null,
@@ -146,7 +156,7 @@ class PlanController extends Controller
             ]
         );
 
-        $plan->load(['user:id,name', 'coach:id,name', 'completions']);
+        $plan->load(['user', 'coach', 'completions']);
 
         return response()->json([
             'message' => 'Plan guardado correctamente.',
@@ -224,7 +234,7 @@ class PlanController extends Controller
             ]
         );
 
-        $plan->load(['user:id,name', 'coach:id,name', 'completions']);
+        $plan->load(['user', 'coach', 'completions']);
 
         return response()->json([
             'message' => 'Progreso actualizado.',
@@ -264,7 +274,7 @@ class PlanController extends Controller
     private function toPayload(Plan $plan): array
     {
         $sessions = is_array($plan->sessions) ? $plan->sessions : [];
-        $weekCompletions = $plan->completions
+        $weekCompletions = collect($plan->completions ?? [])
             ->where('week_number', $plan->week_current)
             ->keyBy('weekday');
 
@@ -272,6 +282,10 @@ class PlanController extends Controller
         $progressByWeekday = [];
 
         foreach ($sessions as $session) {
+            if (!is_array($session) || !array_key_exists('weekday', $session)) {
+                continue;
+            }
+
             $weekday = (int) $session['weekday'];
             $total = count($session['exercises'] ?? []);
             $completed = $weekCompletions->get($weekday)?->completed_exercises ?? [];
@@ -287,10 +301,13 @@ class PlanController extends Controller
             }
         }
 
-        $trainedDates = $plan->completions
+        $trainedDates = collect($plan->completions ?? [])
             ->filter(function ($completion) use ($sessions) {
-                $session = collect($sessions)->firstWhere('weekday', (int) $completion->weekday);
-                $total = count($session['exercises'] ?? []);
+                $session = collect($sessions)->first(function ($item) use ($completion) {
+                    return is_array($item)
+                        && (int) ($item['weekday'] ?? -1) === (int) $completion->weekday;
+                });
+                $total = count(is_array($session) ? ($session['exercises'] ?? []) : []);
                 $done = count($completion->completed_exercises ?? []);
 
                 return $total > 0 && $done >= $total;
@@ -305,6 +322,7 @@ class PlanController extends Controller
             'id' => $plan->id,
             'user_id' => $plan->user_id,
             'user_name' => $plan->user?->name,
+            'training_type' => $plan->user?->training_type ?: User::TRAINING_GYM,
             'coach_name' => $plan->coach?->name,
             'week_current' => $plan->week_current,
             'week_total' => $plan->week_total,

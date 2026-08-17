@@ -8,10 +8,6 @@ import MuscleMap from "./MuscleMap"
 import { resolveExerciseMeta, suggestedMuscleLabel } from "../../data/exerciseCatalog"
 import {
   WEEKDAYS,
-  SESSION_TITLES,
-  MUSCLE_OPTIONS,
-  EXERCISE_SUGGESTIONS,
-  OBJECTIVE_OPTIONS,
   DAYS_PER_WEEK_OPTIONS,
   emptyExercise,
   emptyPlanForm,
@@ -22,7 +18,12 @@ import {
   REST_MINUTE_OPTIONS,
   restMinutesFromSeconds,
   restSecondsFromMinutes,
+  sessionTitlesFor,
+  objectiveOptionsFor,
+  exerciseSuggestionsFor,
+  zoneOptionsFor,
 } from "../../utils/planUtils"
+import { isHomeTraining } from "../../utils/trainingType"
 import {
   getClients,
   peekClients,
@@ -83,6 +84,11 @@ export default function CoachPlanEditor() {
     () => clients.find((client) => String(client.id) === String(selectedUserId)) || null,
     [clients, selectedUserId]
   )
+  const homePlan = isHomeTraining(selectedClient)
+  const sessionTitles = sessionTitlesFor(selectedClient)
+  const objectiveOptions = objectiveOptionsFor(selectedClient)
+  const exerciseSuggestions = exerciseSuggestionsFor(selectedClient)
+  const zoneOptions = zoneOptionsFor(selectedClient)
 
   useEffect(() => {
     getClients()
@@ -190,8 +196,8 @@ export default function CoachPlanEditor() {
           {
             weekday,
             day_number: nextNumber,
-            title: SESSION_TITLES[Math.min(nextNumber - 1, SESSION_TITLES.length - 1)],
-            exercises: [emptyExercise()],
+            title: sessionTitles[Math.min(nextNumber - 1, sessionTitles.length - 1)],
+            exercises: [emptyExercise(homePlan)],
           },
         ].sort((a, b) => a.weekday - b.weekday),
       }
@@ -353,7 +359,9 @@ export default function CoachPlanEditor() {
           Cargar plan
         </h1>
         <p className="mt-3 text-sm text-slate-400 leading-relaxed">
-          Armá la semana. Ella la ve al instante.
+          {homePlan
+            ? `Plan de casa para ${firstName(selectedClient?.name) || "esta alumna"}: peso corporal, sin kilos.`
+            : "Armá la semana. Ella la ve al instante."}
         </p>
 
         {error ? (
@@ -404,6 +412,7 @@ export default function CoachPlanEditor() {
                     {selected ? (
                       <span className="mt-0.5 text-[10px] font-medium" style={{ color: BLAZE }}>
                         {client.has_plan ? "● con plan" : "sin plan"}
+                        {isHomeTraining(client) ? " · casa" : ""}
                       </span>
                     ) : (
                       <span className="mt-0.5 text-[10px] text-transparent">.</span>
@@ -488,7 +497,7 @@ export default function CoachPlanEditor() {
                   <p className="px-2 pb-2 text-[11px] text-slate-500">
                     {selectedObjectives.length}/3 seleccionados
                   </p>
-                  {OBJECTIVE_OPTIONS.map((item) => {
+                  {objectiveOptions.map((item) => {
                     const active = selectedObjectives.includes(item)
                     const locked = !active && selectedObjectives.length >= 3
                     return (
@@ -568,7 +577,7 @@ export default function CoachPlanEditor() {
                   onChange={(e) =>
                     updateSession(activeSession.weekday, (current) => ({ ...current, title: e.target.value }))
                   }
-                  placeholder="Título del día · Empuje, Tirón, Piernas..."
+                  placeholder={homePlan ? "Título del día · Aeróbico, Yoga + calistenia..." : "Título del día · Empuje, Tirón, Piernas..."}
                   className="mt-3 w-full h-11 rounded-xl bg-black border border-white/10 px-3 text-[#f4f4f5]"
                 />
 
@@ -739,7 +748,7 @@ export default function CoachPlanEditor() {
                                 ),
                               }))
                             }
-                            placeholder="Músculo"
+                            placeholder={homePlan ? "Zona" : "Músculo"}
                             className="h-9 rounded-xl bg-black border border-white/10 px-2 text-sm text-[#f4f4f5]"
                           />
                           <div className="h-9 w-[52px] rounded-xl overflow-hidden bg-[#1a1a1a]">
@@ -762,7 +771,7 @@ export default function CoachPlanEditor() {
                   onClick={() =>
                     updateSession(activeSession.weekday, (current) => ({
                       ...current,
-                      exercises: [...current.exercises, emptyExercise()],
+                      exercises: [...current.exercises, emptyExercise(homePlan)],
                     }))
                   }
                   className="mt-3 w-full h-11 rounded-2xl text-sm font-semibold border border-dashed"
@@ -801,17 +810,17 @@ export default function CoachPlanEditor() {
             )}
 
             <datalist id="session-titles">
-              {SESSION_TITLES.map((title) => (
+              {sessionTitles.map((title) => (
                 <option key={title} value={title} />
               ))}
             </datalist>
             <datalist id="exercise-names">
-              {EXERCISE_SUGGESTIONS.map((name) => (
+              {exerciseSuggestions.map((name) => (
                 <option key={name} value={name} />
               ))}
             </datalist>
             <datalist id="muscle-options">
-              {MUSCLE_OPTIONS.map((muscle) => (
+              {zoneOptions.map((muscle) => (
                 <option key={muscle} value={muscle} />
               ))}
             </datalist>

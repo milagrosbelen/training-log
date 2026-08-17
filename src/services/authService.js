@@ -41,13 +41,13 @@ export async function logout() {
   try {
     await api.post("/auth/logout", null, { skipLoading: true })
   } finally {
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(USER_KEY)
     clearPlanCache()
     clearCoachCaches()
     clearWorkoutsCache()
     clearProfileCache()
     clearAlumnasCache()
+    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(USER_KEY)
   }
 }
 

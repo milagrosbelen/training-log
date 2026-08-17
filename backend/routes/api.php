@@ -77,6 +77,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::get('/profile/focus', [ProfileController::class, 'getFocus']);
     Route::patch('/profile/focus', [ProfileController::class, 'updateFocus']);
+    Route::get('/profile/poses', [ProfileController::class, 'getPoses']);
+    Route::patch('/profile/poses', [ProfileController::class, 'updatePoses']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     Route::get('/workouts', [WorkoutController::class, 'index']);

@@ -5,6 +5,7 @@ import {
   Play,
 } from "lucide-react"
 import { WEEKDAYS, firstName, todayWeekday } from "../../utils/planUtils"
+import { isHomeTraining } from "../../utils/trainingType"
 import { savePlanProgress } from "../../services/planService"
 import { getWorkouts, peekWorkouts, logSessionExercise } from "../../services/workoutService"
 import PlanDesktopHeader from "./PlanDesktopHeader"
@@ -48,6 +49,7 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
   const completedSet = new Set(progress.indexes || [])
   const trained = new Set((plan.trained_weekdays || []).map(Number))
   const displayName = firstName(plan.user_name || user?.name)
+  const hideWeight = isHomeTraining(user) || isHomeTraining(plan)
   const total = session?.exercises?.length || 0
   const done = Math.min(progress.completed || 0, total)
   const percent = total > 0 ? Math.round((done / total) * 100) : 0
@@ -81,10 +83,10 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
     setSaving(true)
     setError("")
     try {
-      if (log?.weight) {
+      if (hideWeight || log?.weight || log?.reps || log?.notes) {
         const updatedWorkouts = await logSessionExercise({
           exercise: session.exercises[index],
-          weight: log.weight,
+          weight: hideWeight ? null : log.weight,
           reps: log.reps,
           sets: log.sets,
           notes: log.notes,
@@ -350,6 +352,7 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
         <ExerciseDetail
           exercise={activeExercise}
           workouts={workouts}
+          hideWeight={hideWeight}
           guided={guided}
           guidedLabel={
             guided

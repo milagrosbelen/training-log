@@ -1,4 +1,5 @@
 import { ROUTINES } from "../data/routines"
+import { POSE_IMAGE_FILES } from "../data/poseProgressions"
 
 export function slugExercise(name) {
   return String(name || "")
@@ -62,6 +63,62 @@ const KNOWN_FILES = new Set([
   "subidas-al-cajon",
   "vuelos-laterales",
 ])
+
+const POSE_ALIASES = {
+  "perro-boca-abajo-con-una-pierna": "perro-con-una-pierna",
+  "perro-con-una-pierna": "perro-con-una-pierna",
+  "eka-pada-adho-mukha-svanasana": "perro-con-una-pierna",
+  "adho-mukha-svanasana": "perro-boca-abajo",
+  "perro-boca-abajo": "perro-boca-abajo",
+  bakasana: "cuervo",
+  cuervo: "cuervo",
+  kakasana: "cuervo-brazos-rectos",
+  "cuervo-con-cabeza": "cuervo-con-cabeza",
+  "cuervo-con-apoyo-de-cabeza": "cuervo-con-cabeza",
+  "bajar-normal": "cuervo-con-cabeza",
+  "bajar-piernas-juntas": "tripode-encogida",
+  "tripode-encogida": "tripode-encogida",
+  sirsasana: "invertida-de-cabeza",
+  "salamba-sirsasana": "invertida-de-cabeza",
+  "invertida-de-cabeza": "invertida-de-cabeza",
+  "sirsasana-ii": "tripode-completa",
+  "adho-mukha-vrksasana": "parada-de-manos",
+  "parada-de-manos": "parada-de-manos",
+  handstand: "parada-de-manos",
+  chaturanga: "flexion-pike",
+  "chaturanga-dandasana": "flexion-pike",
+  "flexion-pike": "flexion-pike",
+  "pike-push-up": "flexion-pike",
+  hanumanasana: "split-frontal",
+  mono: "split-frontal",
+  "split-frontal": "split-frontal",
+  "apertura-de-piernas": "split-frontal",
+  "eka-pada-koundinyasana-ii": "split-volador",
+  "eka-pada-koundinyasana": "split-volador",
+  "koundinyasana-ii": "split-volador",
+  koundinyasana: "split-volador",
+  "split-volador": "split-volador",
+  "split-volando": "split-volador",
+}
+
+const POSE_FILES = new Set(POSE_IMAGE_FILES)
+
+const HOME_IMAGE_FILES = new Set(["burpees", "saltos-en-soga", "baile"])
+
+const HOME_ALIASES = {
+  burpee: "burpees",
+  "saltos-de-soga": "saltos-en-soga",
+  soga: "saltos-en-soga",
+  "jumping-rope": "saltos-en-soga",
+  comba: "saltos-en-soga",
+  skipping: "saltos-en-soga",
+  danza: "baile",
+  zumba: "baile",
+  coreo: "baile",
+  coreografia: "baile",
+  "crear-una-coreo": "baile",
+  "crear-coreo": "baile",
+}
 
 const IMAGE_ALIASES = {
   "abduccion-con-banda": "abduccion-lateral-con-banda-caminando",
@@ -177,6 +234,10 @@ const IMAGE_VERSION = "3"
 export function resolveExerciseImageFile(name) {
   const slug = slugExercise(name)
   if (!slug) return ""
+  if (POSE_ALIASES[slug]) return POSE_ALIASES[slug]
+  if (POSE_FILES.has(slug)) return slug
+  if (HOME_ALIASES[slug]) return HOME_ALIASES[slug]
+  if (HOME_IMAGE_FILES.has(slug)) return slug
   if (IMAGE_ALIASES[slug]) return IMAGE_ALIASES[slug]
   if (KNOWN_FILES.has(slug)) return slug
 
@@ -193,5 +254,11 @@ export function resolveExerciseImageFile(name) {
 export function getExerciseImage(name) {
   const file = resolveExerciseImageFile(name)
   if (!file) return EXERCISE_PHOTO_FALLBACK
+  if (HOME_IMAGE_FILES.has(file) || Object.values(HOME_ALIASES).includes(file)) {
+    return `/poses/${file}.png?v=home1`
+  }
+  if (POSE_FILES.has(file) || Object.values(POSE_ALIASES).includes(file)) {
+    return `/poses/${file}.png`
+  }
   return `/exercises/${file}.png?v=${IMAGE_VERSION}`
 }

@@ -14,6 +14,10 @@ class User extends Authenticatable
     public const ROLE_COACH = 'coach';
     public const ROLE_CLIENT = 'client';
 
+    public const TRAINING_GYM = 'gym';
+    public const TRAINING_HOME = 'home';
+    public const TRAINING_TYPES = [self::TRAINING_GYM, self::TRAINING_HOME];
+
     protected $fillable = [
         'name',
         'email',
@@ -21,6 +25,8 @@ class User extends Authenticatable
         'username',
         'avatar',
         'focus',
+        'training_type',
+        'pose_progress',
         'is_active',
         'coach_id',
     ];
@@ -35,6 +41,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'pose_progress' => 'array',
     ];
 
     public function workouts()
@@ -67,6 +74,11 @@ class User extends Authenticatable
         return $this->role === self::ROLE_CLIENT;
     }
 
+    public function isHomeTraining(): bool
+    {
+        return $this->training_type === self::TRAINING_HOME;
+    }
+
     public function ownsAlumna(self $alumna): bool
     {
         return $this->isCoach()
@@ -84,6 +96,7 @@ class User extends Authenticatable
             'role' => $this->role,
             'avatar' => $this->avatar,
             'focus' => $this->focus,
+            'training_type' => $this->training_type ?: self::TRAINING_GYM,
             'is_active' => (bool) $this->is_active,
         ];
     }
