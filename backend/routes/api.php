@@ -18,6 +18,16 @@ use Illuminate\Support\Facades\Route;
 // Health check: GET /api (para verificar que el backend responde)
 Route::get('/', fn () => response()->json(['status' => 'ok', 'api' => 'MiLogit'])->header('Access-Control-Allow-Origin', '*'));
 
+Route::get('/ping', function () {
+    try {
+        \Illuminate\Support\Facades\DB::select('select 1 as ok');
+    } catch (\Throwable) {
+        // Keep the response fast even if the database is waking up.
+    }
+
+    return response()->json(['ok' => true])->header('Access-Control-Allow-Origin', '*');
+});
+
 Route::get('/health', function () {
     $db = false;
     $users = null;
@@ -57,8 +67,9 @@ Route::post('/auth/pin', [AuthController::class, 'loginPin']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         $user = $request->user();
-        $user->applyConfiguredCoachRole();
-        $user->refresh();
+        if ($user->isCoach()) {
+            $user->applyConfiguredCoachRole();
+        }
 
         return response()->json($user->toPublicArray());
     });

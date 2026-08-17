@@ -1,7 +1,7 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { loginWithPin } from "../services/authService"
-import { apiErrorMessage } from "../services/api"
+import { apiErrorMessage, warmupApi } from "../services/api"
 import AuthFrame, { fieldClass, primaryBtnClass } from "../components/AuthFrame"
 
 export default function Login() {
@@ -10,6 +10,10 @@ export default function Login() {
   const [pin, setPin] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    warmupApi()
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -20,7 +24,6 @@ export default function Login() {
       navigate("/dashboard", { replace: true })
     } catch (err) {
       setError(apiErrorMessage(err, "Los datos son incorrectos."))
-    } finally {
       setLoading(false)
     }
   }

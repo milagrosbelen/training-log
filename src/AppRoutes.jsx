@@ -18,6 +18,7 @@ import {
   isCoach,
   logout,
 } from "./services/authService"
+import { warmupApi } from "./services/api"
 import OrangeGrain from "./components/OrangeGrain"
 
 function homeForUser(user = getStoredUser()) {
@@ -43,6 +44,7 @@ function RequireAdmin() {
 
 export default function AppRoutes() {
   useEffect(() => {
+    warmupApi()
     if (!isAuthenticated()) return
     getCurrentUser().catch((err) => {
       if (err.response?.status === 401) logout()

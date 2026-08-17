@@ -20,6 +20,7 @@ const baseURL = resolveBaseURL()
 
 const api = axios.create({
   baseURL,
+  timeout: 20000,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -78,3 +79,14 @@ export function apiErrorMessage(err, fallback = "Los datos son incorrectos.") {
 }
 
 export { api, TOKEN_KEY, USER_KEY }
+
+let warmupPromise = null
+
+export function warmupApi() {
+  if (!warmupPromise) {
+    warmupPromise = api.get("/ping").catch(() => {}).finally(() => {
+      warmupPromise = null
+    })
+  }
+  return warmupPromise
+}

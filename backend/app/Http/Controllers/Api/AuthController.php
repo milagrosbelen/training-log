@@ -55,15 +55,7 @@ class AuthController extends Controller
             ], 403);
         }
 
-        $user->tokens()->delete();
-        $token = $user->createToken('auth-token')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Sesión iniciada correctamente',
-            'user' => $user->toPublicArray(),
-            'token' => $token,
-            'token_type' => 'Bearer',
-        ]);
+        return $this->authPayload($user);
     }
 
     public function loginPin(Request $request): JsonResponse
@@ -78,8 +70,18 @@ class AuthController extends Controller
         $username = strtolower(trim($validated['username']));
         $user = User::query()
             ->where('role', User::ROLE_CLIENT)
-            ->whereRaw('LOWER(username) = ?', [$username])
-            ->first();
+            ->where('username', $username)
+            ->first([
+                'id',
+                'name',
+                'username',
+                'email',
+                'role',
+                'avatar',
+                'focus',
+                'is_active',
+                'pin_hash',
+            ]);
 
         $invalid = !$user
             || !$user->pin_hash
@@ -97,7 +99,11 @@ class AuthController extends Controller
             ], 403);
         }
 
-        $user->tokens()->delete();
+        return $this->authPayload($user);
+    }
+
+    private function authPayload(User $user): JsonResponse
+    {
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([

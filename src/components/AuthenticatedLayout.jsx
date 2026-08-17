@@ -5,7 +5,10 @@ import { prefetchAlumnaData } from "../services/prefetch"
 
 export default function AuthenticatedLayout() {
   useEffect(() => {
-    prefetchAlumnaData()
+    const timer = window.setTimeout(() => {
+      prefetchAlumnaData()
+    }, 250)
+    return () => window.clearTimeout(timer)
   }, [])
 
   return (
