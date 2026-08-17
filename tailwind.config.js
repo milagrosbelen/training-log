@@ -57,8 +57,9 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"Inter Tight"', '"DM Sans"', "ui-sans-serif", "system-ui", "sans-serif"],
-        serif: ['"Playfair Display"', "Georgia", "serif"],
+        sans: ['"Inter Tight"', "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ['"Inter Tight"', "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ['"Inter Tight"', "ui-sans-serif", "system-ui", "sans-serif"],
       },
       boxShadow: {
         ember: "0 0 20px rgba(255, 79, 42, 0.32)",

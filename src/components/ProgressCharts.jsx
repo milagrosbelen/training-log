@@ -32,7 +32,7 @@ function ProgressCharts({ workouts, monthWorkouts }) {
     <div className="space-y-6">
       {/* Título de la sección */}
       <div className="mb-6">
-        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+        <h2 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-white mb-2">
           Gráficos de Progreso
         </h2>
         <p className="text-sm sm:text-base text-slate-400">

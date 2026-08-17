@@ -15,7 +15,13 @@
   }
 
   body {
-    font-family: "Inter Tight", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+    font-family: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  }
+
+  h1, h2, h3 {
+    font-family: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 
   * {

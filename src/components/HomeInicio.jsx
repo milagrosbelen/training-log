@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Flame, Moon, Sun } from "lucide-react"
 import { dateToISOString, formatDateShort } from "../utils/dateUtils"
 import { getExerciseProgressStatus } from "../utils/exerciseProgress"
 import { getMyPlan } from "../services/planService"
 import Calendar from "./Calendar"
+import BrandLogo from "./BrandLogo"
 
 const WEEK_LABELS = ["L", "M", "X", "J", "V", "S", "D"]
 const MONTHS = [
@@ -12,14 +13,17 @@ const MONTHS = [
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ]
 
+const BLAZE = "#FF5C00"
+const BLAZE_GLOW = "rgba(255, 92, 0, 0.55)"
+
 const BTN =
-  "w-full h-14 rounded-full bg-ember text-white text-[17px] font-semibold shadow-ember transition-all duration-200 ease-out hover:bg-ember-400 hover:shadow-[0_0_28px_rgba(255,79,42,0.5)] active:scale-[0.97] active:bg-ember-600"
+  "w-full h-14 rounded-full text-white text-[17px] font-bold tracking-wide shadow-[0_0_28px_rgba(255,92,0,0.45)] transition-all duration-200 ease-out hover:brightness-110 hover:shadow-[0_0_36px_rgba(255,92,0,0.7)] active:scale-[0.97]"
 
 function greetingForNow() {
   const hour = new Date().getHours()
-  if (hour < 12) return "Buenos días,"
-  if (hour < 19) return "Buenas tardes,"
-  return "Buenas noches,"
+  if (hour < 12) return { text: "Buenos días", Icon: Sun }
+  if (hour < 19) return { text: "Buenas tardes", Icon: Sun }
+  return { text: "Buenas noches", Icon: Moon }
 }
 
 function startOfWeek(date) {
@@ -152,6 +156,7 @@ export default function HomeInicio({ userName, workouts = [], selectedDate, onSe
   }, [])
 
   const firstName = String(userName || "").trim().split(/\s+/)[0] || "atleta"
+  const greeting = greetingForNow()
   const today = useMemo(() => dateToISOString(new Date()), [])
   const days = useMemo(() => weekDatesFrom(weekStart), [weekStart])
   const now = useMemo(() => new Date(), [])
@@ -234,29 +239,46 @@ export default function HomeInicio({ userName, workouts = [], selectedDate, onSe
   }
 
   return (
-    <div className="max-w-md mx-auto space-y-5">
+    <div className="max-w-md mx-auto space-y-4">
       <div className="pt-1">
-        <p className="text-[11px] font-medium tracking-[0.28em] text-slate-500 uppercase">MILOGIT</p>
-        <p className="mt-3 text-lg text-slate-400">{greetingForNow()}</p>
-        <h1 className="text-[34px] leading-none font-semibold tracking-tight text-white">{firstName}</h1>
+        <div className="flex items-center justify-between gap-3">
+          <p className="min-w-0 flex items-center gap-2 text-[17px] text-white truncate">
+            <greeting.Icon className="h-5 w-5 shrink-0" style={{ color: BLAZE }} strokeWidth={2.2} />
+            <span className="truncate">
+              {greeting.text}, <span className="font-black italic">{firstName}</span>
+            </span>
+          </p>
+          <BrandLogo size="hero" className="shrink-0" />
+        </div>
       </div>
 
       <button
         type="button"
         onClick={() => onSelectDate(bestSession ? normalizeDate(bestSession.date) : today)}
-        className="relative w-full overflow-hidden rounded-[28px] h-[232px] border border-white/5 text-left transition-transform duration-200 ease-out active:scale-[0.985]"
+        className="relative w-full overflow-hidden rounded-[30px] h-[268px] border border-white/10 text-left transition-transform duration-200 ease-out active:scale-[0.985]"
+        style={{ boxShadow: `0 24px 50px rgba(0,0,0,0.55), 0 0 48px rgba(255,92,0,0.22)` }}
       >
-        <img src="/home-hero-bench.png" alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-black/25" />
+        <img src="/home-hero-sport.png" alt="" className="absolute inset-0 h-full w-full object-cover object-[center_20%]" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(8,8,9,0.96) 0%, rgba(8,8,9,0.55) 42%, rgba(255,92,0,0.18) 100%)",
+          }}
+        />
+        <div
+          className="pointer-events-none absolute -top-10 right-0 h-40 w-40 rounded-full blur-3xl"
+          style={{ background: "rgba(255,92,0,0.35)" }}
+        />
         <div className="relative h-full flex flex-col justify-end p-5">
-          <p className="text-[11px] font-medium tracking-[0.16em] text-ember uppercase">
+          <p className="text-[11px] font-bold tracking-[0.2em] uppercase" style={{ color: BLAZE }}>
             {bestCopy.eyebrow}
           </p>
-          <h2 className="mt-1 text-3xl font-semibold tracking-tight text-white leading-tight">
+          <h2 className="mt-1 font-display text-[34px] font-black tracking-tight text-white leading-[0.95] italic">
             {bestCopy.title}
           </h2>
-          <p className="mt-2 text-sm text-slate-200 leading-snug">{bestCopy.story}</p>
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-sm text-white/85 leading-snug">{bestCopy.story}</p>
+          <p className="mt-2 text-xs font-medium" style={{ color: "rgba(255,184,120,0.9)" }}>
             {bestSession
               ? `${formatDateShort(normalizeDate(bestSession.date))} · ${exerciseCount} ejercicio${exerciseCount === 1 ? "" : "s"} · ${formatVolume(bestVolume)} kg`
               : "La mejor clase del mes se elige con lo que anotes."}
@@ -264,21 +286,23 @@ export default function HomeInicio({ userName, workouts = [], selectedDate, onSe
         </div>
       </button>
 
-      <Link to="/plan" className={`${BTN} flex items-center justify-center`}>
-        Ver plan
+      <Link to="/plan" className={`${BTN} flex items-center justify-center gap-2`} style={{ backgroundColor: BLAZE }}>
+        <Flame className="h-5 w-5" strokeWidth={2.4} />
+        Entrenar ahora
       </Link>
 
       <section
-        className="rounded-[28px] bg-ink-200/85 backdrop-blur-xl border border-white/10 px-5 py-4"
-        style={{ boxShadow: "0 20px 50px rgba(0,0,0,0.45), 0 0 32px rgba(255,79,42,0.08)" }}
+        className="rounded-[28px] bg-black border border-white/10 px-5 py-4"
+        style={{ boxShadow: "0 20px 50px rgba(0,0,0,0.45), 0 0 36px rgba(255,92,0,0.14)" }}
       >
         <div className="flex items-center justify-between mb-4">
-          <p className="text-[11px] font-medium tracking-[0.18em] text-slate-500 uppercase">Actividad semanal</p>
+          <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-slate-400">Racha semanal</p>
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={goPrevWeek}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-ember hover:bg-ember/10 transition-colors"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-white transition-colors"
+              style={{ background: "transparent" }}
               aria-label="Semana anterior"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -286,7 +310,7 @@ export default function HomeInicio({ userName, workouts = [], selectedDate, onSe
             <button
               type="button"
               onClick={goNextWeek}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-ember hover:bg-ember/10 transition-colors"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-white transition-colors"
               aria-label="Semana siguiente"
             >
               <ChevronRight className="w-4 h-4" />
@@ -307,17 +331,21 @@ export default function HomeInicio({ userName, workouts = [], selectedDate, onSe
                 onClick={() => onSelectDate(iso)}
                 className="flex flex-col items-center gap-2 min-w-[32px] bg-transparent transition-transform duration-150 active:scale-90"
               >
-                <span className={`text-[11px] font-medium ${filled || isToday ? "text-ember" : "text-slate-500"}`}>
+                <span
+                  className="text-[11px] font-bold"
+                  style={{ color: filled || isToday ? BLAZE : "#8d8d8d" }}
+                >
                   {WEEK_LABELS[index]}
                 </span>
                 <span
-                  className={`h-8 w-8 rounded-full flex items-center justify-center text-[11px] font-semibold tabular-nums transition-all duration-200 ${
+                  className="h-9 w-9 rounded-full flex items-center justify-center text-[12px] font-bold tabular-nums transition-all duration-200 border-2"
+                  style={
                     filled
-                      ? "bg-ember text-ink shadow-ember-sm border-2 border-ember"
+                      ? { backgroundColor: BLAZE, color: "#080809", borderColor: BLAZE, boxShadow: `0 0 14px ${BLAZE_GLOW}` }
                       : isToday
-                        ? "bg-ember/15 text-ember border-2 border-ember"
-                        : "bg-transparent text-slate-500 border-2 border-slate-600"
-                  }`}
+                        ? { backgroundColor: "rgba(255,92,0,0.16)", color: BLAZE, borderColor: BLAZE }
+                        : { backgroundColor: "transparent", color: "#8d8d8d", borderColor: "#3a3a3a" }
+                  }
                 >
                   {date.getDate()}
                 </span>
@@ -329,34 +357,36 @@ export default function HomeInicio({ userName, workouts = [], selectedDate, onSe
 
       <div className="flex flex-col gap-4">
         <section
-          className="rounded-[28px] bg-ink-200/85 backdrop-blur-xl border border-white/10 px-5 py-6"
-          style={{ boxShadow: "0 24px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,79,42,0.12)", transform: "translateY(-2px)" }}
+          className="rounded-[28px] bg-black border border-white/10 px-5 py-6"
+          style={{ boxShadow: "0 24px 60px rgba(0,0,0,0.5), 0 0 44px rgba(255,92,0,0.16)" }}
         >
-          <p className="text-[11px] font-medium tracking-[0.18em] text-slate-500 uppercase">Progreso del mes</p>
+          <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-slate-400">Progreso del mes</p>
           <div className="mt-5 flex items-center gap-5">
             <div className="relative w-[120px] h-[120px] flex-shrink-0">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r="50" fill="none" strokeWidth="9" className="stroke-ink-400" />
+                <circle cx="60" cy="60" r="50" fill="none" strokeWidth="10" stroke="#2A2A2A" />
                 <circle
                   cx="60"
                   cy="60"
                   r="50"
                   fill="none"
-                  strokeWidth="9"
+                  strokeWidth="10"
                   strokeLinecap="round"
+                  stroke={BLAZE}
                   strokeDasharray={`${(monthProgress / 100) * (2 * Math.PI * 50)} ${2 * Math.PI * 50}`}
-                  className="stroke-ember"
-                  style={{ filter: "drop-shadow(0 0 12px rgba(255,79,42,0.55))" }}
+                  style={{ filter: `drop-shadow(0 0 14px ${BLAZE_GLOW})` }}
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[32px] leading-none font-semibold tabular-nums text-ember">{monthProgress}%</span>
+                <span className="text-[32px] leading-none font-black tabular-nums italic" style={{ color: BLAZE }}>
+                  {monthProgress}%
+                </span>
               </div>
             </div>
             <div className="min-w-0">
-              <p className="text-[52px] leading-none font-semibold tracking-tight text-white tabular-nums">
+              <p className="text-[52px] leading-none font-black tracking-tight text-white tabular-nums italic">
                 {monthWorkouts.length}
-                <span className="ml-1 text-xl font-medium text-slate-500">/{monthGoal}</span>
+                <span className="ml-1 text-xl font-semibold not-italic text-slate-500">/{monthGoal}</span>
               </p>
               <p className="mt-3 text-sm text-slate-400 leading-snug">
                 Sesiones anotadas en {monthName}. El anillo crece cada vez que registrás un entrenamiento.
@@ -366,33 +396,33 @@ export default function HomeInicio({ userName, workouts = [], selectedDate, onSe
         </section>
 
         <section
-          className="rounded-[28px] bg-ink-200/85 backdrop-blur-xl border border-white/10 px-5 py-6"
-          style={{ boxShadow: "0 24px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,79,42,0.12)", transform: "translateY(-2px)" }}
+          className="rounded-[28px] bg-black border border-white/10 px-5 py-6"
+          style={{ boxShadow: "0 24px 60px rgba(0,0,0,0.5), 0 0 44px rgba(255,92,0,0.16)" }}
         >
-          <p className="text-[11px] font-medium tracking-[0.18em] text-slate-500 uppercase">Volumen total</p>
+          <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-slate-400">Volumen total</p>
           <div className="mt-3 flex items-end justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[56px] leading-none font-semibold tracking-tight text-white tabular-nums">
+              <p className="text-[56px] leading-none font-black tracking-tight text-white tabular-nums italic">
                 {formatVolume(monthVolume)}
               </p>
-              <p className="mt-2 text-sm text-slate-500">kg volumen</p>
+              <p className="mt-2 text-sm font-medium" style={{ color: BLAZE }}>kg volumen</p>
             </div>
             <svg viewBox="0 0 168 64" className="w-[168px] h-16 flex-shrink-0 overflow-visible" aria-hidden>
               <defs>
                 <linearGradient id="volFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#FF4F2A" stopOpacity="0.35" />
-                  <stop offset="100%" stopColor="#FF4F2A" stopOpacity="0" />
+                  <stop offset="0%" stopColor={BLAZE} stopOpacity="0.4" />
+                  <stop offset="100%" stopColor={BLAZE} stopOpacity="0" />
                 </linearGradient>
               </defs>
               <path d={spark.area} fill="url(#volFill)" />
               <path
                 d={spark.line}
                 fill="none"
-                stroke="#FF4F2A"
-                strokeWidth="2.5"
+                stroke={BLAZE}
+                strokeWidth="2.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                style={{ filter: "drop-shadow(0 0 8px rgba(255,79,42,0.55))" }}
+                style={{ filter: `drop-shadow(0 0 10px ${BLAZE_GLOW})` }}
               />
             </svg>
           </div>

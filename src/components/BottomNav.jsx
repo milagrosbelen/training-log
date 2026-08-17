@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom"
 import { Home, CalendarDays, BarChart3, User } from "lucide-react"
 
-const EMBER = "#FF4F2A"
+const EMBER = "#FF5C00"
 
 const items = [
   { to: "/dashboard", label: "Inicio", icon: Home },
@@ -29,7 +29,7 @@ export default function BottomNav() {
               <>
                 <span
                   className="flex h-9 w-9 items-center justify-center rounded-2xl transition-colors"
-                  style={isActive ? { backgroundColor: "rgba(255, 79, 42, 0.18)", color: EMBER } : { color: "#7A7A80" }}
+                  style={isActive ? { backgroundColor: "rgba(255, 92, 0, 0.18)", color: EMBER } : { color: "#7A7A80" }}
                 >
                   <Icon className="w-5 h-5" strokeWidth={isActive ? 2.2 : 1.8} />
                 </span>

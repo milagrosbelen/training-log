@@ -62,7 +62,7 @@ function Calendar({ selectedDate, onDateSelect, workouts = [], trainedDates = []
 
   return (
     <div
-      className="relative rounded-[28px] bg-ink-200/85 backdrop-blur-xl border border-white/10 px-4 py-5"
+      className="relative rounded-[28px] bg-black border border-white/10 px-4 py-5"
       style={{
         boxShadow:
           "0 24px 60px rgba(0,0,0,0.55), 0 0 40px rgba(255,79,42,0.12), 0 1px 0 rgba(255,255,255,0.06) inset",

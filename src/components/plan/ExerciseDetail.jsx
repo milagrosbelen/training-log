@@ -158,7 +158,7 @@ export default function ExerciseDetail({
           <span className="inline-flex items-center rounded-full bg-ember px-3 py-1 text-[11px] font-semibold tracking-[0.14em] uppercase text-white">
             {meta.typeLabel}
           </span>
-          <h2 className="mt-3 text-[34px] leading-none font-semibold tracking-tight">{exercise.name}</h2>
+          <h2 className="mt-3 font-display text-[34px] leading-none font-extrabold tracking-tight">{exercise.name}</h2>
 
           <div className="mt-4 flex flex-wrap gap-2">
             <span className="rounded-full bg-ember px-3 py-1.5 text-[12px] font-medium text-white">

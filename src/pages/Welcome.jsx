@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { getCurrentUser } from "../services/authService"
+import BrandLogo from "../components/BrandLogo"
 
 export default function Welcome() {
   const navigate = useNavigate()
@@ -46,12 +47,10 @@ export default function Welcome() {
           transition: "opacity 350ms ease-in-out, transform 350ms ease-in-out",
         }}
       >
-        <p className="text-[11px] font-medium tracking-[0.28em] text-slate-500 uppercase mb-8">
-          MILOGIT
-        </p>
+        <BrandLogo size="lg" className="mx-auto" />
         <p className="text-lg text-slate-400">¿Lista para entrenar hoy?</p>
         <h1
-          className="mt-2 text-5xl sm:text-6xl font-semibold tracking-tight leading-none"
+          className="mt-2 font-display text-5xl sm:text-6xl font-extrabold tracking-tight leading-none"
           style={{ color: "#FF4F2A", textShadow: "0 0 28px rgba(255,79,42,0.45)" }}
         >
           {firstName}

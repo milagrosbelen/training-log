@@ -1,12 +1,12 @@
-export default function AuthFrame({ eyebrow = "MILOGIT", title, subtitle, children, footer }) {
+import BrandLogo from "./BrandLogo"
+
+export default function AuthFrame({ title, subtitle, children, footer }) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm text-center">
-        <p className="text-[11px] font-medium tracking-[0.32em] text-slate-500 uppercase">
-          {eyebrow}
-        </p>
+        <BrandLogo size="lg" className="mx-auto" />
         {title && (
-          <h1 className="mt-6 text-4xl sm:text-5xl font-semibold tracking-tight text-white leading-tight">
+          <h1 className="mt-6 font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
             {title}
           </h1>
         )}

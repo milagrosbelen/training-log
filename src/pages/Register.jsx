@@ -38,7 +38,7 @@ function Register() {
     <div className="min-h-screen bg-ink text-white flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="bg-ink-200 border border-white/5 rounded-2xl shadow-xl shadow-black/40 p-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-ember text-center tracking-tight mb-2 [text-shadow:0_0_20px_rgba(235,87,61,0.35)]">
+          <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-ember text-center tracking-tight mb-2 [text-shadow:0_0_20px_rgba(235,87,61,0.35)]">
             MiLogit
           </h1>
           <p className="text-gold text-sm text-center mb-8">

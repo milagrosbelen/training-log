@@ -63,7 +63,6 @@ export function buildProgressStory(workouts = [], plan = null, userName = "") {
   const weekDates = new Set(list.filter((w) => w.date >= weekStart).map((w) => w.date))
   const weekDone = weekDates.size
   const daysPerWeek = Number(plan?.days_per_week) || plan?.sessions?.length || 4
-  const weekCurrent = Number(plan?.week_current) || 1
 
   const comments = []
   const feelingCount = { Fácil: 0, Bien: 0, Pesado: 0 }
@@ -128,7 +127,9 @@ export function buildProgressStory(workouts = [], plan = null, userName = "") {
 
   return {
     userName: userName || "Alumna",
-    weekLabel: plan ? `Semana ${weekCurrent} del plan` : "Todavía sin plan asignado",
+    weekLabel: plan
+      ? `${daysPerWeek} ${daysPerWeek === 1 ? "día" : "días"} de entreno`
+      : "Todavía sin plan asignado",
     sessionsDone: list.length,
     weekDone,
     daysPerWeek,

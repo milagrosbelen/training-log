@@ -61,12 +61,25 @@ export const OBJECTIVE_OPTIONS = [
 
 export const DAYS_PER_WEEK_OPTIONS = [2, 3, 4, 5, 6]
 
+export function parseObjectives(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean).slice(0, 3)
+  }
+  const raw = String(value || "").trim()
+  if (!raw) return []
+  return raw.split(/\s*[·,|]\s*/).map((item) => item.trim()).filter(Boolean).slice(0, 3)
+}
+
+export function joinObjectives(list) {
+  return parseObjectives(list).join(" · ")
+}
+
 export function emptyPlanForm() {
   return {
     week_current: 1,
     week_total: 8,
     days_per_week: 3,
-    objective: "",
+    objectives: [],
     sessions: [],
   }
 }

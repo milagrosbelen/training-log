@@ -111,7 +111,7 @@ function WorkoutSummary({ workout, allWorkouts, onEdit, onDelete }) {
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-5 sm:p-6 shadow-md border border-slate-700/50">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2 mb-2">
+            <h2 className="font-display text-xl sm:text-2xl font-extrabold tracking-tight text-white flex items-center gap-2 mb-2">
               <span>{getWorkoutEmoji(workout.type)}</span>
               <span>{getWorkoutTitle(workout.type)}</span>
             </h2>

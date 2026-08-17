@@ -1,28 +1,53 @@
-import { useState, useEffect, useRef } from "react"
-import { useNavigate, Link } from "react-router-dom"
-import { ChevronLeft, LogOut, Camera, X, Plus, Minus } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { Navigate, useNavigate } from "react-router-dom"
+import { Camera } from "lucide-react"
 import { getProfileSummary, peekProfile, updateProfile } from "../services/profileService"
-import { logout, getStoredUser } from "../services/authService"
-import { isAuthenticated } from "../services/authService"
-import { Navigate } from "react-router-dom"
-import { formatDateShort } from "../utils/dateUtils"
+import { getStoredUser, isAuthenticated, logout } from "../services/authService"
+import { getMyPlan, peekPlan } from "../services/planService"
+import { dateToISOString } from "../utils/dateUtils"
+import { parseObjectives } from "../utils/planUtils"
 import { ToastHost } from "../components/Toast"
+import BrandLogo from "../components/BrandLogo"
+
+const BLAZE = "#FF5C00"
+const BLAZE_GLOW = "rgba(255, 92, 0, 0.45)"
+const CARD_BORDER = { borderColor: "rgba(255,92,0,0.55)", boxShadow: "0 0 16px rgba(255,92,0,0.1)" }
 
 function getInitial(name) {
-  if (!name || !String(name).trim()) return "?"
-  const parts = String(name).trim().split(/\s+/)
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-  }
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean)
+  if (!parts.length) return "?"
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
   return parts[0][0].toUpperCase()
 }
 
-function formatDuration(minutes) {
-  if (!minutes || minutes < 0) return "0 min"
-  if (minutes < 60) return `${minutes} min`
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  return m > 0 ? `${h}h ${m} min` : `${h}h`
+function formatHours(minutes) {
+  const value = Number(minutes) || 0
+  if (value <= 0) return "0"
+  if (value < 60) return `${value}m`
+  const hours = Math.floor(value / 60)
+  const rest = value % 60
+  return rest ? `${hours}h ${rest}` : `${hours}h`
+}
+
+function lastWorkoutLabel(dateStr) {
+  if (!dateStr) return "—"
+  const key = String(dateStr).slice(0, 10)
+  const today = dateToISOString(new Date())
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (key === today) return "Hoy"
+  if (key === dateToISOString(yesterday)) return "Ayer"
+  const [year, month, day] = key.split("-").map(Number)
+  if (!year || !month || !day) return "—"
+  return new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "short" }).format(new Date(year, month - 1, day))
+}
+
+function statusLabel(status) {
+  if (status === "mejorando") return "mejorando"
+  if (status === "estable") return "estable"
+  if (status === "necesita_atencion") return "necesita atención"
+  if (status === "en_progreso") return "en progreso"
+  return ""
 }
 
 function emptyProfile(user) {
@@ -37,13 +62,15 @@ function emptyProfile(user) {
   }
 }
 
-function Profile() {
+export default function Profile() {
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
-  const [profile, setProfile] = useState(() => peekProfile() || emptyProfile(getStoredUser()))
+  const storedUser = getStoredUser()
+  const [profile, setProfile] = useState(() => peekProfile() || emptyProfile(storedUser))
+  const [plan, setPlan] = useState(() => peekPlan() ?? null)
   const [error, setError] = useState("")
   const [isEditing, setIsEditing] = useState(false)
-  const [editName, setEditName] = useState("")
+  const [editName, setEditName] = useState(storedUser?.name ?? "")
   const [editAvatarFile, setEditAvatarFile] = useState(null)
   const [editAvatarPreview, setEditAvatarPreview] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -53,28 +80,33 @@ function Profile() {
     return <Navigate to="/" replace />
   }
 
-  const loadProfile = async () => {
-    setError("")
-    try {
-      const data = await getProfileSummary()
-      setProfile(data)
-      setEditName(data?.user?.name ?? "")
-      setEditAvatarFile(null)
-      setEditAvatarPreview(null)
-    } catch (err) {
-      setError(err.response?.data?.message ?? "Error al cargar el perfil.")
-    }
-  }
-
   useEffect(() => {
-    loadProfile()
+    getProfileSummary()
+      .then((data) => {
+        setProfile(data)
+        setEditName(data?.user?.name ?? "")
+        setError("")
+      })
+      .catch((err) => {
+        setError(err.response?.data?.message ?? "Error al cargar el perfil.")
+      })
+    getMyPlan()
+      .then((data) => setPlan(data))
+      .catch(() => setPlan(null))
   }, [])
+
+  const user = profile?.user
+  const displayName = isEditing ? editName : user?.name
+  const avatarUrl = isEditing && editAvatarPreview ? editAvatarPreview : user?.avatar_url
+  const username = user?.username || storedUser?.username || ""
+  const objectives = parseObjectives(plan?.objective)
+  const sessions = profile?.totalWorkouts ?? 0
+  const focusStatus = statusLabel(profile?.focusAnalytics?.status)
 
   const handleLogout = async () => {
     try {
       await logout()
-      navigate("/")
-    } catch {
+    } finally {
       navigate("/")
     }
   }
@@ -86,16 +118,13 @@ function Profile() {
     setIsEditing(true)
   }
 
-  const handleCancelEdit = () => {
-    setIsEditing(false)
-    setEditName(profile?.user?.name ?? "")
-    setEditAvatarFile(null)
-    setEditAvatarPreview(null)
-    if (fileInputRef.current) fileInputRef.current.value = ""
+  const handleAvatarClick = () => {
+    if (!isEditing) handleStartEdit()
+    window.setTimeout(() => fileInputRef.current?.click(), 0)
   }
 
-  const handleAvatarChange = (e) => {
-    const file = e.target.files?.[0]
+  const handleAvatarChange = (event) => {
+    const file = event.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith("image/")) {
       setToast({ message: "Seleccioná una imagen válida (JPG, PNG)", type: "error" })
@@ -105,7 +134,9 @@ function Profile() {
     setEditAvatarPreview(URL.createObjectURL(file))
   }
 
-  const handleRemoveAvatar = () => {
+  const handleCancelEdit = () => {
+    setIsEditing(false)
+    setEditName(profile?.user?.name ?? "")
     setEditAvatarFile(null)
     setEditAvatarPreview(null)
     if (fileInputRef.current) fileInputRef.current.value = ""
@@ -125,12 +156,9 @@ function Profile() {
       setEditAvatarFile(null)
       setEditAvatarPreview(null)
       if (fileInputRef.current) fileInputRef.current.value = ""
-      setToast({ message: "Perfil actualizado correctamente", type: "success" })
+      setToast({ message: "Perfil actualizado.", type: "success" })
     } catch (err) {
-      setToast({
-        message: err.response?.data?.message ?? "Error al guardar",
-        type: "error",
-      })
+      setToast({ message: err.response?.data?.message ?? "Error al guardar", type: "error" })
     } finally {
       setSaving(false)
     }
@@ -138,386 +166,174 @@ function Profile() {
 
   if (error && !profile?.user) {
     return (
-      <div className="min-h-screen bg-ink text-white flex flex-col">
-        <ProfileHeader />
-        <main className="flex-1 flex items-center justify-center px-4 pb-24 md:pb-0">
-          <p className="text-red-400 text-center">{error}</p>
-        </main>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center px-6 pb-24">
+        <p className="text-red-400 text-center">{error}</p>
       </div>
     )
   }
 
-  const { user, totalWorkouts, totalDuration, lastWorkout, mostFrequentType, focusAnalytics } = profile ?? {}
-  const avatarUrl = isEditing && editAvatarPreview ? editAvatarPreview : user?.avatar_url
-  const displayName = isEditing ? editName : user?.name
-
   return (
-    <div className="min-h-screen bg-ink text-white">
-      <ProfileHeader />
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 md:pb-8 space-y-8">
-        {/* Header: Avatar → Nombre → Email → Botón */}
-        <section className="relative flex flex-col items-center text-center">
+    <div className="min-h-screen bg-black text-white pb-28">
+      <div className="max-w-md mx-auto px-5 pt-7">
+        <div className="flex items-center justify-between">
+          <BrandLogo size="wide" className="-ml-2" />
+          <p className="text-[11px] font-semibold tracking-[0.22em] uppercase" style={{ color: BLAZE }}>
+            Tu cuenta
+          </p>
+        </div>
+
+        <section className="mt-8 flex flex-col items-center text-center">
           <button
             type="button"
-            onClick={handleLogout}
-            className="absolute top-0 right-0 flex flex-col items-center gap-0.5 py-1 px-1 text-slate-500 hover:text-slate-400 transition-colors"
-            aria-label="Cerrar sesión"
-          >
-            <LogOut className="w-4 h-4" strokeWidth={2} />
-            <span className="text-[10px] font-medium uppercase tracking-wider">cerrar</span>
-          </button>
-
-          <div
-            className="w-[100px] h-[100px] rounded-full border-2 border-neon-500/60 flex items-center justify-center overflow-hidden bg-slate-800 flex-shrink-0"
-            aria-hidden
+            onClick={handleAvatarClick}
+            className="relative h-[112px] w-[112px] rounded-full overflow-hidden bg-[#141414]"
+            style={{ border: `3px solid ${BLAZE}`, boxShadow: `0 0 22px ${BLAZE_GLOW}` }}
+            aria-label="Cambiar foto"
           >
             {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={user?.name ?? "Avatar"}
-                className="w-full h-full object-cover"
-              />
+              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
             ) : (
-              <span className="text-3xl font-bold text-neon-400">
+              <span className="flex h-full w-full items-center justify-center text-3xl font-black italic" style={{ color: BLAZE }}>
                 {getInitial(displayName)}
               </span>
             )}
-          </div>
+            <span
+              className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full text-white"
+              style={{ backgroundColor: BLAZE }}
+            >
+              <Camera className="h-4 w-4" strokeWidth={2.2} />
+            </span>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleAvatarChange}
+            className="hidden"
+          />
 
-          <h2 className="mt-5 text-xl font-semibold text-white">
-            {displayName || "—"}
-          </h2>
-          <p className="mt-1 text-sm text-slate-400">{user?.email ?? "—"}</p>
+          {isEditing ? (
+            <input
+              value={editName}
+              onChange={(event) => setEditName(event.target.value)}
+              className="mt-5 w-full max-w-xs h-12 rounded-2xl bg-black border px-4 text-center text-xl font-black italic text-white"
+              style={{ borderColor: "rgba(255,92,0,0.55)" }}
+            />
+          ) : (
+            <h2 className="mt-5 font-display text-[32px] font-black italic tracking-tight leading-none text-white">
+              {displayName || "—"}
+            </h2>
+          )}
+          <p className="mt-2 text-sm text-slate-500">{username ? `@${username}` : user?.email || ""}</p>
 
-          {!isEditing && (
+          {isEditing ? (
+            <div className="mt-4 flex w-full max-w-xs gap-2">
+              <button
+                type="button"
+                onClick={handleSaveEdit}
+                disabled={saving}
+                className="flex-1 h-11 rounded-full text-sm font-black italic text-white disabled:opacity-60"
+                style={{ backgroundColor: BLAZE }}
+              >
+                {saving ? "Guardando..." : "Guardar"}
+              </button>
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                disabled={saving}
+                className="flex-1 h-11 rounded-full text-sm font-semibold text-slate-400 border border-white/15"
+              >
+                Cancelar
+              </button>
+            </div>
+          ) : (
             <button
+              type="button"
               onClick={handleStartEdit}
-              className="mt-4 text-sm font-medium text-neon-500 hover:text-neon-300 transition-colors"
+              className="mt-4 h-10 px-5 rounded-full text-sm font-semibold border"
+              style={{ borderColor: BLAZE, color: BLAZE }}
             >
               Modificar perfil
             </button>
           )}
         </section>
 
-        {/* Sección editable */}
-        {isEditing && (
-          <section className="bg-slate-800/60 rounded-2xl p-4 sm:p-6 shadow-lg shadow-black/20 border border-slate-700/50 space-y-4">
-            <h3 className="text-base font-semibold text-white">Editar perfil</h3>
-
-            <div>
-              <label htmlFor="edit-name" className="block text-sm text-slate-400 mb-2">
-                Nombre
-              </label>
-              <input
-                id="edit-name"
-                type="text"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                placeholder="Tu nombre"
-                className="w-full px-4 py-3 rounded-xl bg-ink-300 border border-slate-600 text-[#f4f4f5] placeholder:text-slate-400 caret-ember scheme-dark focus:outline-none focus:ring-2 focus:ring-ember focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-slate-400 mb-2">Foto</label>
-              <div className="flex items-center gap-3">
-                <div className="w-16 h-16 rounded-full border-2 border-slate-600 flex items-center justify-center overflow-hidden bg-slate-700/50 flex-shrink-0">
-                  {editAvatarPreview ? (
-                    <img
-                      src={editAvatarPreview}
-                      alt="Vista previa"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Camera className="w-6 h-6 text-slate-500" />
-                  )}
-                </div>
-                <div className="flex flex-col gap-2">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="text-sm px-3 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700/50 transition-colors"
-                  >
-                    Cambiar foto
-                  </button>
-                  {editAvatarPreview && (
-                    <button
-                      type="button"
-                      onClick={handleRemoveAvatar}
-                      className="text-sm px-3 py-2 rounded-lg text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1"
-                    >
-                      <X className="w-4 h-4" />
-                      Quitar
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={handleSaveEdit}
-                disabled={saving}
-                className="flex-1 sm:flex-initial px-6 py-3 rounded-xl bg-neon-500 hover:bg-neon-600 disabled:opacity-60 text-white font-semibold transition-colors"
-              >
-                {saving ? "Guardando..." : "Guardar"}
-              </button>
-              <button
-                onClick={handleCancelEdit}
-                disabled={saving}
-                className="flex-1 sm:flex-initial px-6 py-3 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-700/50 disabled:opacity-60 transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
-          </section>
-        )}
-
-        {/* Foco Principal */}
-        <FocusPrincipalSection focusAnalytics={focusAnalytics} />
-
-        {/* Resumen – Acordeón colapsable */}
-        <SummaryAccordion
-          totalWorkouts={totalWorkouts ?? 0}
-          totalDuration={totalDuration ?? 0}
-          lastWorkout={lastWorkout}
-          mostFrequentType={mostFrequentType ?? "—"}
-          formatDuration={formatDuration}
-          formatDateShort={formatDateShort}
-        />
-
-        {/* Branding */}
-        <div className="py-10 flex justify-center">
-          <span className="text-xl font-bold text-ember/90 tracking-tight">
-            MiLogit
-          </span>
+        <div className="mt-8 grid grid-cols-3 gap-2.5">
+          <article className="rounded-[18px] bg-black px-2 py-4 text-center border" style={CARD_BORDER}>
+            <p className="font-display font-black italic tracking-tight text-[28px] leading-none" style={{ color: BLAZE }}>
+              {sessions}
+            </p>
+            <p className="mt-1.5 text-[11px] italic text-white/85">sesiones</p>
+          </article>
+          <article className="rounded-[18px] bg-black px-2 py-4 text-center border" style={CARD_BORDER}>
+            <p className="font-display font-black italic tracking-tight text-[22px] leading-none text-white">
+              {formatHours(profile?.totalDuration)}
+            </p>
+            <p className="mt-1.5 text-[11px] italic text-white/85">entrenadas</p>
+          </article>
+          <article className="rounded-[18px] bg-black px-2 py-4 text-center border" style={CARD_BORDER}>
+            <p className="font-display font-black italic tracking-tight text-[22px] leading-none text-white">
+              {lastWorkoutLabel(profile?.lastWorkout?.date)}
+            </p>
+            <p className="mt-1.5 text-[11px] italic text-white/85">último entreno</p>
+          </article>
         </div>
-      </main>
+
+        <p className="mt-8 text-[11px] font-semibold tracking-[0.22em] uppercase" style={{ color: BLAZE }}>
+          Tu foco
+        </p>
+        <section
+          className="mt-3 rounded-[24px] bg-black px-4 py-5 border"
+          style={{ borderColor: "rgba(255,92,0,0.55)", boxShadow: "0 0 22px rgba(255,92,0,0.12)" }}
+        >
+          {objectives.length ? (
+            <div className="flex flex-wrap gap-2">
+              {objectives.map((item) => (
+                <span
+                  key={item}
+                  className="rounded-full px-3 py-1 text-[12px] font-semibold"
+                  style={{ backgroundColor: "rgba(255,92,0,0.16)", color: BLAZE }}
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400">Todavía no hay objetivo en tu plan.</p>
+          )}
+          <p className="mt-3 text-[13px] text-slate-500">Lo que tu coach cargó en el plan.</p>
+          <p className="mt-1 text-[13px] font-semibold" style={{ color: BLAZE }}>
+            {sessions} {sessions === 1 ? "sesión" : "sesiones"}
+            {focusStatus ? ` · ${focusStatus}` : ""}
+          </p>
+        </section>
+
+        <p className="mt-8 text-[11px] font-semibold tracking-[0.22em] uppercase" style={{ color: BLAZE }}>
+          Resumen
+        </p>
+        <div className="mt-3 space-y-2.5">
+          <article className="rounded-[20px] bg-black border border-white/15 px-4 py-4 flex items-center justify-between gap-3">
+            <p className="text-sm text-white/90">Total de entrenamientos</p>
+            <p className="font-display font-black italic text-[28px] leading-none text-white">{sessions}</p>
+          </article>
+          <article className="rounded-[20px] bg-black border border-white/15 px-4 py-4 flex items-center justify-between gap-3">
+            <p className="text-sm text-white/90">Tipo más frecuente</p>
+            <p className="font-display font-black italic text-[22px] leading-none text-white text-right">
+              {profile?.mostFrequentType || "—"}
+            </p>
+          </article>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="mt-10 mb-4 w-full text-center text-sm text-slate-500 hover:text-white transition-colors"
+        >
+          Cerrar sesión
+        </button>
+      </div>
 
       <ToastHost toast={toast} onClose={() => setToast(null)} />
     </div>
   )
 }
-
-function ProfileHeader() {
-  return (
-    <header className="hidden md:block bg-ink-200/95 backdrop-blur-sm border-b border-white/5 sticky top-0 z-50 shadow-lg">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link
-            to="/dashboard"
-            className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors group"
-          >
-            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-            <span>Volver</span>
-          </Link>
-          <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Perfil</h1>
-          <Link
-            to="/plan"
-            className="text-sm text-slate-400 hover:text-white transition-colors"
-          >
-            Plan
-          </Link>
-        </div>
-      </div>
-    </header>
-  )
-}
-
-function FocusPrincipalSection({ focusAnalytics }) {
-  if (!focusAnalytics) {
-    return (
-      <section>
-        <h2 className="text-base font-semibold text-white mb-4">🎯 Foco Principal</h2>
-        <div className="bg-slate-800/60 rounded-2xl p-5 border border-slate-700/50">
-          <p className="text-sm text-slate-400">
-            Definí tu foco en{" "}
-            <Link to="/progreso" className="text-neon-400 hover:text-neon-300">
-              Progreso
-            </Link>{" "}
-            para ver tu avance.
-          </p>
-        </div>
-      </section>
-    )
-  }
-
-  const { focus, sufficient_data, message, sessions, progress_pct, weight_change, status } =
-    focusAnalytics
-
-  if (!sufficient_data) {
-    return (
-      <section>
-        <h2 className="text-base font-semibold text-white mb-4">🎯 Foco Principal</h2>
-        <div className="bg-slate-800/60 rounded-2xl p-5 border border-slate-700/50">
-          <p className="text-base font-medium text-white mb-1">{focus}</p>
-          <p className="text-sm text-slate-400">{message ?? "Aún no hay datos suficientes para analizar tu foco."}</p>
-        </div>
-      </section>
-    )
-  }
-
-  const statusConfig = {
-    mejorando: { label: "Mejorando", icon: "📈", color: "text-neon-400" },
-    estable: { label: "Estable", icon: "➖", color: "text-slate-400" },
-    necesita_atencion: { label: "Necesita atención", icon: "📉", color: "text-amber-400" },
-    en_progreso: { label: "En progreso", icon: "🎯", color: "text-neon-400" },
-  }
-  const sc = statusConfig[status] ?? statusConfig.en_progreso
-
-  const formatProgress = (pct) => {
-    if (pct == null) return null
-    const sign = pct >= 0 ? "+" : ""
-    return `${sign}${pct}%`
-  }
-
-  const formatWeightChange = (delta) => {
-    if (delta == null) return null
-    if (delta > 0) return `+${delta} kg`
-    return `${delta} kg`
-  }
-
-  return (
-    <section>
-      <h2 className="text-base font-semibold text-white mb-4">🎯 Foco Principal</h2>
-      <div className="bg-slate-800/60 rounded-2xl p-5 sm:p-6 border border-slate-700/50 space-y-4">
-        <div>
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">
-            Foco actual
-          </p>
-          <p className="text-lg font-semibold text-white">{focus}</p>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          {progress_pct != null && (
-            <div>
-              <p className="text-xs text-slate-500 mb-0.5">Progreso del mes</p>
-              <p
-                className={`text-base font-semibold ${
-                  progress_pct >= 0 ? "text-neon-400" : "text-amber-400"
-                }`}
-              >
-                {formatProgress(progress_pct)}
-              </p>
-            </div>
-          )}
-          <div>
-            <p className="text-xs text-slate-500 mb-0.5">Frecuencia</p>
-            <p className="text-base font-semibold text-white">{sessions} sesiones</p>
-          </div>
-          {weight_change != null && (
-            <div>
-              <p className="text-xs text-slate-500 mb-0.5">Peso promedio</p>
-              <p
-                className={`text-base font-semibold ${
-                  weight_change >= 0 ? "text-neon-400" : "text-amber-400"
-                }`}
-              >
-                {weight_change >= 0 ? "↑" : "↓"} {formatWeightChange(Math.abs(weight_change))}
-              </p>
-            </div>
-          )}
-          <div>
-            <p className="text-xs text-slate-500 mb-0.5">Estado</p>
-            <p className={`text-base font-medium ${sc.color}`}>
-              {sc.icon} {sc.label}
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function SummaryAccordion({
-  totalWorkouts,
-  totalDuration,
-  lastWorkout,
-  mostFrequentType,
-  formatDuration,
-  formatDateShort,
-}) {
-  const [expandedId, setExpandedId] = useState(null)
-
-  const items = [
-    {
-      id: "total",
-      label: "Total de entrenamientos",
-      value: String(totalWorkouts),
-    },
-    {
-      id: "duration",
-      label: "Duración acumulada",
-      value: formatDuration(totalDuration),
-    },
-    {
-      id: "last",
-      label: "Último entrenamiento",
-      value: lastWorkout ? formatDateShort(lastWorkout.date) : "—",
-      sub: lastWorkout ? `${lastWorkout.type} · ${formatDuration(lastWorkout.duration)}` : null,
-    },
-    {
-      id: "frequent",
-      label: "Tipo más frecuente",
-      value: mostFrequentType,
-    },
-  ]
-
-  const handleToggle = (id) => {
-    setExpandedId((prev) => (prev === id ? null : id))
-  }
-
-  return (
-    <section>
-      <h2 className="text-base font-semibold text-white mb-6">Resumen</h2>
-
-      <div className="divide-y divide-slate-700/40">
-        {items.map(({ id, label, value, sub }) => {
-          const isExpanded = expandedId === id
-          return (
-            <div key={id} className="py-4 first:pt-0 last:pb-0">
-              <button
-                type="button"
-                onClick={() => handleToggle(id)}
-                className="w-full flex items-center justify-between text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-500/50 rounded-lg py-1 -my-1"
-              >
-                <span className="text-sm font-medium text-slate-300">{label}</span>
-                <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                  {isExpanded ? (
-                    <Minus className="w-4 h-4 text-neon-500" strokeWidth={2.5} />
-                  ) : (
-                    <Plus className="w-4 h-4 text-slate-400" strokeWidth={2.5} />
-                  )}
-                </span>
-              </button>
-
-              <div
-                className={`overflow-hidden transition-all duration-300 ease-out ${
-                  isExpanded ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
-                }`}
-              >
-                <div className="pt-2 pb-1">
-                  <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                    {value}
-                  </p>
-                  {sub && (
-                    <p className="text-sm text-slate-500 mt-1">{sub}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    </section>
-  )
-}
-
-export default Profile

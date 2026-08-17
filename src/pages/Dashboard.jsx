@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react"
 import HomeInicio from "../components/HomeInicio"
 import AlumnaProgressView from "../components/progress/AlumnaProgressView"
 import { ToastHost } from "../components/Toast"
+import BrandLogo from "../components/BrandLogo"
 import { getWorkouts, peekWorkouts } from "../services/workoutService"
 import { getStoredUser, isAuthenticated } from "../services/authService"
 
@@ -47,7 +48,7 @@ function Dashboard() {
       <header className="hidden md:flex bg-ink-200/95 backdrop-blur-sm border-b border-white/5 sticky top-0 z-50 shadow-lg">
         <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <span className="text-xl font-bold text-ember [text-shadow:0_0_20px_rgba(235,87,61,0.4)] tracking-wide">MiLogit</span>
+            <BrandLogo size="wide" />
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => { setCurrentView("calendar"); setSelectedDate("") }}

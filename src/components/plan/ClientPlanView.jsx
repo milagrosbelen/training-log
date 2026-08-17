@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import {
+  Flame,
   Headphones,
-  Lightbulb,
   Play,
 } from "lucide-react"
 import { WEEKDAYS, firstName, todayWeekday } from "../../utils/planUtils"
@@ -10,6 +10,9 @@ import { getWorkouts, peekWorkouts, logSessionExercise } from "../../services/wo
 import PlanDesktopHeader from "./PlanDesktopHeader"
 import ExerciseHeroCard from "./ExerciseHeroCard"
 import ExerciseDetail from "./ExerciseDetail"
+
+const BLAZE = "#FF5C00"
+const BLAZE_GLOW = "rgba(255, 92, 0, 0.55)"
 
 export default function ClientPlanView({ plan, user, onPlanChange }) {
   const sessionsByDay = useMemo(() => {
@@ -115,26 +118,48 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
       ? session?.exercises?.[detailIndex]
       : null
 
+  const todayBanner = todayHasSession && !todayTrained
+    ? {
+        title: "Hoy te toca entrenar",
+        story: "Es tu día. Entrá a la sesión y dejá todo.",
+        action: true,
+      }
+    : todayHasSession && todayTrained
+      ? {
+          title: "Hoy ya entrenaste",
+          story: "Qué bien. Mañana el cuerpo lo va a notar.",
+          action: false,
+        }
+      : {
+          title: "Hoy descansás",
+          story: nextTraining
+            ? `El ${nextTraining.name} es tu próximo entreno.`
+            : "Recuperá. El próximo día de plan te espera.",
+          action: false,
+        }
+
   return (
-    <div className="min-h-screen bg-ink text-white pb-28 font-sans">
+    <div className="min-h-screen bg-black text-white pb-28 font-sans">
       <PlanDesktopHeader />
-      <div className="max-w-md mx-auto px-5 pt-8">
-        <p className="text-[13px] text-gold tracking-wide">
+      <div className="max-w-md mx-auto px-5 pt-7">
+        <p className="text-[11px] font-semibold tracking-[0.28em] uppercase" style={{ color: BLAZE }}>
           Plan de {displayName || "la alumna"}
         </p>
-        <div className="mt-1 flex items-start justify-between gap-3">
-          <h1 className="font-serif text-[40px] leading-none text-white">Esta semana</h1>
+        <div className="mt-2 flex items-start justify-between gap-3">
+          <h1 className="font-display font-black italic tracking-tight text-[40px] leading-[0.9] text-white">
+            Esta semana
+          </h1>
           {daysPerWeek ? (
-            <span className="mt-2 shrink-0 rounded-full border border-gold/70 px-3 py-1 text-[11px] text-gold text-right leading-tight">
-              {daysPerWeek} {daysPerWeek === 1 ? "día" : "días"} de entreno a la semana
+            <span
+              className="mt-1 shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-semibold text-right leading-tight"
+              style={{ borderColor: BLAZE, color: BLAZE }}
+            >
+              {daysPerWeek} {daysPerWeek === 1 ? "día" : "días"} de entreno
             </span>
           ) : null}
         </div>
-        {plan.objective ? (
-          <p className="mt-3 text-sm text-slate-400">{plan.objective}</p>
-        ) : null}
 
-        <div className="mt-8 flex justify-between px-1">
+        <div className="mt-7 flex justify-between px-0.5">
           {WEEKDAYS.map((day) => {
             const isActive = selectedDay === day.key
             const isToday = today === day.key
@@ -149,23 +174,43 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
                   setDetailIndex(null)
                   setGuided(false)
                 }}
-                className="flex flex-col items-center min-w-[36px]"
+                className="flex flex-col items-center min-w-[36px] bg-transparent"
               >
-                <span className={`h-3 text-[9px] uppercase tracking-[0.12em] ${isToday ? "text-gold" : "text-transparent"}`}>
+                <span
+                  className="h-3 text-[9px] font-semibold uppercase tracking-[0.14em]"
+                  style={{ color: isToday ? BLAZE : "transparent" }}
+                >
                   Hoy
                 </span>
                 <span
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-[15px] font-medium transition-colors ${
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-[15px] font-bold transition-all duration-200 border-2"
+                  style={
                     isActive
-                      ? "bg-ember text-white"
-                      : hasSession
-                        ? "border-2 border-ember text-white"
-                        : "text-slate-500"
-                  }`}
+                      ? {
+                          backgroundColor: BLAZE,
+                          color: "#080809",
+                          borderColor: BLAZE,
+                          boxShadow: `0 0 16px ${BLAZE_GLOW}`,
+                        }
+                      : isTrained
+                        ? { backgroundColor: "transparent", color: "#fff", borderColor: "rgba(255,255,255,0.85)" }
+                        : hasSession
+                          ? { backgroundColor: "transparent", color: "#fff", borderColor: BLAZE }
+                          : { backgroundColor: "transparent", color: "#8d8d8d", borderColor: "#3a3a3a" }
+                  }
                 >
                   {day.label}
                 </span>
-                <span className={`h-5 mt-1 text-[10px] ${isTrained ? "text-gold" : hasSession ? "text-ember/80" : "text-transparent"}`}>
+                <span
+                  className="h-5 mt-1 text-[10px] font-semibold"
+                  style={{
+                    color: isTrained
+                      ? "#ffffff"
+                      : hasSession
+                        ? BLAZE
+                        : "transparent",
+                  }}
+                >
                   {isTrained ? "Hecho" : hasSession ? "Entreno" : "."}
                 </span>
               </button>
@@ -173,7 +218,7 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
           })}
         </div>
 
-        {todayHasSession && !todayTrained ? (
+        {todayBanner.action ? (
           <button
             type="button"
             onClick={() => {
@@ -181,43 +226,47 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
               setDetailIndex(null)
               setGuided(false)
             }}
-            className="mt-2 w-full rounded-[24px] border border-ember/40 bg-ember/10 px-4 py-4 text-left"
+            className="mt-1 w-full rounded-[28px] bg-black px-5 py-5 text-left flex items-center justify-between gap-3"
+            style={{
+              border: "1.5px solid rgba(255,92,0,0.7)",
+              boxShadow: `0 0 28px rgba(255,92,0,0.22)`,
+            }}
           >
-            <p className="text-[11px] uppercase tracking-[0.18em] text-ember">Hoy</p>
-            <p className="mt-1 font-serif text-[26px] leading-none text-white">Hoy te toca entrenar</p>
-            <p className="mt-2 text-sm text-slate-400">
-              Es tu día. Entrá a la sesión y dejá todo.
-            </p>
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold tracking-[0.22em] uppercase" style={{ color: BLAZE }}>Hoy</p>
+              <p className="mt-1.5 font-display font-black italic tracking-tight text-[28px] leading-none text-white">
+                {todayBanner.title}
+              </p>
+              <p className="mt-2 text-sm text-white/80">{todayBanner.story}</p>
+            </div>
+            <Flame className="h-12 w-12 shrink-0" style={{ color: BLAZE, filter: `drop-shadow(0 0 12px ${BLAZE_GLOW})` }} strokeWidth={1.8} />
           </button>
-        ) : null}
-
-        {todayHasSession && todayTrained ? (
-          <div className="mt-2 w-full rounded-[24px] border border-gold/30 bg-ink-200 px-4 py-4">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-gold">Hoy</p>
-            <p className="mt-1 font-serif text-[26px] leading-none text-white">Hoy ya entrenaste</p>
-            <p className="mt-2 text-sm text-slate-400">Qué bien. Mañana el cuerpo lo va a notar.</p>
+        ) : (
+          <div
+            className="mt-1 w-full rounded-[28px] bg-black px-5 py-5 flex items-center justify-between gap-3"
+            style={{
+              border: "1.5px solid rgba(255,92,0,0.7)",
+              boxShadow: `0 0 28px rgba(255,92,0,0.22)`,
+            }}
+          >
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold tracking-[0.22em] uppercase" style={{ color: BLAZE }}>Hoy</p>
+              <p className="mt-1.5 font-display font-black italic tracking-tight text-[28px] leading-none text-white">
+                {todayBanner.title}
+              </p>
+              <p className="mt-2 text-sm text-white/80">{todayBanner.story}</p>
+            </div>
+            <Flame className="h-12 w-12 shrink-0" style={{ color: BLAZE, filter: `drop-shadow(0 0 12px ${BLAZE_GLOW})` }} strokeWidth={1.8} />
           </div>
-        ) : null}
-
-        {!todayHasSession ? (
-          <div className="mt-2 w-full rounded-[24px] border border-white/5 bg-ink-200 px-4 py-4">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-gold">Hoy</p>
-            <p className="mt-1 font-serif text-[26px] leading-none text-white">Hoy descansás</p>
-            <p className="mt-2 text-sm text-slate-400">
-              {nextTraining
-                ? `El ${nextTraining.name} es tu próximo entreno.`
-                : "Recuperá. El próximo día de plan te espera."}
-            </p>
-          </div>
-        ) : null}
+        )}
 
         {session ? (
           <>
             <div className="mt-8">
-              <h2 className="font-serif text-[28px] leading-tight">
+              <h2 className="font-display font-black italic tracking-tight text-[28px] leading-tight text-white">
                 Día {session.day_number} · {session.title}
               </h2>
-              <p className="mt-2 flex items-center gap-2 text-[13px] text-gold">
+              <p className="mt-2 flex items-center gap-2 text-[13px] font-medium" style={{ color: BLAZE }}>
                 <Headphones className="w-4 h-4" />
                 Coach asignó esta sesión
               </p>
@@ -236,15 +285,19 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
             </div>
 
             <div className="mt-6">
-              <div className="flex items-center justify-between text-[13px] text-[#bdbdbd] mb-2">
-                <span>
+              <div className="flex items-center justify-between text-[13px] mb-2">
+                <span style={{ color: BLAZE }}>
                   {done} de {total} ejercicios
                 </span>
               </div>
-              <div className="h-1.5 rounded-full bg-ink-400 overflow-hidden">
+              <div className="h-1.5 rounded-full bg-[#2A2A2A] overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-ember transition-all"
-                  style={{ width: `${percent}%` }}
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    width: `${percent}%`,
+                    backgroundColor: BLAZE,
+                    boxShadow: `0 0 10px ${BLAZE_GLOW}`,
+                  }}
                 />
               </div>
             </div>
@@ -255,20 +308,26 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
               type="button"
               onClick={handleStartGuided}
               disabled={!total}
-              className="mt-5 w-full h-12 rounded-2xl bg-ember text-white font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+              className="mt-5 w-full h-14 rounded-full text-white text-[15px] font-bold tracking-[0.08em] uppercase flex items-center justify-center gap-2 disabled:opacity-50 transition-all duration-200 active:scale-[0.97]"
+              style={{
+                backgroundColor: BLAZE,
+                boxShadow: `0 0 28px ${BLAZE_GLOW}`,
+              }}
             >
               <Play className="w-4 h-4 fill-white" />
               {done > 0 && done < total ? "Seguir sesión guiada" : "Empezar sesión guiada"}
             </button>
 
-            <p className="mt-4 flex items-start gap-2 text-[12px] text-slate-500 leading-relaxed">
-              <Lightbulb className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-              Tocá una card para ver la zona. En la sesión guiada, al final de cada ejercicio anotá peso y cómo te fue.
+            <p className="mt-4 text-center text-[12px] text-slate-500">
+              Tocá una card para ver la zona.
             </p>
           </>
         ) : (
-          <section className="mt-6 rounded-[28px] bg-ink-200 border border-white/5 px-4 py-10 text-center">
-            <h2 className="font-serif text-2xl">Día de descanso</h2>
+          <section
+            className="mt-6 rounded-[28px] bg-black border px-4 py-10 text-center"
+            style={{ borderColor: "rgba(255,92,0,0.35)" }}
+          >
+            <h2 className="font-display font-black italic tracking-tight text-2xl">Día de descanso</h2>
             <p className="mt-2 text-sm text-slate-500">
               Hoy no hay sesión asignada. Recuperá y volvé al próximo día de plan.
             </p>

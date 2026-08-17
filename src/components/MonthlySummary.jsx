@@ -135,7 +135,7 @@ function MonthlySummary({ workouts, month, year, onMonthPrev, onMonthNext, canGo
         <p className="text-xs font-medium text-slate-400 uppercase tracking-[0.2em]">
           Progreso Mensual
         </p>
-        <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">
+        <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
           {MONTHS[month]} en<br />
           <span className="text-ember [text-shadow:0_0_20px_rgba(235,87,61,0.3)]">Movimiento</span>
         </h1>
