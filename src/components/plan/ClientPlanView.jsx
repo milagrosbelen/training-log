@@ -12,8 +12,7 @@ import { getWorkouts, peekWorkouts, logSessionExercise } from "../../services/wo
 import PlanDesktopHeader from "./PlanDesktopHeader"
 import ExerciseHeroCard from "./ExerciseHeroCard"
 import ExerciseDetail from "./ExerciseDetail"
-import PoseDaySection from "./PoseDaySection"
-import { isYogaClassWeekday } from "../../utils/poseLadder"
+import QuickYogaDaySection from "./QuickYogaDaySection"
 
 const BLAZE = "#FF5C00"
 const BLAZE_GLOW = "rgba(255, 92, 0, 0.55)"
@@ -54,7 +53,6 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
   const displayName = firstName(plan.user_name || user?.name)
   const hideWeight = isHomeTraining(user) || isHomeTraining(plan)
   const poseLadder = usesPoseLadder(user)
-  const yogaClassDay = poseLadder && isYogaClassWeekday(selectedDay)
   const total = session?.exercises?.length || 0
   const done = Math.min(progress.completed || 0, total)
   const percent = total > 0 ? Math.round((done / total) * 100) : 0
@@ -275,8 +273,6 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
           </div>
         )}
 
-        {yogaClassDay ? <PoseDaySection mode="class" /> : null}
-
         {session ? (
           <>
             <div className="mt-8 flex items-start justify-between gap-3">
@@ -362,7 +358,7 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
           </section>
         )}
 
-        {poseLadder && !yogaClassDay ? <PoseDaySection mode="practice" /> : null}
+        {poseLadder ? <QuickYogaDaySection /> : null}
       </div>
 
       {activeExercise ? (

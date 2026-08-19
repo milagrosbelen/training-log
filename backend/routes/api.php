@@ -84,6 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/profile/poses', [ProfileController::class, 'updatePoses']);
     Route::get('/profile/yoga-progressions', [MilagrosYogaController::class, 'indexForUser']);
     Route::post('/profile/yoga-progressions/attempts', [MilagrosYogaController::class, 'storeAttempt']);
+    Route::post('/profile/yoga-progressions/quick-practice', [MilagrosYogaController::class, 'storeQuickPractice']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     Route::middleware('coach')->group(function () {

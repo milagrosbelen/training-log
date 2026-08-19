@@ -79,6 +79,17 @@ class MilagrosYogaProgressionTest extends TestCase
 
         $mastery->assertStatus(201);
         $mastery->assertJsonPath('data.mastered', true);
+
+        $quickPractice = $this->actingAs($milagros, 'sanctum')
+            ->postJson('/api/profile/yoga-progressions/quick-practice', [
+                'name' => 'Pose nueva de práctica',
+                'reached_stage' => 1,
+                'deep_breathing_done' => false,
+                'notes' => 'La probé hoy dentro del registro diario.',
+            ]);
+
+        $quickPractice->assertStatus(201);
+        $quickPractice->assertJsonPath('data.name', 'Pose nueva de práctica');
     }
 
     public function test_delfi_and_jo_remain_isolated_from_milagros_progression(): void

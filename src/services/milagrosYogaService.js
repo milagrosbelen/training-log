@@ -50,3 +50,8 @@ export async function updateMilagrosYogaExercise(id, { name, description, image,
   })
   return data?.data ?? null
 }
+
+export async function recordQuickYogaPractice(payload) {
+  const { data } = await api.post("/profile/yoga-progressions/quick-practice", payload)
+  return data?.data ?? null
+}

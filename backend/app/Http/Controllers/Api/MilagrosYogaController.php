@@ -207,6 +207,63 @@ class MilagrosYogaController extends Controller
         ], 201);
     }
 
+    public function storeQuickPractice(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user->isMilagros()) {
+            return response()->json(['message' => 'El registro rápido solo está disponible para Milagros.'], 403);
+        }
+
+        $validated = $request->validate([
+            'exercise_id' => ['nullable', 'integer', 'exists:yoga_exercises,id'],
+            'name' => ['required_without:exercise_id', 'nullable', 'string', 'max:255'],
+            'reached_stage' => ['nullable', 'integer', 'min:0'],
+            'deep_breathing_done' => ['nullable', 'boolean'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $exercise = !empty($validated['exercise_id'])
+            ? YogaExercise::with('stages')->where('user_id', $user->id)->findOrFail($validated['exercise_id'])
+            : null;
+
+        if (!$exercise) {
+            $exercise = YogaExercise::create([
+                'user_id' => $user->id,
+                'name' => trim((string) $validated['name']),
+            ]);
+            $exercise->stages()->create([
+                'sort_order' => 1,
+                'title' => 'Práctica inicial',
+                'description' => 'Registrar cómo se sintió la pose.',
+            ]);
+            $exercise->load('stages');
+        }
+
+        $stageCount = $exercise->stages->count();
+        $reachedStage = max(0, min((int) ($validated['reached_stage'] ?? 0), $stageCount));
+        $deepBreathingDone = (bool) ($validated['deep_breathing_done'] ?? false);
+
+        $attempt = YogaProgressAttempt::create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'reached_stage' => $reachedStage,
+            'deep_breathing_done' => $deepBreathingDone,
+            'notes' => trim((string) ($validated['notes'] ?? '')) ?: null,
+            'recorded_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Práctica de hoy guardada.',
+            'data' => [
+                'exercise_id' => $exercise->id,
+                'name' => $exercise->name,
+                'reached_stage' => $reachedStage,
+                'deep_breathing_done' => $deepBreathingDone,
+                'recorded_at' => $attempt->recorded_at?->format('Y-m-d'),
+            ],
+        ], 201);
+    }
+
     protected function serializeExercise(YogaExercise $exercise): array
     {
         $stages = $exercise->stages ?? collect();

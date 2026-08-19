@@ -128,7 +128,21 @@ export default function MilagrosYogaProgressSection() {
                   </button>
                 </div>
 
-                <p className="mt-4 text-xs text-slate-500">Historial: {exercise.history?.length || 0} {exercise.history?.length === 1 ? "intento" : "intentos"}</p>
+                <div className="mt-4 border-t border-white/10 pt-4">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: BLAZE }}>Evolución de {exercise.name}</p>
+                  {exercise.history?.length ? (
+                    <div className="mt-2 space-y-2">
+                      {exercise.history.slice().reverse().slice(-6).map((attempt) => (
+                        <div key={attempt.id} className="flex items-center justify-between gap-3 text-xs">
+                          <span className="text-slate-500">{attempt.recorded_at}</span>
+                          <span className="text-white">Etapa {attempt.reached_stage}/{exercise.stage_count}{attempt.deep_breathing_done ? " · 3 respiraciones" : ""}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-xs text-slate-500">Sin registros todavía.</p>
+                  )}
+                </div>
               </div>
             </article>
           )
