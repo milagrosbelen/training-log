@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use App\Models\User;
+use App\Models\YogaExercise;
 use App\Services\CoachRosterService;
 use App\Services\PlanAssembler;
 use Illuminate\Http\JsonResponse;
@@ -103,6 +104,8 @@ class PlanController extends Controller
             'sessions.*.exercises.*.rest_seconds' => ['nullable', 'integer', 'min:0', 'max:600'],
             'sessions.*.exercises.*.tip' => ['nullable', 'string', 'max:500'],
             'sessions.*.exercises.*.muscle' => ['nullable', 'string', 'max:100'],
+            'sessions.*.exercises.*.yoga_exercise_id' => ['nullable', 'integer'],
+            'sessions.*.exercises.*.yoga' => ['nullable', 'array'],
         ], [
             'week_current.required' => 'Indicá la semana actual.',
             'week_total.required' => 'Indicá el total de semanas.',
@@ -118,6 +121,31 @@ class PlanController extends Controller
         }
 
         $sessions = $this->normalizeSessions($validated['sessions']);
+
+            $yogaIds = collect($sessions)
+                ->flatMap(fn (array $session) => $session['exercises'])
+                ->pluck('yoga_exercise_id')
+                ->filter()
+                ->unique()
+                ->values();
+
+            if ($yogaIds->isNotEmpty()) {
+                if (!$user->isMilagros()) {
+                    return response()->json([
+                        'message' => 'Las poses de yoga solo pueden asignarse al plan de Milagros.',
+                    ], 422);
+                }
+
+                $validYogaIds = YogaExercise::where('user_id', $user->id)
+                    ->whereIn('id', $yogaIds)
+                    ->pluck('id');
+
+                if ($validYogaIds->count() !== $yogaIds->count()) {
+                    return response()->json([
+                        'message' => 'Una de las poses de yoga no pertenece a Milagros.',
+                    ], 422);
+                }
+            }
 
         if (count($sessions) > $validated['days_per_week']) {
             return response()->json([
@@ -224,14 +252,23 @@ class PlanController extends Controller
         return collect($sessions)
             ->map(function (array $session) {
                 $exercises = collect($session['exercises'] ?? [])
-                    ->map(fn (array $exercise) => [
-                        'name' => trim($exercise['name']),
-                        'sets' => (int) $exercise['sets'],
-                        'reps' => trim((string) $exercise['reps']),
-                        'rest_seconds' => isset($exercise['rest_seconds']) ? (int) $exercise['rest_seconds'] : 90,
-                        'tip' => trim((string) ($exercise['tip'] ?? '')),
-                        'muscle' => trim((string) ($exercise['muscle'] ?? '')),
-                    ])
+                    ->map(function (array $exercise) {
+                        $normalized = [
+                            'name' => trim($exercise['name']),
+                            'sets' => (int) $exercise['sets'],
+                            'reps' => trim((string) $exercise['reps']),
+                            'rest_seconds' => isset($exercise['rest_seconds']) ? (int) $exercise['rest_seconds'] : 90,
+                            'tip' => trim((string) ($exercise['tip'] ?? '')),
+                            'muscle' => trim((string) ($exercise['muscle'] ?? '')),
+                        ];
+
+                        if (isset($exercise['yoga_exercise_id'])) {
+                            $normalized['yoga_exercise_id'] = (int) $exercise['yoga_exercise_id'];
+                            $normalized['yoga'] = is_array($exercise['yoga'] ?? null) ? $exercise['yoga'] : null;
+                        }
+
+                        return $normalized;
+                    })
                     ->filter(fn (array $exercise) => $exercise['name'] !== '')
                     ->values()
                     ->all();

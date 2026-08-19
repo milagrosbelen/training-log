@@ -88,6 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('coach')->group(function () {
         Route::post('/coach/yoga-exercises', [MilagrosYogaController::class, 'storeExercise']);
+        Route::get('/coach/yoga-exercises/library', [MilagrosYogaController::class, 'libraryForCoach']);
     });
 
     Route::get('/workouts', [WorkoutController::class, 'index']);

@@ -28,3 +28,8 @@ export async function recordMilagrosYogaAttempt(payload) {
   const { data } = await api.post("/profile/yoga-progressions/attempts", payload)
   return data?.data ?? null
 }
+
+export async function getCoachMilagrosYogaLibrary(userId) {
+  const { data } = await api.get("/coach/yoga-exercises/library", { params: { user_id: userId } })
+  return data?.data ?? []
+}

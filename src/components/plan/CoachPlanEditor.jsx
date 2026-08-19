@@ -23,7 +23,8 @@ import {
   exerciseSuggestionsFor,
   zoneOptionsFor,
 } from "../../utils/planUtils"
-import { isHomeTraining } from "../../utils/trainingType"
+import { isHomeTraining, usesPoseLadder } from "../../utils/trainingType"
+import { getCoachMilagrosYogaLibrary } from "../../services/milagrosYogaService"
 import {
   getClients,
   peekClients,
@@ -65,6 +66,7 @@ export default function CoachPlanEditor() {
   const cachedClients = peekClients() || []
   const initialId = searchParams.get("alumna") || (cachedClients[0] ? String(cachedClients[0].id) : "")
   const [clients, setClients] = useState(cachedClients)
+  const [yogaExercises, setYogaExercises] = useState([])
   const [selectedUserId, setSelectedUserId] = useState(initialId)
   const [form, setForm] = useState(() => formFromPlan(initialId ? peekClientPlan(initialId) : undefined))
   const [saving, setSaving] = useState(false)
@@ -89,6 +91,7 @@ export default function CoachPlanEditor() {
   const objectiveOptions = objectiveOptionsFor(selectedClient)
   const exerciseSuggestions = exerciseSuggestionsFor(selectedClient)
   const zoneOptions = zoneOptionsFor(selectedClient)
+  const isMilagrosPlan = usesPoseLadder(selectedClient)
 
   useEffect(() => {
     getClients()
@@ -128,6 +131,17 @@ export default function CoachPlanEditor() {
         setError(err.response?.data?.message ?? "No se pudo cargar el plan.")
       })
   }, [selectedUserId])
+
+  useEffect(() => {
+    if (!isMilagrosPlan || !selectedUserId) {
+      setYogaExercises([])
+      return
+    }
+
+    getCoachMilagrosYogaLibrary(selectedUserId)
+      .then((list) => setYogaExercises(Array.isArray(list) ? list : []))
+      .catch(() => setYogaExercises([]))
+  }, [isMilagrosPlan, selectedUserId])
 
   useEffect(() => {
     if (!openObjectives) return
@@ -673,6 +687,43 @@ export default function CoachPlanEditor() {
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
+                        {isMilagrosPlan ? (
+                          <div className="px-2.5 pb-2.5">
+                            <select
+                              value={exercise.yoga_exercise_id || ""}
+                              onChange={(event) => {
+                                const pose = yogaExercises.find((item) => String(item.id) === event.target.value)
+                                updateSession(activeSession.weekday, (current) => ({
+                                  ...current,
+                                  exercises: current.exercises.map((item, i) => (
+                                    i === index
+                                      ? pose
+                                        ? {
+                                            ...item,
+                                            name: pose.name,
+                                            sets: 1,
+                                            reps: "1 práctica",
+                                            rest_seconds: 0,
+                                            muscle: "Yoga",
+                                            image_url: pose.image_url,
+                                            yoga_exercise_id: pose.id,
+                                            yoga: pose,
+                                          }
+                                        : { ...item, yoga_exercise_id: null, yoga: null }
+                                      : item
+                                  )),
+                                }))
+                              }}
+                              className="h-9 w-full rounded-xl bg-black border border-white/10 px-3 text-sm text-[#f4f4f5]"
+                              aria-label="Pose de yoga para este día"
+                            >
+                              <option value="">Ejercicio aeróbico / general</option>
+                              {yogaExercises.map((pose) => (
+                                <option key={pose.id} value={pose.id}>{pose.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : null}
                         <div className="px-2.5 pb-2.5 grid grid-cols-3 gap-2">
                           <input
                             type="number"

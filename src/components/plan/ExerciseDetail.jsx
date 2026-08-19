@@ -94,6 +94,8 @@ export default function ExerciseDetail({
   const [logSets, setLogSets] = useState("")
   const [logNote, setLogNote] = useState("")
   const [feeling, setFeeling] = useState("")
+  const [yogaStage, setYogaStage] = useState(0)
+  const [deepBreathingDone, setDeepBreathingDone] = useState(false)
   const meta = resolveExerciseMeta(exercise)
   const view = mapView || meta.preferredView
 
@@ -120,6 +122,8 @@ export default function ExerciseDetail({
     setShowHistory(false)
     setFeeling("")
     setLogNote("")
+    setYogaStage(0)
+    setDeepBreathingDone(false)
     setLogSets(exercise.sets ? String(exercise.sets) : "1")
     setLogReps(defaultReps(exercise.reps))
     const previousWeight = collectHistory(exercise.name, workouts)[0]?.weight
@@ -297,7 +301,30 @@ export default function ExerciseDetail({
               <p className="text-[11px] font-medium tracking-[0.18em] uppercase text-slate-500">
                 Cómo te fue
               </p>
-              {hideWeight ? (
+              {exercise.yoga ? (
+                <>
+                  <p className="mt-2 text-sm text-slate-500">Registrá hasta qué etapa llegaste en esta pose.</p>
+                  <select
+                    value={yogaStage}
+                    onChange={(e) => setYogaStage(Number(e.target.value))}
+                    className="mt-4 h-12 w-full rounded-xl bg-ink border border-white/10 px-3 text-sm text-white"
+                  >
+                    <option value={0}>Todavía no pude avanzar</option>
+                    {(exercise.yoga.stages || []).map((stage) => (
+                      <option key={stage.id} value={stage.sort_order}>Etapa {stage.sort_order}: {stage.title}</option>
+                    ))}
+                  </select>
+                  <label className="mt-3 flex items-center gap-2 text-sm text-white">
+                    <input
+                      type="checkbox"
+                      checked={deepBreathingDone}
+                      onChange={(e) => setDeepBreathingDone(e.target.checked)}
+                      className="h-4 w-4 accent-[#FF5C00]"
+                    />
+                    Hice 3 respiraciones profundas
+                  </label>
+                </>
+              ) : hideWeight ? (
                 <p className="mt-2 text-sm text-slate-500">
                   Anotá series, reps o tiempo. El peso no hace falta: es con tu cuerpo.
                 </p>
@@ -405,6 +432,8 @@ export default function ExerciseDetail({
                     reps: parseInt(logReps, 10) || defaultReps(exercise.reps) || null,
                     sets: parseInt(logSets, 10) || exercise.sets || 1,
                     notes: noteParts.join(". "),
+                    reachedStage: exercise.yoga ? yogaStage : null,
+                    deepBreathingDone: exercise.yoga ? deepBreathingDone : false,
                   })
                 }}
                 className="w-full h-12 rounded-2xl bg-ember text-white font-medium flex items-center justify-center gap-2 disabled:opacity-60"

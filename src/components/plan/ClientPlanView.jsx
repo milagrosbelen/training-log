@@ -6,6 +6,7 @@ import {
 } from "lucide-react"
 import { WEEKDAYS, firstName, todayWeekday } from "../../utils/planUtils"
 import { isHomeTraining, usesPoseLadder } from "../../utils/trainingType"
+import { recordMilagrosYogaAttempt } from "../../services/milagrosYogaService"
 import { savePlanProgress } from "../../services/planService"
 import { getWorkouts, peekWorkouts, logSessionExercise } from "../../services/workoutService"
 import PlanDesktopHeader from "./PlanDesktopHeader"
@@ -101,6 +102,14 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
           const date = updatedWorkouts?.date
           const without = current.filter((item) => item.date !== date)
           return updatedWorkouts ? [updatedWorkouts, ...without] : current
+        })
+      }
+      if (exerciseIsYoga(session.exercises[index])) {
+        await recordMilagrosYogaAttempt({
+          exercise_id: session.exercises[index].yoga_exercise_id,
+          reached_stage: log?.reachedStage ?? 0,
+          deep_breathing_done: Boolean(log?.deepBreathingDone),
+          notes: log?.notes || "",
         })
       }
       const next = [...new Set([...(progress.indexes || []), index])]
@@ -384,4 +393,8 @@ export default function ClientPlanView({ plan, user, onPlanChange }) {
       ) : null}
     </div>
   )
+}
+
+function exerciseIsYoga(exercise) {
+  return Boolean(exercise?.yoga_exercise_id && exercise?.yoga)
 }

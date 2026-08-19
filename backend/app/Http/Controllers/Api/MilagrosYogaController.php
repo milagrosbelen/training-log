@@ -36,6 +36,35 @@ class MilagrosYogaController extends Controller
         ]);
     }
 
+    public function libraryForCoach(Request $request): JsonResponse
+    {
+        $targetUser = User::findOrFail($request->integer('user_id'));
+
+        if (!$request->user()->ownsAlumna($targetUser) || !$targetUser->isMilagros()) {
+            return response()->json(['message' => 'La biblioteca solo está disponible para Milagros.'], 403);
+        }
+
+        $exercises = YogaExercise::with('stages')
+            ->where('user_id', $targetUser->id)
+            ->orderBy('name')
+            ->get();
+
+        return response()->json([
+            'data' => $exercises->map(fn (YogaExercise $exercise) => [
+                'id' => $exercise->id,
+                'name' => $exercise->name,
+                'description' => $exercise->description,
+                'image_url' => $exercise->image_url,
+                'stages' => $exercise->stages->map(fn ($stage) => [
+                    'id' => $stage->id,
+                    'sort_order' => $stage->sort_order,
+                    'title' => $stage->title,
+                    'description' => $stage->description,
+                ])->values()->all(),
+            ])->values()->all(),
+        ]);
+    }
+
     public function storeExercise(Request $request): JsonResponse
     {
         $validated = $request->validate([
