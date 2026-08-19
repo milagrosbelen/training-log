@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react"
 import { getExerciseImage, EXERCISE_PHOTO_FALLBACK } from "../utils/exerciseImages"
 
-export default function ExercisePhoto({ name, className = "", dimmed = true }) {
-  const [src, setSrc] = useState(() => getExerciseImage(name))
+export default function ExercisePhoto({ name, image, imageUrl, className = "", dimmed = true }) {
+  const exercise = { name, image, imageUrl, image_url: imageUrl ?? image }
+  const [src, setSrc] = useState(() => getExerciseImage(exercise))
 
   useEffect(() => {
-    setSrc(getExerciseImage(name))
-  }, [name])
+    setSrc(getExerciseImage(exercise))
+  }, [name, image, imageUrl])
 
   return (
-      <img
+    <img
       key={src}
       src={src}
       alt={name || ""}

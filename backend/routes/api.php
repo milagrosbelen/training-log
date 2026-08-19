@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AlumnaController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ExerciseController;
+use App\Http\Controllers\Api\MilagrosYogaController;
 use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SessionController;
@@ -81,7 +82,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/profile/focus', [ProfileController::class, 'updateFocus']);
     Route::get('/profile/poses', [ProfileController::class, 'getPoses']);
     Route::patch('/profile/poses', [ProfileController::class, 'updatePoses']);
+    Route::get('/profile/yoga-progressions', [MilagrosYogaController::class, 'indexForUser']);
+    Route::post('/profile/yoga-progressions/attempts', [MilagrosYogaController::class, 'storeAttempt']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+    Route::middleware('coach')->group(function () {
+        Route::post('/coach/yoga-exercises', [MilagrosYogaController::class, 'storeExercise']);
+    });
 
     Route::get('/workouts', [WorkoutController::class, 'index']);
     Route::get('/workouts/date/{date}', [WorkoutController::class, 'showByDate']);

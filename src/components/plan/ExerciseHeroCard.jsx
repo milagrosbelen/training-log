@@ -41,6 +41,8 @@ export default function ExerciseHeroCard({
       <ExercisePhoto
 
         name={exercise.name}
+        image={exercise.image}
+        imageUrl={exercise.image_url || exercise.imageUrl}
 
         className="absolute inset-0 h-full w-full object-cover object-center"
 

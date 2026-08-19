@@ -5,7 +5,7 @@ import { getWorkouts, peekWorkouts } from "../../services/workoutService"
 import { buildProgressStory, formatKg } from "../../utils/progressStory"
 import { isHomeTraining, usesPoseLadder } from "../../utils/trainingType"
 import BrandLogo from "../BrandLogo"
-import PoseProgressSection from "./PoseProgressSection"
+import MilagrosYogaProgressSection from "./MilagrosYogaProgressSection"
 
 const BLAZE = "#FF5C00"
 const BLAZE_GLOW = "rgba(255, 92, 0, 0.55)"
@@ -389,7 +389,7 @@ export default function AlumnaProgressView({ workouts: workoutsProp }) {
         )}
 
         {poseLadder ? (
-          <PoseProgressSection />
+          <MilagrosYogaProgressSection />
         ) : home ? null : (
           <>
             <p className="mt-10 text-[11px] font-semibold tracking-[0.22em] uppercase" style={{ color: BLAZE }}>

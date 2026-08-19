@@ -23,6 +23,8 @@ function apiToFrontend(workout) {
       reps: ex.reps ?? "",
       sets: ex.sets ?? 1,
       notes: ex.notes ?? "",
+      image: ex.image ?? null,
+      image_url: ex.image_url ?? ex.imageUrl ?? null,
     })),
   }
 }

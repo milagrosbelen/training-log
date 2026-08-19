@@ -23,7 +23,9 @@ class WorkoutAssembler
                     \'reps\', e.reps,
                     \'sets\', e.sets,
                     \'order\', e."order",
-                    \'notes\', e.notes
+                    \'notes\', e.notes,
+                    \'image\', e.image,
+                    \'image_url\', case when e.image is not null then concat(\'/storage/\', e.image) else null end
                 ) order by e."order") filter (where e.id is not null), \'[]\'::json) as exercises
             from workouts w
             left join exercises e on e.workout_id = w.id
@@ -62,6 +64,8 @@ class WorkoutAssembler
                     'sets' => (int) ($exercise['sets'] ?? 1),
                     'order' => (int) ($exercise['order'] ?? 0),
                     'notes' => $exercise['notes'] ?? null,
+                    'image' => $exercise['image'] ?? null,
+                    'image_url' => $exercise['image_url'] ?? null,
                 ];
             }, is_array($exercises) ? $exercises : []),
         ];

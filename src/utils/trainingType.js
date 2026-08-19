@@ -27,7 +27,9 @@ export function isHomeTraining(source) {
 }
 
 export function usesPoseLadder(user) {
-  return String(user?.username || "").toLowerCase() === "milagros"
+  const username = String(user?.username || "").trim().toLowerCase()
+  const email = String(user?.email || "").trim().toLowerCase()
+  return username === "milagros" || email === "milagrospedrasa1@gmail.com"
 }
 
 export function trainingTypeMeta(source) {

@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Exercise extends Model
 {
     use HasFactory;
+
+    protected $appends = ['image_url'];
 
     /**
      * The attributes that are mass assignable.
@@ -22,6 +25,7 @@ class Exercise extends Model
         'sets',
         'order',
         'notes',
+        'image',
     ];
 
     /**
@@ -49,5 +53,10 @@ class Exercise extends Model
     public function workout()
     {
         return $this->belongsTo(Workout::class);
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image ? Storage::url($this->image) : null;
     }
 }

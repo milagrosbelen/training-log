@@ -88,6 +88,8 @@ function ExerciseCard({ exercise, onUpdate, onDelete, onMoveUp, onMoveDown, canM
         <div className="relative h-32">
           <ExercisePhoto
             name={exercise.name}
+            image={exercise.image}
+            imageUrl={exercise.image_url || exercise.imageUrl}
             className="absolute inset-0 h-full w-full object-cover object-center"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-black/10" />

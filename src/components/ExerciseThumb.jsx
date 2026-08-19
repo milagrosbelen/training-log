@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react"
 import { getExerciseImage, EXERCISE_PHOTO_FALLBACK } from "../utils/exerciseImages"
 
-export default function ExerciseThumb({ name, className = "w-[72px] h-[72px]" }) {
-  const [src, setSrc] = useState(() => getExerciseImage(name))
+export default function ExerciseThumb({ name, image, imageUrl, className = "w-[72px] h-[72px]" }) {
+  const exercise = { name, image, imageUrl, image_url: imageUrl ?? image }
+  const [src, setSrc] = useState(() => getExerciseImage(exercise))
 
   useEffect(() => {
-    setSrc(getExerciseImage(name))
-  }, [name])
+    setSrc(getExerciseImage(exercise))
+  }, [name, image, imageUrl])
 
   return (
     <div className={`${className} rounded-xl overflow-hidden shrink-0 bg-ink-400`}>

@@ -68,6 +68,7 @@ export default function AppRoutes() {
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={null} />
             <Route path="/admin/plan" element={null} />
+            <Route path="/admin/yoga" element={null} />
           </Route>
         </Route>
 

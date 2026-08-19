@@ -54,6 +54,8 @@ class WorkoutController extends Controller
             'exercises.*.sets' => ['nullable', 'integer', 'min:1'],
             'exercises.*.order' => ['nullable', 'integer', 'min:0'],
             'exercises.*.notes' => ['nullable', 'string', 'max:500'],
+            'exercises.*.image' => ['nullable', 'string', 'max:255'],
+            'exercises.*.image_url' => ['nullable', 'string', 'max:255'],
         ]);
 
         $workout = $request->user()
@@ -83,6 +85,7 @@ class WorkoutController extends Controller
                     'sets' => $ex['sets'] ?? 1,
                     'order' => $ex['order'] ?? $i,
                     'notes' => isset($ex['notes']) ? trim((string) $ex['notes']) : null,
+                    'image' => isset($ex['image']) && $ex['image'] !== '' ? trim((string) $ex['image']) : null,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];

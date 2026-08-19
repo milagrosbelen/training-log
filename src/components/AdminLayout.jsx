@@ -1,9 +1,10 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { useEffect } from "react"
-import { ClipboardList, LogOut, Users } from "lucide-react"
+import { ClipboardList, Dumbbell, LogOut, Users } from "lucide-react"
 import { logout } from "../services/authService"
 import { prefetchCoachData } from "../services/prefetch"
 import AdminAlumnas from "../pages/AdminAlumnas"
+import AdminMilagrosYoga from "../pages/AdminMilagrosYoga"
 import CoachPlanEditor from "./plan/CoachPlanEditor"
 
 const BLAZE = "#FF5C00"
@@ -11,11 +12,13 @@ const BLAZE = "#FF5C00"
 const items = [
   { to: "/admin", label: "Alumnas", icon: Users, end: true },
   { to: "/admin/plan", label: "Planes", icon: ClipboardList, end: false },
+  { to: "/admin/yoga", label: "Yoga", icon: Dumbbell, end: false },
 ]
 
 const TABS = [
   { path: "/admin", Page: AdminAlumnas },
   { path: "/admin/plan", Page: CoachPlanEditor },
+  { path: "/admin/yoga", Page: AdminMilagrosYoga },
 ]
 
 export default function AdminLayout() {

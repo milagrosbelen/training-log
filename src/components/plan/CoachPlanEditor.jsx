@@ -593,6 +593,8 @@ export default function CoachPlanEditor() {
                             {filled ? (
                               <ExercisePhoto
                                 name={exercise.name}
+                                image={exercise.image}
+                                imageUrl={exercise.image_url || exercise.imageUrl}
                                 className="h-full w-full object-cover object-center"
                               />
                             ) : hasMuscle ? (

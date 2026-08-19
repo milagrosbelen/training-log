@@ -228,7 +228,7 @@ const KEYWORD_FILES = [
   { test: /cinta/, file: "cinta" },
 ]
 
-export const EXERCISE_PHOTO_FALLBACK = "/home-hero-bench.png"
+export const EXERCISE_PHOTO_FALLBACK = "/milogit-icon.png"
 const IMAGE_VERSION = "3"
 
 export function resolveExerciseImageFile(name) {
@@ -251,7 +251,12 @@ export function resolveExerciseImageFile(name) {
   return KEYWORD_FILES.find((item) => item.test.test(haystack))?.file || ""
 }
 
-export function getExerciseImage(name) {
+export function getExerciseImage(exerciseOrName) {
+  const candidate = typeof exerciseOrName === "string" ? { name: exerciseOrName } : (exerciseOrName || {})
+  const explicitImage = candidate.image_url || candidate.imageUrl || candidate.image
+  if (explicitImage) return explicitImage
+
+  const name = candidate.name ?? ""
   const file = resolveExerciseImageFile(name)
   if (!file) return EXERCISE_PHOTO_FALLBACK
   if (HOME_IMAGE_FILES.has(file) || Object.values(HOME_ALIASES).includes(file)) {

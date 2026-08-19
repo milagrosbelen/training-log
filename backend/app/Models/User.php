@@ -29,6 +29,8 @@ class User extends Authenticatable
         'pose_progress',
         'is_active',
         'coach_id',
+        'role',
+        'pin_hash',
     ];
 
     protected $hidden = [
@@ -77,6 +79,12 @@ class User extends Authenticatable
     public function isHomeTraining(): bool
     {
         return $this->training_type === self::TRAINING_HOME;
+    }
+
+    public function isMilagros(): bool
+    {
+        $username = strtolower((string) ($this->username ?? ''));
+        return $username === 'milagros' || $this->email === 'milagrospedrasa1@gmail.com';
     }
 
     public function ownsAlumna(self $alumna): bool

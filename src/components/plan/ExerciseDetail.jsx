@@ -145,6 +145,8 @@ export default function ExerciseDetail({
         <div className="relative h-[42vh] min-h-[280px]">
           <ExercisePhoto
             name={exercise.name}
+            image={exercise.image}
+            imageUrl={exercise.image_url || exercise.imageUrl}
             className="absolute inset-0 h-full w-full object-cover object-center"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/25" />
