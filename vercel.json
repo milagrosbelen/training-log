@@ -9,6 +9,10 @@
       "destination": "https://milogit-backend.onrender.com/api/:path*"
     },
     {
+      "source": "/storage/:path*",
+      "destination": "https://milogit-backend.onrender.com/storage/:path*"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
