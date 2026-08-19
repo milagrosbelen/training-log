@@ -40,9 +40,9 @@ export default function AdminMilagrosYoga() {
     const image = event.target.files?.[0] ?? null
     setError("")
     if (!image) return
-    if (image.size > 2 * 1024 * 1024) {
+    if (image.size > 10 * 1024 * 1024) {
       event.target.value = ""
-      setError("La imagen debe pesar menos de 2 MB.")
+      setError("La imagen debe pesar menos de 10 MB.")
       return
     }
     setForm((current) => ({ ...current, image }))
@@ -137,7 +137,7 @@ export default function AdminMilagrosYoga() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-[11px] tracking-[0.18em] uppercase font-semibold" style={{ color: BLAZE }}>Imagen</p>
-                <p className="mt-1 text-xs text-slate-500">JPG, PNG o WebP · máximo 2 MB</p>
+                <p className="mt-1 text-xs text-slate-500">JPG, PNG o WebP · máximo 10 MB</p>
               </div>
               <label className="flex h-10 items-center gap-2 rounded-full px-4 text-xs font-bold cursor-pointer" style={{ backgroundColor: BLAZE, color: "#080809" }}>
                 <ImagePlus className="h-4 w-4" />
