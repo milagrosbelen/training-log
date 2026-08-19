@@ -9,6 +9,7 @@ use App\Models\YogaExerciseStage;
 use App\Models\YogaProgressAttempt;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\File;
 
@@ -114,6 +115,52 @@ class MilagrosYogaController extends Controller
             'message' => 'Pose creada correctamente.',
             'data' => $exercise->fresh()->load(['stages', 'attempts']),
         ], 201);
+    }
+
+    public function updateExercise(Request $request, YogaExercise $yogaExercise): JsonResponse
+    {
+        $targetUser = $yogaExercise->user;
+        if (!$targetUser || !$targetUser->isMilagros() || !$request->user()->ownsAlumna($targetUser)) {
+            return response()->json(['message' => 'No podés editar esta pose.'], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'image' => ['nullable', File::image()->max(10240)],
+            'stages' => ['required', 'array', 'min:1'],
+            'stages.*.title' => ['required', 'string', 'max:255'],
+            'stages.*.description' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        DB::transaction(function () use ($request, $validated, $yogaExercise) {
+            $yogaExercise->update([
+                'name' => trim($validated['name']),
+                'description' => trim((string) ($validated['description'] ?? '')) ?: null,
+            ]);
+
+            if ($request->hasFile('image')) {
+                if ($yogaExercise->image) {
+                    Storage::disk('public')->delete($yogaExercise->image);
+                }
+                $yogaExercise->image = $request->file('image')->store('yoga-exercise-images', 'public');
+                $yogaExercise->save();
+            }
+
+            $yogaExercise->stages()->delete();
+            $yogaExercise->stages()->createMany(
+                collect($validated['stages'])->values()->map(fn (array $stage, int $index) => [
+                    'sort_order' => $index + 1,
+                    'title' => trim($stage['title']),
+                    'description' => trim((string) ($stage['description'] ?? '')) ?: null,
+                ])->all()
+            );
+        });
+
+        return response()->json([
+            'message' => 'Pose actualizada correctamente.',
+            'data' => $yogaExercise->fresh()->load('stages'),
+        ]);
     }
 
     public function storeAttempt(Request $request): JsonResponse
