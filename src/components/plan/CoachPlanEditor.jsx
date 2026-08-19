@@ -252,6 +252,27 @@ export default function CoachPlanEditor() {
     }
 
     const daysPerWeek = Number(form.days_per_week) || 3
+    const incompleteExercise = form.sessions
+      .flatMap((session, sessionIndex) => (session.exercises || []).map((exercise, exerciseIndex) => ({
+        sessionIndex,
+        exerciseIndex,
+        exercise,
+      })))
+      .find(({ exercise }) => (
+        String(exercise.name || "").trim()
+        && !exercise.yoga_exercise_id
+        && (!String(exercise.reps ?? "").trim() || !Number(exercise.sets))
+      ))
+
+    if (incompleteExercise) {
+      const { sessionIndex, exerciseIndex, exercise } = incompleteExercise
+      setToast({
+        message: `Completá series y reps de la sesión ${sessionIndex + 1}, ejercicio ${exerciseIndex + 1} (${exercise.name}).`,
+        type: "error",
+      })
+      return
+    }
+
     const sessions = form.sessions
       .map((session) => ({
         ...session,
@@ -261,7 +282,10 @@ export default function CoachPlanEditor() {
           .map((exercise) => ({
             ...exercise,
             name: String(exercise.name).trim(),
-            reps: String(exercise.reps ?? "").trim(),
+            sets: exercise.yoga_exercise_id ? 1 : (Number(exercise.sets) || 1),
+            reps: exercise.yoga_exercise_id
+              ? (String(exercise.reps ?? "").trim() || "1 práctica")
+              : String(exercise.reps ?? "").trim(),
           })),
       }))
       .filter((session) => session.title)
